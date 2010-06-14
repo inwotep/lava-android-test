@@ -1,0 +1,16 @@
+#!/usr/bin/python
+
+import os
+import sys
+
+ABREK_BINDIR=os.path.abspath(os.path.dirname(os.path.realpath(sys.argv[0])))
+ABREK_ROOT=os.path.dirname(ABREK_BINDIR)
+ABREK_DIR=os.path.join(ABREK_ROOT,'abrek')
+if os.path.exists(ABREK_DIR) and ABREK_ROOT not in sys.path:
+    sys.path.insert(0, ABREK_ROOT)
+
+import abrek.main
+
+if __name__ == '__main__':
+    exit_code = abrek.main.main()
+    sys.exit(exit_code)
