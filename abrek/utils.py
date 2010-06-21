@@ -4,8 +4,7 @@ import urlparse
 
 def geturl(url, path=""):
     urlpath = urlparse.urlsplit(url).path
-    loc = urlpath.rfind('/')
-    filename = urlpath[loc+1:]
+    filename = os.path.basename(urlpath)
     if path:
         filename = os.path.join(path,filename)
     urllib.urlretrieve(url, filename)
