@@ -18,8 +18,7 @@ def run_external(cmd):
     rc = p.returncode
     return rc,output
 
-def write_file(data,filename):
-    fd = open(filename,"w")
-    fd.write(data)
-    fd.close()
+def write_file(data,path):
+    with open(path, "w") as fd:
+        fd.write(data)
 
