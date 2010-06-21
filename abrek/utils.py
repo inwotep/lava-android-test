@@ -1,10 +1,12 @@
 import os
 import urllib
+import urlparse
 from subprocess import Popen, PIPE
 
 def geturl(url, path=""):
-    loc = url.rfind('/')
-    filename = url[loc+1:]
+    urlpath = urlparse.urlsplit(url).path
+    loc = urlpath.rfind('/')
+    filename = urlpath[loc+1:]
     if path:
         filename = os.path.join(path,filename)
     urllib.urlretrieve(url, filename)
