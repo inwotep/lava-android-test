@@ -1,7 +1,6 @@
 import os
 import urllib
 import urlparse
-from subprocess import Popen, PIPE
 
 def geturl(url, path=""):
     urlpath = urlparse.urlsplit(url).path
@@ -11,12 +10,6 @@ def geturl(url, path=""):
         filename = os.path.join(path,filename)
     urllib.urlretrieve(url, filename)
     return filename
-
-def run_external(cmd):
-    p = Popen(cmd, shell=True, stdout=PIPE)
-    output = p.communicate()[0]
-    rc = p.returncode
-    return rc,output
 
 def write_file(data,path):
     with open(path, "w") as fd:
