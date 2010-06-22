@@ -15,4 +15,8 @@ class cmd_install(AbrekCmd):
             sys.exit(1)
         testname = argv[0]
         test = testloader(argv[0])
-        test.install()
+        try:
+            test.install()
+        except RuntimeError as strerror:
+            print "Test installation error: %s" % strerror
+            sys.exit(1)
