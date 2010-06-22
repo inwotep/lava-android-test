@@ -107,9 +107,13 @@ class AbrekTestInstaller(object):
         if not os.path.exists(filename):
             return None
         if self.md5:
-            checkmd5 = hashlib.md5(file(filename).read()).hexdigest()
+            checkmd5 = hashlib.md5()
+            with open(filename, 'rb') as fd:
+                for data in fd.read(0x10000):
+                    checkmd5.update(data)
             if checkmd5 != self.md5:
-                print "ERROR: unexpected md5sum downloading %s" % filename
+                raise RuntimeError, "Unexpected md5sum downloading %s" % \
+                                    filename
                 return None
         return filename
 
