@@ -1,4 +1,4 @@
-from abrek.commands import AbrekCmd
+from abrek.command import AbrekCmd
 
 class cmd_version(AbrekCmd):
     def run(self, argv):

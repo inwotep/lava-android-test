@@ -1,5 +1,5 @@
 import sys
-import abrek.commands
+import abrek.command
 
 def main(argv=None):
     if argv is None:
@@ -7,7 +7,7 @@ def main(argv=None):
         if not argv:
             argv = ['help']
         cmd = argv.pop(0)
-        cmd_func = abrek.commands.get_command(cmd)
+        cmd_func = abrek.command.get_command(cmd)
         if not cmd_func:
             print "command '%s' not found" % cmd
             return 1
