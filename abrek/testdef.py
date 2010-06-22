@@ -1,6 +1,7 @@
 import hashlib
 import os
 import shutil
+import sys
 from commands import getstatusoutput
 
 import abrek.config
@@ -18,6 +19,7 @@ class AbrekTest(object):
     runner - AbrekRunner instance to use
     parser - AbrekParser instance to use
     """
+
     def __init__(self, testname, version="", installer=None, runner=None,
                  parser=None):
         self.config = abrek.config.AbrekConfig()
@@ -38,15 +40,14 @@ class AbrekTest(object):
         if self.installer:
             path = os.path.join(self.config.installdir, self.testname)
             if os.path.exists(path):
-                print "%s is already installed" % self.testname
-                return 1
+                raise RuntimeError, "%s is already installed" % self.testname
             os.makedirs(path)
             os.chdir(path)
             rc = self.installer.install()
             if rc:
-                print "An error was detected during installation, cleaning up"
                 self.uninstall()
-            return rc
+                raise RuntimeError, "An error was detected during", \
+                                    "installation, cleaning up"
 
     def uninstall(self):
         """
@@ -79,7 +80,8 @@ class AbrekTestInstaller(object):
     url - location from which the test suite should be downloaded
     md5 - md5sum to check the integrety of the download
     """
-    def __init__(self,steps=[], deps=[], url="", md5="", **kwargs):
+
+    def __init__(self, steps=[], deps=[], url="", md5="", **kwargs):
         self.steps = steps
         self.deps = deps
         self.url = url
@@ -91,8 +93,7 @@ class AbrekTestInstaller(object):
         cmd = "sudo apt-get install %s", " ".join(self.deps)
         rc,output = getstatusoutput(cmd)
         if rc:
-            print "ERROR: dependency installation failed"
-        return rc
+            raise RuntimeError, "Dependency installation failed"
 
     def _download(self):
         """
@@ -117,12 +118,8 @@ class AbrekTestInstaller(object):
             rc,output = getstatusoutput(cmd)
 
     def install(self):
-        rc = self._installdeps()
-        if rc:
-            return rc
-        rc = self._download()
-        if rc == None:
-            return 1
+        self._installdeps()
+        self._download()
         self._runsteps()
 
 def testloader(testname):
@@ -131,7 +128,11 @@ def testloader(testname):
     file, or a directory with an __init__.py
     """
     importpath = "abrek.test_definitions.%s" % testname
-    mod = __import__(importpath)
+    try:
+        mod = __import__(importpath)
+    except ImportError:
+        print "unknown test '%s'" % testname
+        sys.exit(1)
     for i in importpath.split('.')[1:]:
         mod = getattr(mod,i)
     try:
