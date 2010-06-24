@@ -1,3 +1,4 @@
+import shutil
 import os
 import urllib2
 import urlparse
@@ -10,12 +11,9 @@ def geturl(url, path=""):
     fd = open(filename, "w")
     try:
         response = urllib2.urlopen(url)
-        with open(filename, 'wb') as fd:
-            while True:
-                data = response.read(0x10000)
-                if not data:
-                    break
-                fd.write(data)
+        fd = open(filename, 'wb')
+        shutil.copyfileobj(response,fd,0x10000)
+        fd.close()
         response.close()
     except:
         raise RuntimeError, "Could not retrieve %s" % url
