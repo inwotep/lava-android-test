@@ -12,7 +12,6 @@ class testAbrekTestInstaller(unittest.TestCase):
         self.tmpdir = tempfile.mkdtemp()
         self.filename = os.path.abspath(__file__)
         os.chdir(self.tmpdir)
-        print self.tmpdir
 
     def tearDown(self):
         os.chdir(self.origdir)
@@ -38,4 +37,3 @@ class testAbrekTestInstaller(unittest.TestCase):
         installer = self.makeinstaller(steps = steps)
         installer._runsteps()
         self.assertTrue(os.path.exists("./foo"))
-        #self.assertTrue(os.path.exists(self.tmpdir+"/foo"))
