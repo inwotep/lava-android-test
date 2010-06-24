@@ -1,5 +1,5 @@
 import unittest
-from abrek.commands import AbrekCmd
+from abrek.command import AbrekCmd
 
 class testAbrekCmd(unittest.TestCase):
     def test_empty_run(self):
