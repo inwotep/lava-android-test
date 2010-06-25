@@ -20,6 +20,11 @@ class testAbrekTestInstaller(unittest.TestCase):
     def makeinstaller(self,**kwargs):
         return AbrekTestInstaller(**kwargs)
 
+    def test_bad_download(self):
+        url = "file:///xxxyyyzzz"
+        installer = self.makeinstaller(url = url)
+        self.assertRaises(RuntimeError, installer._download)
+
     def test_bad_md5(self):
         url = "file://%s" % self.filename
         installer = self.makeinstaller(url = url, md5 = 'foo')
