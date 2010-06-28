@@ -1,11 +1,14 @@
 import hashlib
+import json
 import os
 import shutil
 import sys
+import time
 from commands import getstatusoutput
+from datetime import datetime
 
 import abrek.config
-from abrek.utils import geturl
+from abrek.utils import geturl, write_file
 
 class AbrekTest(object):
     """
@@ -28,6 +31,7 @@ class AbrekTest(object):
         self.installer = installer
         self.runner = runner
         self.parser = parser
+        self.installdir = os.path.join(self.config.installdir, self.testname)
         self.origdir = os.path.abspath(os.curdir)
 
     def install(self):
@@ -37,17 +41,19 @@ class AbrekTest(object):
         The installer's install() method is then called from this directory
         to complete any test specific install that may be needed.
         """
-        if self.installer:
-            path = os.path.join(self.config.installdir, self.testname)
-            if os.path.exists(path):
-                raise RuntimeError, "%s is already installed" % self.testname
-            os.makedirs(path)
-            os.chdir(path)
-            rc = self.installer.install()
-            if rc:
-                self.uninstall()
-                raise RuntimeError, "An error was detected during", \
-                                    "installation, cleaning up"
+
+        if not self.installer:
+            raise RuntimeError, "no installer defined for '%s'" % \
+                                 self.testname
+        if os.path.exists(self.installdir):
+            raise RuntimeError, "%s is already installed" % self.testname
+        os.makedirs(self.installdir)
+        os.chdir(self.installdir)
+        rc = self.installer.install()
+        if rc:
+            self.uninstall()
+            raise RuntimeError, "An error was detected during", \
+                                "installation, cleaning up"
 
     def uninstall(self):
         """
@@ -57,18 +63,38 @@ class AbrekTest(object):
         or installed under that directory.  Dependencies are intentionally
         not removed by this.
         """
+
         os.chdir(self.origdir)
         path = os.path.join(self.config.installdir, self.testname)
         if os.path.exists(path):
             shutil.rmtree(path)
 
+    def _savetestdata(self):
+        testdata = {}
+        filename = os.path.join(self.resultsdir, 'testdata.json')
+        testdata['testname'] = self.testname
+        testdata['version'] = self.version
+        testdata['starttime'] = time.mktime(self.runner.starttime.timetuple())
+        testdata['endtime'] = time.mktime(self.runner.endtime.timetuple())
+        write_file(json.dumps(testdata), filename)
+
     def run(self):
-        if self.runner:
-            return self.runner.run()
+        if not self.runner:
+            raise RuntimeError, "no test runner defined for '%s'" % \
+                                 self.testname
+        resultname = self.testname + \
+                     str(time.mktime(datetime.utcnow().timetuple()))
+        self.resultsdir = os.path.join(self.config.resultsdir, resultname)
+        os.makedirs(self.resultsdir)
+        os.chdir(self.installdir)
+        self.runner.run(self.resultsdir)
+        self._savetestdata()
 
     def parse(self,results):
-        if self.parser:
-            return self.parser.parse(results)
+        if not self.parser:
+            raise RuntimeError, "no test parser defined for '%s'" % \
+                                 self.testname
+        self.parser.parse(results)
 
 class AbrekTestInstaller(object):
     """
@@ -126,11 +152,41 @@ class AbrekTestInstaller(object):
         self._download()
         self._runsteps()
 
+class AbrekTestRunner(object):
+    """
+    Base class for defining an test runner object.  This class can be used
+    as-is for simple execution with the expectation that the run() method
+    will be called from the directory where the test was installed.  Steps,
+    if used, should handle changing directories from there to the directory
+    where the test was extracted if necessary.  This class can also be
+    extended for more advanced funcionality.
+
+    steps - list of steps to be executed in a shell
+    """
+
+    def __init__(self, steps=[]):
+        self.steps = steps
+        self.testoutput = []
+
+    def _runsteps(self, resultsdir):
+        outputlog = os.path.join(resultsdir, 'testoutput.log')
+        fd = open(outputlog, 'a')
+        for cmd in self.steps:
+            rc,output = getstatusoutput(cmd)
+            fd.write(output)
+        fd.close()
+
+    def run(self, resultsdir):
+        self.starttime = datetime.utcnow()
+        self._runsteps(resultsdir)
+        self.endtime = datetime.utcnow()
+
 def testloader(testname):
     """
     Load the test definition, which can be either an individual
     file, or a directory with an __init__.py
     """
+
     importpath = "abrek.test_definitions.%s" % testname
     try:
         mod = __import__(importpath)
