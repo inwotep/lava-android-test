@@ -47,11 +47,12 @@ class AbrekTest(object):
             raise RuntimeError("%s is already installed" % self.testname)
         os.makedirs(self.installdir)
         os.chdir(self.installdir)
-        rc = self.installer.install()
-        if rc:
+        try:
+            self.installer.install()
+        except Exception as strerror:
             self.uninstall()
             raise RuntimeError("An error was detected during",
-                                "installation, cleaning up")
+                "installation, cleaning up: %s" % strerror)
 
     def uninstall(self):
         """
