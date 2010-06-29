@@ -31,3 +31,15 @@ class cmd_run(AbrekCmd):
         except Exception as strerror:
             print "Test execution error: %s" % strerror
             sys.exit(1)
+
+class cmd_uninstall(AbrekCmd):
+    def run(self, argv):
+        if len(argv) != 1:
+            print "please specify the name of the test to uninstall"
+            sys.exit(1)
+        test = testloader(argv[0])
+        try:
+            test.uninstall()
+        except Exception as strerror:
+            print "Test uninstall error: %s" % strerror
+            sys.exit(1)
