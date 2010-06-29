@@ -22,7 +22,6 @@ class AbrekTest(object):
     runner - AbrekRunner instance to use
     parser - AbrekParser instance to use
     """
-
     def __init__(self, testname, version="", installer=None, runner=None,
                  parser=None):
         self.config = abrek.config.AbrekConfig()
@@ -41,7 +40,6 @@ class AbrekTest(object):
         The installer's install() method is then called from this directory
         to complete any test specific install that may be needed.
         """
-
         if not self.installer:
             raise RuntimeError("no installer defined for '%s'" %
                                 self.testname)
@@ -63,7 +61,6 @@ class AbrekTest(object):
         or installed under that directory.  Dependencies are intentionally
         not removed by this.
         """
-
         os.chdir(self.origdir)
         path = os.path.join(self.config.installdir, self.testname)
         if os.path.exists(path):
@@ -82,8 +79,8 @@ class AbrekTest(object):
         if not self.runner:
             raise RuntimeError("no test runner defined for '%s'" %
                                 self.testname)
-        resultname = self.testname + \
-                     str(time.mktime(datetime.utcnow().timetuple()))
+        resultname = (self.testname +
+                     str(time.mktime(datetime.utcnow().timetuple())))
         self.resultsdir = os.path.join(self.config.resultsdir, resultname)
         os.makedirs(self.resultsdir)
         os.chdir(self.installdir)
@@ -106,7 +103,6 @@ class AbrekTestInstaller(object):
     url - location from which the test suite should be downloaded
     md5 - md5sum to check the integrety of the download
     """
-
     def __init__(self, steps=[], deps=[], url="", md5="", **kwargs):
         self.steps = steps
         self.deps = deps
@@ -117,7 +113,7 @@ class AbrekTestInstaller(object):
         if not self.deps:
             return 0
         cmd = "sudo apt-get install %s", " ".join(self.deps)
-        rc,output = getstatusoutput(cmd)
+        rc, output = getstatusoutput(cmd)
         if rc:
             raise RuntimeError("Dependency installation failed")
 
@@ -145,7 +141,7 @@ class AbrekTestInstaller(object):
 
     def _runsteps(self):
         for cmd in self.steps:
-            rc,output = getstatusoutput(cmd)
+            rc, output = getstatusoutput(cmd)
 
     def install(self):
         self._installdeps()
@@ -163,18 +159,16 @@ class AbrekTestRunner(object):
 
     steps - list of steps to be executed in a shell
     """
-
     def __init__(self, steps=[]):
         self.steps = steps
         self.testoutput = []
 
     def _runsteps(self, resultsdir):
         outputlog = os.path.join(resultsdir, 'testoutput.log')
-        fd = open(outputlog, 'a')
-        for cmd in self.steps:
-            rc,output = getstatusoutput(cmd)
-            fd.write(output)
-        fd.close()
+        with open(outputlog, 'a') as fd:
+            for cmd in self.steps:
+                rc, output = getstatusoutput(cmd)
+                fd.write(output)
 
     def run(self, resultsdir):
         self.starttime = datetime.utcnow()
@@ -186,7 +180,6 @@ def testloader(testname):
     Load the test definition, which can be either an individual
     file, or a directory with an __init__.py
     """
-
     importpath = "abrek.test_definitions.%s" % testname
     try:
         mod = __import__(importpath)
