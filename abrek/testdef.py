@@ -43,17 +43,17 @@ class AbrekTest(object):
         """
 
         if not self.installer:
-            raise RuntimeError, "no installer defined for '%s'" % \
-                                 self.testname
+            raise RuntimeError("no installer defined for '%s'" %
+                                self.testname)
         if os.path.exists(self.installdir):
-            raise RuntimeError, "%s is already installed" % self.testname
+            raise RuntimeError("%s is already installed" % self.testname)
         os.makedirs(self.installdir)
         os.chdir(self.installdir)
         rc = self.installer.install()
         if rc:
             self.uninstall()
-            raise RuntimeError, "An error was detected during", \
-                                "installation, cleaning up"
+            raise RuntimeError("An error was detected during",
+                                "installation, cleaning up")
 
     def uninstall(self):
         """
@@ -80,8 +80,8 @@ class AbrekTest(object):
 
     def run(self):
         if not self.runner:
-            raise RuntimeError, "no test runner defined for '%s'" % \
-                                 self.testname
+            raise RuntimeError("no test runner defined for '%s'" %
+                                self.testname)
         resultname = self.testname + \
                      str(time.mktime(datetime.utcnow().timetuple()))
         self.resultsdir = os.path.join(self.config.resultsdir, resultname)
@@ -92,8 +92,8 @@ class AbrekTest(object):
 
     def parse(self,results):
         if not self.parser:
-            raise RuntimeError, "no test parser defined for '%s'" % \
-                                 self.testname
+            raise RuntimeError("no test parser defined for '%s'" %
+                                self.testname)
         self.parser.parse(results)
 
 class AbrekTestInstaller(object):
@@ -119,7 +119,7 @@ class AbrekTestInstaller(object):
         cmd = "sudo apt-get install %s", " ".join(self.deps)
         rc,output = getstatusoutput(cmd)
         if rc:
-            raise RuntimeError, "Dependency installation failed"
+            raise RuntimeError("Dependency installation failed")
 
     def _download(self):
         """
@@ -138,8 +138,8 @@ class AbrekTestInstaller(object):
                 for data in fd.read(0x10000):
                     checkmd5.update(data)
             if checkmd5.hexdigest() != self.md5:
-                raise RuntimeError, "Unexpected md5sum downloading %s" % \
-                                    filename
+                raise RuntimeError("Unexpected md5sum downloading %s" %
+                                    filename)
                 return None
         return filename
 
