@@ -23,27 +23,27 @@ class testAbrekTestInstaller(unittest.TestCase):
     def test_starttime(self):
         runner = self.makerunner()
         runner.run(self.tmpdir)
-        self.assertTrue(runner.starttime, datetime)
+        self.assertTrue(isinstance(runner.starttime, datetime))
 
     def test_endtime(self):
         runner = self.makerunner()
         runner.run(self.tmpdir)
-        self.assertTrue(runner.endtime, datetime)
+        self.assertTrue(isinstance(runner.endtime, datetime))
 
     def test_timediff(self):
         steps = ['sleep 2']
-        runner = self.makerunner(steps = steps)
+        runner = self.makerunner(steps=steps)
         runner.run(self.tmpdir)
         self.assertNotEqual(runner.starttime, runner.endtime)
 
     def test_runsteps(self):
         steps = ["echo test > foo"]
-        runner = self.makerunner(steps = steps)
+        runner = self.makerunner(steps=steps)
         runner._runsteps(self.tmpdir)
         self.assertTrue(os.path.exists("./foo"))
 
     def test_logoutput(self):
         steps = ["echo test > foo"]
-        runner = self.makerunner(steps = steps)
+        runner = self.makerunner(steps=steps)
         runner._runsteps(self.tmpdir)
         self.assertTrue(os.path.exists("./testoutput.log"))
