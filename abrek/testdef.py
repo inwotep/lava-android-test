@@ -11,7 +11,8 @@ import abrek.config
 from abrek.utils import geturl, write_file
 
 class AbrekTest(object):
-    """
+    """Base class for defining tests.
+
     This can be used by test definition files to create an object that
     contains the building blocks for installing tests, running them,
     and parsing the results.
@@ -34,11 +35,12 @@ class AbrekTest(object):
         self.origdir = os.path.abspath(os.curdir)
 
     def install(self):
-        """
-        Install the test suite.  This creates an install directory under
-        the user's XDG_DATA_HOME directory to mark that the test is installed.
-        The installer's install() method is then called from this directory
-        to complete any test specific install that may be needed.
+        """Install the test suite.
+
+        This creates an install directory under the user's XDG_DATA_HOME
+        directory to mark that the test is installed.  The installer's
+        install() method is then called from this directory to complete any
+        test specific install that may be needed.
         """
         if not self.installer:
             raise RuntimeError("no installer defined for '%s'" %
@@ -55,7 +57,8 @@ class AbrekTest(object):
                 "installation, cleaning up: %s" % strerror)
 
     def uninstall(self):
-        """
+        """Uninstall the test suite.
+
         Uninstalling just recursively removes the test specific directory
         under the user's XDG_DATA_HOME directory.  This will both mark
         the test as removed, and clean up any files that were downloaded
@@ -95,9 +98,9 @@ class AbrekTest(object):
         self.parser.parse(results)
 
 class AbrekTestInstaller(object):
-    """
-    Base class for defining an installer object.  This class can be used
-    as-is for simple installers, or extended for more advanced funcionality.
+    """Base class for defining an installer object.
+    This class can be used as-is for simple installers, or extended for more
+    advanced funcionality.
 
     steps - list of steps to be executed in a shell
     deps - list of dependencies to apt-get install before running the steps
@@ -119,9 +122,9 @@ class AbrekTestInstaller(object):
             raise RuntimeError("Dependency installation failed")
 
     def _download(self):
-        """
-        Download the file specified by the url and check the md5.
-        Return the path and filename if successful, otherwise return None
+        """Download the file specified by the url and check the md5.
+
+        Returns the path and filename if successful, otherwise return None
         """
         if not self.url:
             return 0
@@ -150,13 +153,13 @@ class AbrekTestInstaller(object):
         self._runsteps()
 
 class AbrekTestRunner(object):
-    """
-    Base class for defining an test runner object.  This class can be used
-    as-is for simple execution with the expectation that the run() method
-    will be called from the directory where the test was installed.  Steps,
-    if used, should handle changing directories from there to the directory
-    where the test was extracted if necessary.  This class can also be
-    extended for more advanced funcionality.
+    """Base class for defining an test runner object.
+
+    This class can be used as-is for simple execution with the expectation
+    that the run() method will be called from the directory where the test
+    was installed.  Steps, if used, should handle changing directories from
+    there to the directory where the test was extracted if necessary.
+    This class can also be extended for more advanced funcionality.
 
     steps - list of steps to be executed in a shell
     """
