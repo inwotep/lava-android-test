@@ -13,10 +13,21 @@ class cmd_install(AbrekCmd):
         if len(argv) != 1:
             print "please specify the name of the test to install"
             sys.exit(1)
-        testname = argv[0]
         test = testloader(argv[0])
         try:
             test.install()
         except RuntimeError as strerror:
             print "Test installation error: %s" % strerror
+            sys.exit(1)
+
+class cmd_run(AbrekCmd):
+    def run(self, argv):
+        if len(argv) != 1:
+            print "please specify the name of the test to run"
+            sys.exit(1)
+        test = testloader(argv[0])
+        try:
+            test.run()
+        except Exception as strerror:
+            print "Test execution error: %s" % strerror
             sys.exit(1)

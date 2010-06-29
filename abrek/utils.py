@@ -16,7 +16,7 @@ def geturl(url, path=""):
         fd.close()
         response.close()
     except:
-        raise RuntimeError, "Could not retrieve %s" % url
+        raise RuntimeError("Could not retrieve %s" % url)
     return filename
 
 def write_file(data,path):

@@ -22,23 +22,23 @@ class testAbrekTestInstaller(unittest.TestCase):
 
     def test_bad_download(self):
         url = "file:///xxxyyyzzz"
-        installer = self.makeinstaller(url = url)
+        installer = self.makeinstaller(url=url)
         self.assertRaises(RuntimeError, installer._download)
 
     def test_bad_md5(self):
         url = "file://%s" % self.filename
-        installer = self.makeinstaller(url = url, md5 = 'foo')
+        installer = self.makeinstaller(url=url, md5='foo')
         self.assertRaises(RuntimeError, installer._download)
 
     def test_good_md5(self):
         url = "file://%s" % self.filename
         md5 = hashlib.md5(file(self.filename).read()).hexdigest()
-        installer = self.makeinstaller(url = url, md5 = md5)
+        installer = self.makeinstaller(url=url, md5=md5)
         location = installer._download()
         self.assertTrue(os.path.exists(location))
 
     def test_runsteps(self):
         steps = ["echo test > foo"]
-        installer = self.makeinstaller(steps = steps)
+        installer = self.makeinstaller(steps=steps)
         installer._runsteps()
         self.assertTrue(os.path.exists("./foo"))
