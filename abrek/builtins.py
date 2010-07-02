@@ -20,20 +20,19 @@ class cmd_help(abrek.command.AbrekCmd):
     list of valid commands.
     """
     def run(self, argv):
-        from inspect import getdoc
-        try:
-            cmd = abrek.command.get_command(argv[0])
-            if cmd:
-                print getdoc(cmd)
-            else:
-                print "No command found for '%s'" % argv[0]
-        except IndexError:
+        if len(argv) != 1:
             print "Available commands:"
             for cmd in abrek.command.get_all_cmds():
                 print "  %s" % cmd
             print
             print "To access extended help on a command use 'abrek help " \
                   "[command]'"
+        else:
+            cmd = abrek.command.get_command(argv[0])
+            if cmd:
+                cmd.help()
+            else:
+                print "No command found for '%s'" % argv[0]
 
 class cmd_install(abrek.command.AbrekCmd):
     """ Install a test

@@ -10,7 +10,8 @@ class AbrekCmd(object):
         raise NotImplementedError("%s: command defined but not implemented!" %
                                   self.name())
     def help(self):
-        print self.__doc__
+        from inspect import getdoc
+        print getdoc(self)
 
 def _convert_command_name(cmd):
     return cmd[4:].replace('_','-')
