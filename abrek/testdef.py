@@ -1,6 +1,7 @@
 import hashlib
 import json
 import os
+import re
 import shutil
 import sys
 import time
@@ -91,11 +92,13 @@ class AbrekTest(object):
         self.runner.run(self.resultsdir)
         self._savetestdata()
 
-    def parse(self,results):
+    def parse(self, resultname):
         if not self.parser:
             raise RuntimeError("no test parser defined for '%s'" %
                                 self.testname)
-        self.parser.parse(results)
+        self.resultsdir = os.path.join(self.config.resultsdir, resultname)
+        os.chdir(self.resultsdir)
+        self.parser.parse()
 
 class AbrekTestInstaller(object):
     """Base class for defining an installer object.
@@ -178,6 +181,68 @@ class AbrekTestRunner(object):
         self.starttime = datetime.utcnow()
         self._runsteps(resultsdir)
         self.endtime = datetime.utcnow()
+
+class AbrekTestParser(object):
+    """
+    assume we start in the directory with test result
+    init can maybe open the file? or maybe parse can do it using 'with'?
+    parse() parses the file, can take a single arg of the regexp (optional?)
+    has helper methods, idea is that for most things you'll likely want to
+       overload the parse() method
+    maybe parse could return the json string?
+    """
+    def __init__(self, pattern=None, fixupdict=None):
+        self.pattern = pattern
+        self.fixupdict = fixupdict
+        self.results = {'testlist':[]}
+
+    def _find_testid(self, id):
+        for x in self.results['testlist']:
+            if x['testid'] == id:
+                return self.results['testlist'].index(x)
+
+    def parse(self):
+        """
+        pattern - the regexp str
+        """
+        filename = "testoutput.log"
+        pat = re.compile(self.pattern)
+        with open(filename, 'r') as fd:
+            for line in fd.readlines():
+                match = pat.search(line)
+                if match:
+                    self.results['testlist'].append(match.groupdict())
+        if self.fixupdict:
+            self.fixresults()
+
+    def append(self,testid,entry):
+        """
+        This lets you add a dict to the entry for a specific testid
+        entry should be a dict, updates it in place
+        """
+        index = self._find_testid(testid)
+        self.results['testlist'][index].update(entry)
+
+    def appendtoall(self,entry):
+        """Append entry to each item in the testlist.
+
+        entry - dict of key,value pairs to add to each item in the testlist
+        """
+        for t in self.results['testlist']:
+            t.update(entry)
+
+    def fixresults(self,fixupdict):
+        """Convert results to a known, standard format
+
+        pass it a dict of keys/values to replace
+        For instance:
+            {"TPASS":"pass", "TFAIL":"fail"}
+        This is really only used for qualitative tests
+        """
+        for t in self.results['testlist']:
+            if t.has_key("result"):
+                t['result'] = fixupdict[t['result']]
+
 
 def testloader(testname):
     """
