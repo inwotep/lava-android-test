@@ -30,7 +30,7 @@ class cmd_help(abrek.command.AbrekCmd):
         else:
             cmd = abrek.command.get_command(argv[0])
             if cmd:
-                cmd.help()
+                print cmd.help()
             else:
                 print "No command found for '%s'" % argv[0]
 

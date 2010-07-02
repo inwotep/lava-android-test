@@ -11,7 +11,7 @@ class AbrekCmd(object):
                                   self.name())
     def help(self):
         from inspect import getdoc
-        print getdoc(self)
+        return getdoc(self)
 
 def _convert_command_name(cmd):
     return cmd[4:].replace('_','-')
