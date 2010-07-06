@@ -1,6 +1,7 @@
 import sys
 
-import abrek
+import abrek.command
+import abrek.testdef
 
 class cmd_version(abrek.command.AbrekCmd):
     """ Show the version of abrek
