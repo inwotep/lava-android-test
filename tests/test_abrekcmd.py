@@ -19,6 +19,12 @@ class testAbrekCmd(unittest.TestCase):
         cmd = cmd_test_help()
         self.assertEqual("Test Help", cmd.help())
 
+    def test_no_help(self):
+        class cmd_test_no_help(AbrekCmd):
+            pass
+        cmd = cmd_test_no_help()
+        self.assertEqual(None, cmd.help())
+
     def test_get_command(self):
         cmd = get_command("install")
         self.assertTrue(isinstance(cmd, AbrekCmd))
