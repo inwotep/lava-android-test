@@ -10,12 +10,14 @@ class testAbrekCmd(unittest.TestCase):
         class cmd_test_name(AbrekCmd):
             pass
         cmd = cmd_test_name()
-        self.assertEqual(cmd.name(),"test-name")
+        self.assertEqual("test-name", cmd.name())
 
     def test_help(self):
-        cmd = AbrekCmd()
-        print cmd.help()
-        self.assertTrue(cmd.help())
+        class cmd_test_help(AbrekCmd):
+            """Test Help"""
+            pass
+        cmd = cmd_test_help()
+        self.assertEqual("Test Help", cmd.help())
 
     def test_get_command(self):
         cmd = get_command("install")
