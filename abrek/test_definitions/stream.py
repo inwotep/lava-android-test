@@ -13,6 +13,7 @@ class StreamTestParser(abrek.testdef.AbrekTestParser):
 
 streaminst = abrek.testdef.AbrekTestInstaller(INSTALLSTEPS, url=URL, md5=MD5)
 streamrun = abrek.testdef.AbrekTestRunner(RUNSTEPS)
-streamparser = StreamTestParser(PATTERN)
+streamparser = abrek.testdef.AbrekTestParser(PATTERN,
+                             appendall={'units':'MB/s'})
 testobj = abrek.testdef.AbrekTest(testname="stream", installer=streaminst,
                                   runner=streamrun, parser=streamparser)

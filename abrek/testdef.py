@@ -204,11 +204,15 @@ class AbrekTestParser(object):
         For example: if you want to standardize on having pass/fail results
             in lower case, but your test outputs them in upper case, you could
             use a fixupdict of something like: {'PASS':'pass','FAIL':'fail'}
+    appendall - Append a dict to the testlist entry for each result.
+        For example: if you would like to add units="MB/s" to each result:
+            appenall={'units':'MB/s'}
     """
-    def __init__(self, pattern=None, fixupdict=None):
+    def __init__(self, pattern=None, fixupdict=None, appendall={}):
         self.pattern = pattern
         self.fixupdict = fixupdict
         self.results = {'testlist':[]}
+        self.appendall = appendall
 
     def _find_testid(self, id):
         for x in self.results['testlist']:
@@ -232,6 +236,8 @@ class AbrekTestParser(object):
                     self.results['testlist'].append(match.groupdict())
         if self.fixupdict:
             self.fixresults()
+        if self.appendall:
+            self.appendtoall(self.appendall)
 
     def append(self,testid,entry):
         """Appends a dict to the testlist entry for a specified testid
