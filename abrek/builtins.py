@@ -105,3 +105,14 @@ class cmd_list_tests(abrek.command.AbrekCmd):
         print "Known tests:"
         for importer, mod, ispkg in walk_packages(test_definitions.__path__):
               print mod
+
+class cmd_list_results(abrek.command.AbrekCmd):
+    """
+    List results of previous runs
+    """
+    def run(self, argv):
+        from abrek.config import AbrekConfig
+        config = AbrekConfig()
+        print "Saved results:"
+        for dir in os.listdir(config.resultsdir):
+            print dir
