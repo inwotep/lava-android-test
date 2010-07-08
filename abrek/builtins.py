@@ -95,3 +95,13 @@ class cmd_list_installed(abrek.command.AbrekCmd):
         for dir in os.listdir(config.installdir):
             print dir
 
+class cmd_list_tests(abrek.command.AbrekCmd):
+    """
+    List all known tests
+    """
+    def run(self, argv):
+        from abrek import test_definitions
+        from pkgutil import walk_packages
+        print "Known tests:"
+        for importer, mod, ispkg in walk_packages(test_definitions.__path__):
+              print mod
