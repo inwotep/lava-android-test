@@ -1,3 +1,4 @@
+import os
 import sys
 
 import abrek.command
@@ -82,3 +83,15 @@ class cmd_uninstall(abrek.command.AbrekCmd):
         except Exception as strerror:
             print "Test uninstall error: %s" % strerror
             sys.exit(1)
+
+class cmd_list_installed(abrek.command.AbrekCmd):
+    """
+    List tests that are currently installed
+    """
+    def run(self, argv):
+        from abrek.config import AbrekConfig
+        config = AbrekConfig()
+        print "Installed tests:"
+        for dir in os.listdir(config.installdir):
+            print dir
+
