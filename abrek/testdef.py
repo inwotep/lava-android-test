@@ -7,7 +7,7 @@ import time
 from commands import getstatusoutput
 from datetime import datetime
 
-import abrek.config
+from abrek.config import get_config
 from abrek.utils import geturl, write_file
 
 class AbrekTest(object):
@@ -25,7 +25,7 @@ class AbrekTest(object):
     """
     def __init__(self, testname, version="", installer=None, runner=None,
                  parser=None):
-        self.config = abrek.config.AbrekConfig()
+        self.config = get_config()
         self.testname = testname
         self.version = version
         self.installer = installer

@@ -89,8 +89,8 @@ class cmd_list_installed(abrek.command.AbrekCmd):
     List tests that are currently installed
     """
     def run(self, argv):
-        from abrek.config import AbrekConfig
-        config = AbrekConfig()
+        from abrek.config import get_config
+        config = get_config()
         print "Installed tests:"
         try:
             for dir in os.listdir(config.installdir):
@@ -114,8 +114,8 @@ class cmd_list_results(abrek.command.AbrekCmd):
     List results of previous runs
     """
     def run(self, argv):
-        from abrek.config import AbrekConfig
-        config = AbrekConfig()
+        from abrek.config import get_config
+        config = get_config()
         print "Saved results:"
         try:
             for dir in os.listdir(config.resultsdir):
