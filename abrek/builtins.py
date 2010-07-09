@@ -92,8 +92,11 @@ class cmd_list_installed(abrek.command.AbrekCmd):
         from abrek.config import AbrekConfig
         config = AbrekConfig()
         print "Installed tests:"
-        for dir in os.listdir(config.installdir):
-            print dir
+        try:
+            for dir in os.listdir(config.installdir):
+                print dir
+        except OSError:
+            print "No tests installed"
 
 class cmd_list_tests(abrek.command.AbrekCmd):
     """
@@ -104,7 +107,7 @@ class cmd_list_tests(abrek.command.AbrekCmd):
         from pkgutil import walk_packages
         print "Known tests:"
         for importer, mod, ispkg in walk_packages(test_definitions.__path__):
-              print mod
+            print mod
 
 class cmd_list_results(abrek.command.AbrekCmd):
     """
@@ -114,5 +117,8 @@ class cmd_list_results(abrek.command.AbrekCmd):
         from abrek.config import AbrekConfig
         config = AbrekConfig()
         print "Saved results:"
-        for dir in os.listdir(config.resultsdir):
-            print dir
+        try:
+            for dir in os.listdir(config.resultsdir):
+                print dir
+        except OSError:
+            print "No results found"
