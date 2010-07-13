@@ -11,3 +11,15 @@ class AbrekConfig(object):
         self.installdir = os.path.join(basedata, 'abrek', 'installed-tests')
         self.resultsdir = os.path.join(basedata, 'abrek', 'results')
 
+_config = None
+
+def get_config():
+    global _config
+    if _config is not None:
+        return _config
+    return AbrekConfig()
+
+def set_config(config):
+    global _config
+    _config = config
+
