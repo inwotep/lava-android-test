@@ -116,7 +116,7 @@ class AbrekTestInstaller(object):
     def _installdeps(self):
         if not self.deps:
             return 0
-        cmd = "sudo apt-get install %s", " ".join(self.deps)
+        cmd = "sudo apt-get install %s" % " ".join(self.deps)
         rc, output = getstatusoutput(cmd)
         if rc:
             raise RuntimeError("Dependency installation failed")
