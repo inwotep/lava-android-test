@@ -135,8 +135,10 @@ class AbrekTestInstaller(object):
         if self.md5:
             checkmd5 = hashlib.md5()
             with open(filename, 'rb') as fd:
-                for data in fd.read(0x10000):
+                data = fd.read(0x10000)
+                while data:
                     checkmd5.update(data)
+                    data = fd.read(0x10000)
             if checkmd5.hexdigest() != self.md5:
                 raise RuntimeError("Unexpected md5sum downloading %s" %
                                     filename)
