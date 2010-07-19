@@ -1,0 +1,4 @@
+Abrek is an automated testing framework with pre-defined tests and the
+ability to define additional tests as needed.  Tests can be
+automatically installed, executed, and the results can be parsed and
+uploaded to an external server.

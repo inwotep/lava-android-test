@@ -16,4 +16,6 @@ version=version,
 author='Paul Larson',
 author_email='paul.larson@linaro.org',
 url='https://launchpad.net/abrek',
+description='Abrek automated testing framework',
+long_description=open("README").read() + "\n",
 )
