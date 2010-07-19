@@ -19,7 +19,7 @@ class FakeOutputTests(unittest.TestCase):
 class ListKnown(FakeOutputTests):
     def test_list_tests(self):
         cmd = abrek.builtins.cmd_list_tests()
-        cmd.run("argv_junk")
+        cmd.run()
         self.assertTrue("stream" in self.fakestdout.getvalue())
 
 class FakeConfigTests(FakeOutputTests):
@@ -42,12 +42,12 @@ class FakeConfigTests(FakeOutputTests):
         test_name="test_list_installed000"
         os.makedirs(os.path.join(self.config.installdir, test_name))
         cmd = abrek.builtins.cmd_list_installed()
-        cmd.run("argv_junk")
+        cmd.run()
         self.assertTrue(test_name in self.fakestdout.getvalue())
 
     def test_list_results(self):
         result_name = "test_list_results000"
         os.makedirs(os.path.join(self.config.resultsdir, result_name))
         cmd = abrek.builtins.cmd_list_results()
-        cmd.run("argv_junk")
+        cmd.run()
         self.assertTrue(result_name in self.fakestdout.getvalue())

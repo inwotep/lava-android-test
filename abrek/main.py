@@ -11,5 +11,5 @@ def main(argv=None):
         if not cmd_func:
             print "command '%s' not found" % cmd
             return 1
-        run = cmd_func.run
-        run(argv)
+        main = cmd_func.main
+        main(argv)

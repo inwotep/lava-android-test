@@ -1,28 +1,27 @@
 import os
 import sys
+from optparse import make_option
 
 import abrek.command
 import abrek.testdef
 
 class cmd_version(abrek.command.AbrekCmd):
-    """ Show the version of abrek
-
-    Usage:  abrek version
     """
-    def run(self, argv):
+    Show the version of abrek
+    """
+    def run(self):
         import abrek
         print abrek.__version__
 
 class cmd_help(abrek.command.AbrekCmd):
     """ Get help on abrek commands
 
-    Usage: abrek help [command]
-
     If the command name is ommited, calling the help command will return a
     list of valid commands.
     """
-    def run(self, argv):
-        if len(argv) != 1:
+    arglist = ['command']
+    def run(self):
+        if len(self.args) != 1:
             print "Available commands:"
             for cmd in abrek.command.get_all_cmds():
                 print "  %s" % cmd
@@ -30,22 +29,23 @@ class cmd_help(abrek.command.AbrekCmd):
             print "To access extended help on a command use 'abrek help " \
                   "[command]'"
         else:
-            cmd = abrek.command.get_command(argv[0])
+            cmd = abrek.command.get_command(self.args[0])
             if cmd:
                 print cmd.help()
             else:
-                print "No command found for '%s'" % argv[0]
+                print "No command found for '%s'" % self.args[0]
 
 class cmd_install(abrek.command.AbrekCmd):
-    """ Install a test
-
-    Usage: abrek install TEST_NAME
     """
-    def run(self, argv):
-        if len(argv) != 1:
+    Install a test
+    """
+    arglist = ['*testname']
+
+    def run(self):
+        if len(self.args) != 1:
             print "please specify the name of the test to install"
             sys.exit(1)
-        test = abrek.testdef.testloader(argv[0])
+        test = abrek.testdef.testloader(self.args[0])
         try:
             test.install()
         except RuntimeError as strerror:
@@ -53,15 +53,16 @@ class cmd_install(abrek.command.AbrekCmd):
             sys.exit(1)
 
 class cmd_run(abrek.command.AbrekCmd):
-    """ Run tests
-
-    Usage: abrek run TEST_NAME
     """
-    def run(self, argv):
-        if len(argv) != 1:
+    Run tests
+    """
+    arglist = ['*testname']
+
+    def run(self):
+        if len(self.args) != 1:
             print "please specify the name of the test to run"
             sys.exit(1)
-        test = abrek.testdef.testloader(argv[0])
+        test = abrek.testdef.testloader(self.args[0])
         try:
             test.run()
         except Exception as strerror:
@@ -69,15 +70,16 @@ class cmd_run(abrek.command.AbrekCmd):
             sys.exit(1)
 
 class cmd_uninstall(abrek.command.AbrekCmd):
-    """ Uninstall a test
-
-    Usage: abrek uninstall TEST_NAME
     """
-    def run(self, argv):
-        if len(argv) != 1:
+    Uninstall a test
+    """
+    arglist = ['*testname']
+
+    def run(self):
+        if len(self.args) != 1:
             print "please specify the name of the test to uninstall"
             sys.exit(1)
-        test = abrek.testdef.testloader(argv[0])
+        test = abrek.testdef.testloader(self.args[0])
         try:
             test.uninstall()
         except Exception as strerror:
@@ -88,7 +90,7 @@ class cmd_list_installed(abrek.command.AbrekCmd):
     """
     List tests that are currently installed
     """
-    def run(self, argv):
+    def run(self):
         from abrek.config import get_config
         config = get_config()
         print "Installed tests:"
@@ -102,7 +104,7 @@ class cmd_list_tests(abrek.command.AbrekCmd):
     """
     List all known tests
     """
-    def run(self, argv):
+    def run(self):
         from abrek import test_definitions
         from pkgutil import walk_packages
         print "Known tests:"
@@ -113,7 +115,7 @@ class cmd_list_results(abrek.command.AbrekCmd):
     """
     List results of previous runs
     """
-    def run(self, argv):
+    def run(self):
         from abrek.config import get_config
         config = get_config()
         print "Saved results:"
