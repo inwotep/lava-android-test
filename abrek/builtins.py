@@ -1,53 +1,145 @@
 import json
 import os
 import sys
+from optparse import make_option
 
-import abrek.config
-from abrek.command import AbrekCmd
-from abrek.testdef import testloader
+import abrek.command
+import abrek.testdef
 
-class cmd_version(AbrekCmd):
-    def run(self, argv):
+
+class cmd_version(abrek.command.AbrekCmd):
+    """
+    Show the version of abrek
+    """
+    def run(self):
         import abrek
         print abrek.__version__
 
-class cmd_install(AbrekCmd):
-    def run(self, argv):
-        if len(argv) != 1:
+class cmd_help(abrek.command.AbrekCmd):
+    """ Get help on abrek commands
+
+    If the command name is ommited, calling the help command will return a
+    list of valid commands.
+    """
+    arglist = ['command']
+    def run(self):
+        if len(self.args) != 1:
+            print "Available commands:"
+            for cmd in abrek.command.get_all_cmds():
+                print "  %s" % cmd
+            print
+            print "To access extended help on a command use 'abrek help " \
+                  "[command]'"
+        else:
+            cmd = abrek.command.get_command(self.args[0])
+            if cmd:
+                print cmd.help()
+            else:
+                print "No command found for '%s'" % self.args[0]
+
+class cmd_install(abrek.command.AbrekCmd):
+    """
+    Install a test
+    """
+    arglist = ['*testname']
+
+    def run(self):
+        if len(self.args) != 1:
             print "please specify the name of the test to install"
             sys.exit(1)
-        test = testloader(argv[0])
+        test = abrek.testdef.testloader(self.args[0])
         try:
             test.install()
         except RuntimeError as strerror:
             print "Test installation error: %s" % strerror
             sys.exit(1)
 
-class cmd_run(AbrekCmd):
-    def run(self, argv):
-        if len(argv) != 1:
+class cmd_run(abrek.command.AbrekCmd):
+    """
+    Run tests
+    """
+    arglist = ['*testname']
+
+    def run(self):
+        if len(self.args) != 1:
             print "please specify the name of the test to run"
             sys.exit(1)
-        test = testloader(argv[0])
+        test = abrek.testdef.testloader(self.args[0])
         try:
             test.run()
         except Exception as strerror:
             print "Test execution error: %s" % strerror
             sys.exit(1)
 
-class cmd_parse(AbrekCmd):
-    def run(self, argv):
-        if len(argv) != 1:
+class cmd_parse(abrek.command.AbrekCmd):
+    def run(self):
+        if len(self.args) != 1:
             print "please specify the name of the result dir"
             sys.exit(1)
         config = abrek.config.AbrekConfig()
-        resultsdir = os.path.join(config.resultsdir,argv[0])
+        resultsdir = os.path.join(config.resultsdir,self.args[0])
         testdatafile = os.path.join(resultsdir,"testdata.json")
         testdata = json.loads(file(testdatafile,'r').read())
-        test = testloader(testdata['testname'])
+        test = abrek.testdef.testloader(testdata['testname'])
         try:
-            test.parse(argv[0])
+            test.parse(self.args[0])
         except Exception as strerror:
             print "Test parse error: %s" % strerror
             sys.exit(1)
         print test.parser.results
+
+class cmd_uninstall(abrek.command.AbrekCmd):
+    """
+    Uninstall a test
+    """
+    arglist = ['*testname']
+
+    def run(self):
+        if len(self.args) != 1:
+            print "please specify the name of the test to uninstall"
+            sys.exit(1)
+        test = abrek.testdef.testloader(self.args[0])
+        try:
+            test.uninstall()
+        except Exception as strerror:
+            print "Test uninstall error: %s" % strerror
+            sys.exit(1)
+
+class cmd_list_installed(abrek.command.AbrekCmd):
+    """
+    List tests that are currently installed
+    """
+    def run(self):
+        from abrek.config import get_config
+        config = get_config()
+        print "Installed tests:"
+        try:
+            for dir in os.listdir(config.installdir):
+                print dir
+        except OSError:
+            print "No tests installed"
+
+class cmd_list_tests(abrek.command.AbrekCmd):
+    """
+    List all known tests
+    """
+    def run(self):
+        from abrek import test_definitions
+        from pkgutil import walk_packages
+        print "Known tests:"
+        for importer, mod, ispkg in walk_packages(test_definitions.__path__):
+            print mod
+
+class cmd_list_results(abrek.command.AbrekCmd):
+    """
+    List results of previous runs
+    """
+    def run(self):
+        from abrek.config import get_config
+        config = get_config()
+        print "Saved results:"
+        try:
+            for dir in os.listdir(config.resultsdir):
+                print dir
+        except OSError:
+            print "No results found"

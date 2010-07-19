@@ -8,7 +8,7 @@ import time
 from commands import getstatusoutput
 from datetime import datetime
 
-import abrek.config
+from abrek.config import get_config
 from abrek.utils import geturl, write_file
 
 class AbrekTest(object):
@@ -26,7 +26,7 @@ class AbrekTest(object):
     """
     def __init__(self, testname, version="", installer=None, runner=None,
                  parser=None):
-        self.config = abrek.config.AbrekConfig()
+        self.config = get_config()
         self.testname = testname
         self.version = version
         self.installer = installer
@@ -120,7 +120,7 @@ class AbrekTestInstaller(object):
     def _installdeps(self):
         if not self.deps:
             return 0
-        cmd = "sudo apt-get install %s", " ".join(self.deps)
+        cmd = "sudo apt-get install %s" % " ".join(self.deps)
         rc, output = getstatusoutput(cmd)
         if rc:
             raise RuntimeError("Dependency installation failed")
@@ -139,8 +139,10 @@ class AbrekTestInstaller(object):
         if self.md5:
             checkmd5 = hashlib.md5()
             with open(filename, 'rb') as fd:
-                for data in fd.read(0x10000):
+                data = fd.read(0x10000)
+                while data:
                     checkmd5.update(data)
+                    data = fd.read(0x10000)
             if checkmd5.hexdigest() != self.md5:
                 raise RuntimeError("Unexpected md5sum downloading %s" %
                                     filename)
