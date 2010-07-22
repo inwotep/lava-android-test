@@ -237,7 +237,7 @@ class AbrekTestParser(object):
                 if match:
                     self.results['testlist'].append(match.groupdict())
         if self.fixupdict:
-            self.fixresults()
+            self.fixresults(self.fixupdict)
         if self.appendall:
             self.appendtoall(self.appendall)
 
