@@ -1,6 +1,7 @@
 import hashlib
 import json
 import os
+import re
 import shutil
 import sys
 import time
@@ -91,14 +92,17 @@ class AbrekTest(object):
         self.runner.run(self.resultsdir)
         self._savetestdata()
 
-    def parse(self,results):
+    def parse(self, resultname):
         if not self.parser:
             raise RuntimeError("no test parser defined for '%s'" %
                                 self.testname)
-        self.parser.parse(results)
+        self.resultsdir = os.path.join(self.config.resultsdir, resultname)
+        os.chdir(self.resultsdir)
+        self.parser.parse()
 
 class AbrekTestInstaller(object):
     """Base class for defining an installer object.
+
     This class can be used as-is for simple installers, or extended for more
     advanced funcionality.
 
@@ -180,6 +184,92 @@ class AbrekTestRunner(object):
         self.starttime = datetime.utcnow()
         self._runsteps(resultsdir)
         self.endtime = datetime.utcnow()
+
+class AbrekTestParser(object):
+    """Base class for defining a test parser
+
+    This class can be used as-is for simple results parsers, but will
+    likely need to be extended slightly for many.  If used as it is,
+    the parse() method should be called while already in the results
+    directory and assumes that a file for test output will exist called
+    testoutput.log.
+
+    pattern - regexp pattern to identify important elements of test output
+        For example: If your testoutput had lines that look like:
+            "test01:  PASS", then you could use a pattern like this:
+            "^(?P<testid>\w+):\W+(?P<result>\w+)"
+            This would result in identifying "test01" as testid and "PASS"
+            as result.  Once parse() has been called, self.results.testlist[]
+            contains a list of dicts of all the key,value pairs found for
+            each test result
+    fixupdict - dict of strings to convert test results to standard strings
+        For example: if you want to standardize on having pass/fail results
+            in lower case, but your test outputs them in upper case, you could
+            use a fixupdict of something like: {'PASS':'pass','FAIL':'fail'}
+    appendall - Append a dict to the testlist entry for each result.
+        For example: if you would like to add units="MB/s" to each result:
+            appendall={'units':'MB/s'}
+    """
+    def __init__(self, pattern=None, fixupdict=None, appendall={}):
+        self.pattern = pattern
+        self.fixupdict = fixupdict
+        self.results = {'testlist':[]}
+        self.appendall = appendall
+
+    def _find_testid(self, id):
+        for x in self.results['testlist']:
+            if x['testid'] == id:
+                return self.results['testlist'].index(x)
+
+    def parse(self):
+        """Parse test output to gather results
+
+        Use the pattern specified when the class was instantiated to look
+        through the results line-by-line and find lines that match it.
+        Results are then stored in self.results.  If a fixupdict was supplied
+        it is used to convert test result strings to a standard format.
+        """
+        filename = "testoutput.log"
+        pat = re.compile(self.pattern)
+        with open(filename, 'r') as fd:
+            for line in fd.readlines():
+                match = pat.search(line)
+                if match:
+                    self.results['testlist'].append(match.groupdict())
+        if self.fixupdict:
+            self.fixresults(self.fixupdict)
+        if self.appendall:
+            self.appendtoall(self.appendall)
+
+    def append(self, testid, entry):
+        """Appends a dict to the testlist entry for a specified testid
+
+        This lets you add a dict to the entry for a specific testid
+        entry should be a dict, updates it in place
+        """
+        index = self._find_testid(testid)
+        self.results['testlist'][index].update(entry)
+
+    def appendtoall(self, entry):
+        """Append entry to each item in the testlist.
+
+        entry - dict of key,value pairs to add to each item in the testlist
+        """
+        for t in self.results['testlist']:
+            t.update(entry)
+
+    def fixresults(self, fixupdict):
+        """Convert results to a known, standard format
+
+        pass it a dict of keys/values to replace
+        For instance:
+            {"TPASS":"pass", "TFAIL":"fail"}
+        This is really only used for qualitative tests
+        """
+        for t in self.results['testlist']:
+            if t.has_key("result"):
+                t['result'] = fixupdict[t['result']]
+
 
 def testloader(testname):
     """
