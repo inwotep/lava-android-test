@@ -208,7 +208,7 @@ class AbrekTestParser(object):
             use a fixupdict of something like: {'PASS':'pass','FAIL':'fail'}
     appendall - Append a dict to the testlist entry for each result.
         For example: if you would like to add units="MB/s" to each result:
-            appenall={'units':'MB/s'}
+            appendall={'units':'MB/s'}
     """
     def __init__(self, pattern=None, fixupdict=None, appendall={}):
         self.pattern = pattern
@@ -241,7 +241,7 @@ class AbrekTestParser(object):
         if self.appendall:
             self.appendtoall(self.appendall)
 
-    def append(self,testid,entry):
+    def append(self, testid, entry):
         """Appends a dict to the testlist entry for a specified testid
 
         This lets you add a dict to the entry for a specific testid
@@ -250,7 +250,7 @@ class AbrekTestParser(object):
         index = self._find_testid(testid)
         self.results['testlist'][index].update(entry)
 
-    def appendtoall(self,entry):
+    def appendtoall(self, entry):
         """Append entry to each item in the testlist.
 
         entry - dict of key,value pairs to add to each item in the testlist
@@ -258,7 +258,7 @@ class AbrekTestParser(object):
         for t in self.results['testlist']:
             t.update(entry)
 
-    def fixresults(self,fixupdict):
+    def fixresults(self, fixupdict):
         """Convert results to a known, standard format
 
         pass it a dict of keys/values to replace
