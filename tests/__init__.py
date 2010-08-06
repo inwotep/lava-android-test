@@ -6,7 +6,8 @@ def test_suite():
                     'tests.test_abrektestinstaller',
                     'tests.test_abrektestrunner',
                     'tests.test_abrektestparser',
-                    'tests.test_swprofile']
+                    'tests.test_swprofile',
+                    'tests.test_hwprofile']
     loader = unittest.TestLoader()
     suite = loader.loadTestsFromNames(module_names)
     return suite
