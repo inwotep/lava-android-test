@@ -11,6 +11,8 @@ from uuid import uuid1
 
 from abrek.config import get_config
 from abrek.utils import geturl, write_file
+from abrek import hwprofile
+from abrek import swprofile
 
 class AbrekTest(object):
     """Base class for defining tests.
@@ -77,10 +79,14 @@ class AbrekTest(object):
         testdata = {}
         filename = os.path.join(self.resultsdir, 'testdata.json')
         testdata['test_id'] = self.testname
-        testdata['analyzer_assigned_uuid'] = uuid1()
+        testdata['analyzer_assigned_uuid'] = str(uuid1())
         testdata['time_check_performed'] = False
-        testdata['analyzer_assigned_date'] = datetime.strftime(TIMEFORMAT,
-                                             self.runner.starttime)
+        testdata['analyzer_assigned_date'] = datetime.strftime(
+                                             self.runner.starttime,TIMEFORMAT)
+        hw = hwprofile.get_hw_context()
+        testdata['hw_context'] = hw
+        sw = swprofile.get_sw_context()
+        testdata['sw_context'] = sw
         write_file(json.dumps(testdata), filename)
 
     def run(self):
