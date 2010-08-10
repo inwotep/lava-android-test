@@ -19,8 +19,7 @@ def get_packages(apt_cache=None):
             packages.append(pkg)
     return packages
 
-def get_sw_context(test_id, time_check=False, apt_cache=None,
-                  lsb_information=None):
+def get_sw_context(apt_cache=None, lsb_information=None):
     """ Return dict used for storing sw_context information
 
     test_id - Unique identifier for this test
@@ -32,8 +31,6 @@ def get_sw_context(test_id, time_check=False, apt_cache=None,
     sw_context = {}
     sw_context['sw_image'] = get_sw_image(lsb_information)
     sw_context['packages'] = get_packages(apt_cache)
-    sw_context['time_check_performed'] = time_check
-    sw_context['test_id'] = test_id
     return sw_context
 
 def get_sw_image(lsb_information=None):

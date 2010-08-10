@@ -26,12 +26,12 @@ class SwprofileTests(unittest.TestCase):
         self.testpackage = Package('testpkg', '7.77')
         self.cache = AptCache([self.testpackage])
 
-    def make_profile(self, test_id='unit', cache=None, info=None):
+    def make_profile(self, cache=None, info=None):
         if cache == None:
             cache = self.cache
         if info == None:
             info = self.lsb_information
-        return abrek.swprofile.get_sw_context(test_id, apt_cache=cache,
+        return abrek.swprofile.get_sw_context(apt_cache=cache,
                 lsb_information=info)
 
     def test_pkg_name(self):
