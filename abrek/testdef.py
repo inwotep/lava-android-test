@@ -7,6 +7,7 @@ import sys
 import time
 from commands import getstatusoutput
 from datetime import datetime
+from uuid import uuid1
 
 from abrek.config import get_config
 from abrek.utils import geturl, write_file
@@ -72,12 +73,14 @@ class AbrekTest(object):
             shutil.rmtree(path)
 
     def _savetestdata(self):
+        TIMEFORMAT = '%Y-%m-%dT%H:%M:%SZ'
         testdata = {}
         filename = os.path.join(self.resultsdir, 'testdata.json')
-        testdata['testname'] = self.testname
-        testdata['version'] = self.version
-        testdata['starttime'] = time.mktime(self.runner.starttime.timetuple())
-        testdata['endtime'] = time.mktime(self.runner.endtime.timetuple())
+        testdata['test_id'] = self.testname
+        testdata['analyzer_assigned_uuid'] = uuid1()
+        testdata['time_check_performed'] = False
+        testdata['analyzer_assigned_date'] = datetime.strftime(TIMEFORMAT,
+                                             self.runner.starttime)
         write_file(json.dumps(testdata), filename)
 
     def run(self):
@@ -199,27 +202,27 @@ class AbrekTestParser(object):
             "test01:  PASS", then you could use a pattern like this:
             "^(?P<testid>\w+):\W+(?P<result>\w+)"
             This would result in identifying "test01" as testid and "PASS"
-            as result.  Once parse() has been called, self.results.testlist[]
+            as result.  Once parse() has been called, self.results.test_results[]
             contains a list of dicts of all the key,value pairs found for
             each test result
     fixupdict - dict of strings to convert test results to standard strings
         For example: if you want to standardize on having pass/fail results
             in lower case, but your test outputs them in upper case, you could
             use a fixupdict of something like: {'PASS':'pass','FAIL':'fail'}
-    appendall - Append a dict to the testlist entry for each result.
+    appendall - Append a dict to the test_results entry for each result.
         For example: if you would like to add units="MB/s" to each result:
             appendall={'units':'MB/s'}
     """
     def __init__(self, pattern=None, fixupdict=None, appendall={}):
         self.pattern = pattern
         self.fixupdict = fixupdict
-        self.results = {'testlist':[]}
+        self.results = {'test_results':[]}
         self.appendall = appendall
 
     def _find_testid(self, id):
-        for x in self.results['testlist']:
+        for x in self.results['test_results']:
             if x['testid'] == id:
-                return self.results['testlist'].index(x)
+                return self.results['test_results'].index(x)
 
     def parse(self):
         """Parse test output to gather results
@@ -235,27 +238,27 @@ class AbrekTestParser(object):
             for line in fd.readlines():
                 match = pat.search(line)
                 if match:
-                    self.results['testlist'].append(match.groupdict())
+                    self.results['test_results'].append(match.groupdict())
         if self.fixupdict:
             self.fixresults(self.fixupdict)
         if self.appendall:
             self.appendtoall(self.appendall)
 
     def append(self, testid, entry):
-        """Appends a dict to the testlist entry for a specified testid
+        """Appends a dict to the test_results entry for a specified testid
 
         This lets you add a dict to the entry for a specific testid
         entry should be a dict, updates it in place
         """
         index = self._find_testid(testid)
-        self.results['testlist'][index].update(entry)
+        self.results['test_results'][index].update(entry)
 
     def appendtoall(self, entry):
-        """Append entry to each item in the testlist.
+        """Append entry to each item in the test_results.
 
-        entry - dict of key,value pairs to add to each item in the testlist
+        entry - dict of key,value pairs to add to each item in the test_results
         """
-        for t in self.results['testlist']:
+        for t in self.results['test_results']:
             t.update(entry)
 
     def fixresults(self, fixupdict):
@@ -266,7 +269,7 @@ class AbrekTestParser(object):
             {"TPASS":"pass", "TFAIL":"fail"}
         This is really only used for qualitative tests
         """
-        for t in self.results['testlist']:
+        for t in self.results['test_results']:
             if t.has_key("result"):
                 t['result'] = fixupdict[t['result']]
 

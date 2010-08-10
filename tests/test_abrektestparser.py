@@ -28,8 +28,8 @@ class testAbrekTestParser(unittest.TestCase):
         self.writeoutputlog("test001: pass")
         parser = self.makeparser(pattern)
         parser.parse()
-        self.assertTrue(parser.results["testlist"][0]["testid"] == "test001" and
-                        parser.results["testlist"][0]["result"] == "pass")
+        self.assertTrue(parser.results["test_results"][0]["testid"] == "test001" and
+                        parser.results["test_results"][0]["result"] == "pass")
 
     def test_fixupdict(self):
         pattern = "^(?P<testid>\w+):\W+(?P<result>\w+)"
@@ -37,7 +37,7 @@ class testAbrekTestParser(unittest.TestCase):
         self.writeoutputlog("test001: pass")
         parser = self.makeparser(pattern, fixupdict=fixup)
         parser.parse()
-        self.assertEquals("PASS", parser.results["testlist"][0]["result"])
+        self.assertEquals("PASS", parser.results["test_results"][0]["result"])
 
     def test_appendall(self):
         pattern = "^(?P<testid>\w+):\W+(?P<result>\w+)"
@@ -45,5 +45,5 @@ class testAbrekTestParser(unittest.TestCase):
         self.writeoutputlog("test001: pass")
         parser = self.makeparser(pattern, appendall=append)
         parser.parse()
-        self.assertEqual("foo/s", parser.results["testlist"][0]["units"])
+        self.assertEqual("foo/s", parser.results["test_results"][0]["units"])
 
