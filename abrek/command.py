@@ -13,6 +13,7 @@ class AbrekCmd(object):
     """
     options = []
     arglist = []
+    subcmds = {}
 
     def __init__(self):
         self.parser = _AbrekOptionParser(usage=self._usage(),
@@ -21,8 +22,11 @@ class AbrekCmd(object):
             self.parser.add_option(opt)
 
     def main(self, argv):
-        (self.opts, self.args) = self.parser.parse_args(argv)
-        self.run()
+        if len(argv) and argv[0] in self.subcmds.keys():
+            self.subcmds[argv[0]].main(argv[1:])
+        else:
+            (self.opts, self.args) = self.parser.parse_args(argv)
+            self.run()
 
     def name(self):
         return _convert_command_name(self.__class__.__name__)
@@ -37,6 +41,7 @@ class AbrekCmd(object):
                 usagestr += " %s" % arg[1:].upper()
             else:
                 usagestr += " [%s]" % arg.upper()
+        usagestr += self._list_subcmds()
         return usagestr
 
     def _desc(self):
@@ -47,6 +52,14 @@ class AbrekCmd(object):
         description = "\nDescription:\n"
         description += docstr + "\n"
         return description
+
+    def _list_subcmds(self):
+        str = ""
+        if self.subcmds:
+            str = "\n\nSub-Commands:"
+            for cmd in self.subcmds.keys():
+                str += "\n  " + cmd
+        return str
 
     def help(self):
         #For some reason, format_help includes an extra \n
