@@ -65,3 +65,16 @@ class testAbrekCmd(unittest.TestCase):
             pass
         cmd = cmd_test_subcmds()
         self.assertTrue(expected_str in cmd.help())
+
+    def test_subcmds_run(self):
+        expected_str = "subcmd test str"
+        class subcmd_test(AbrekCmd):
+            def run(self):
+                return expected_str
+
+        class cmd_test_subcmds(AbrekCmd):
+            subcmds = {'foo':subcmd_test()}
+            pass
+        cmd = cmd_test_subcmds()
+        argv = ['foo']
+        self.assertEqual(expected_str, cmd.main(argv))

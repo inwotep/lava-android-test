@@ -23,10 +23,10 @@ class AbrekCmd(object):
 
     def main(self, argv):
         if len(argv) and argv[0] in self.subcmds.keys():
-            self.subcmds[argv[0]].main(argv[1:])
+            return self.subcmds[argv[0]].main(argv[1:])
         else:
             (self.opts, self.args) = self.parser.parse_args(argv)
-            self.run()
+            return self.run()
 
     def name(self):
         return _convert_command_name(self.__class__.__name__)
