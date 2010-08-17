@@ -1,4 +1,5 @@
 import unittest
+from optparse import make_option
 from abrek.command import AbrekCmd, get_command, get_all_cmds
 
 class testAbrekCmd(unittest.TestCase):
@@ -37,3 +38,30 @@ class testAbrekCmd(unittest.TestCase):
     def test_get_all_cmds(self):
         cmds = get_all_cmds()
         self.assertTrue("install" in cmds)
+
+    def test_arglist(self):
+        expected_str = 'Usage: abrek arglist FOO'
+        class cmd_arglist(AbrekCmd):
+            arglist = ['*foo']
+            pass
+        cmd = cmd_arglist()
+        self.assertTrue(expected_str in cmd.help())
+
+    def test_options(self):
+        expected_str = '-b BAR, --bar=BAR'
+        class cmd_options(AbrekCmd):
+            options = [make_option("-b", "--bar", dest="bar")]
+            pass
+        cmd = cmd_options()
+        self.assertTrue(expected_str in cmd.help())
+
+    def test_subcmds(self):
+        expected_str = 'Sub-Commands:\n  foo'
+        class subcmd_test(AbrekCmd):
+            pass
+
+        class cmd_test_subcmds(AbrekCmd):
+            subcmds = {'foo':subcmd_test()}
+            pass
+        cmd = cmd_test_subcmds()
+        self.assertTrue(expected_str in cmd.help())
