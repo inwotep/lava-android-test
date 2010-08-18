@@ -8,8 +8,31 @@ class _AbrekOptionParser(OptionParser):
         return self.epilog
 
 class AbrekCmd(object):
-    """
-    Base class for commands that can be passed to Abrek.
+    """ Base class for commands that can be passed to Abrek.
+
+    Commands added to abrek should inherit from AbrekCmd.  To allow for
+    autodiscovery, the name of the class should begin with cmd_.
+
+    Arguments allowed by the command can be specified in the 'arglist'.
+    These arguments will automatically be listed in the help for that
+    command.  Required arguments should begin with a '*'.  For example:
+        arglist = ['*requiredarg', 'optionalarg']
+
+    Options may also be specified by using the 'options' list.  To add
+    arguments, you must use the make_option() function from optparse.
+    For example:
+        options = [make_option("-b", "--bar", dest="bar")]
+
+    Commands also support subcommands.  A subcommand is similar to a
+    command in abrek, and it should also inherit from AbrekCmd.  However,
+    a subcommand class should not begin with cmd_.  Instead, it should
+    be tied to the command that uses it, using the 'subcmds' dict.
+    For example:
+        class subcmd_bar(AbrekCmd):
+            pass
+        class cmd_foo(AbrekCmd):
+            subcmds = {'bar':subcmd_bar()}
+            pass
     """
     options = []
     arglist = []
