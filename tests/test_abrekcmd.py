@@ -78,3 +78,19 @@ class testAbrekCmd(unittest.TestCase):
         cmd = cmd_test_subcmds()
         argv = ['foo']
         self.assertEqual(expected_str, cmd.main(argv))
+
+    def test_subcmd_strip_argv(self):
+        """
+        Make sure that the argv list is stripped after calling the subcmd
+        """
+        class subcmd_test(AbrekCmd):
+            def main(self, argv):
+                return len(argv)
+
+        class cmd_test_subcmds(AbrekCmd):
+            subcmds = {'foo':subcmd_test()}
+            pass
+        cmd = cmd_test_subcmds()
+        argv = ['foo']
+        self.assertEqual(0, cmd.main(argv))
+
