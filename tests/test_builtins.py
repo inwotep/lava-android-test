@@ -59,10 +59,3 @@ class FakeConfigTests(FakeOutputTests):
         cmd = abrek.builtins.cmd_list_installed()
         cmd.run()
         self.assertTrue(test_name in self.fakestdout.getvalue())
-
-    def test_list_results(self):
-        result_name = "test_list_results000"
-        os.makedirs(os.path.join(self.config.resultsdir, result_name))
-        cmd = abrek.builtins.cmd_list_results()
-        cmd.run()
-        self.assertTrue(result_name in self.fakestdout.getvalue())

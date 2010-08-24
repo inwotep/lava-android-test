@@ -20,6 +20,8 @@ from optparse import make_option
 
 import abrek.command
 import abrek.testdef
+from abrek.config import get_config
+from abrek.utils import read_file
 
 
 class cmd_version(abrek.command.AbrekCmd):
@@ -95,7 +97,7 @@ class cmd_parse(abrek.command.AbrekCmd):
         resultsdir = os.path.join(config.resultsdir,self.args[0])
         testdatafile = os.path.join(resultsdir,"testdata.json")
         testdata = json.loads(file(testdatafile,'r').read())
-        test = abrek.testdef.testloader(testdata['testname'])
+        test = abrek.testdef.testloader(testdata['test_id'])
         try:
             test.parse(self.args[0])
         except Exception as strerror:
@@ -125,7 +127,6 @@ class cmd_list_installed(abrek.command.AbrekCmd):
     List tests that are currently installed
     """
     def run(self):
-        from abrek.config import get_config
         config = get_config()
         print "Installed tests:"
         try:
@@ -145,16 +146,3 @@ class cmd_list_tests(abrek.command.AbrekCmd):
         for importer, mod, ispkg in walk_packages(test_definitions.__path__):
             print mod
 
-class cmd_list_results(abrek.command.AbrekCmd):
-    """
-    List results of previous runs
-    """
-    def run(self):
-        from abrek.config import get_config
-        config = get_config()
-        print "Saved results:"
-        try:
-            for dir in os.listdir(config.resultsdir):
-                print dir
-        except OSError:
-            print "No results found"
