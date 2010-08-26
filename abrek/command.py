@@ -115,7 +115,7 @@ def _find_commands(module):
     return cmds
 
 def get_all_cmds():
-    from abrek import (builtins, results)
+    from abrek import builtins, results
     cmds = _find_commands(builtins)
     cmds.update(_find_commands(results))
     return cmds
