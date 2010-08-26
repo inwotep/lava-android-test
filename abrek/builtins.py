@@ -32,6 +32,7 @@ class cmd_version(abrek.command.AbrekCmd):
         import abrek
         print abrek.__version__
 
+
 class cmd_help(abrek.command.AbrekCmd):
     """ Get help on abrek commands
 
@@ -54,6 +55,7 @@ class cmd_help(abrek.command.AbrekCmd):
             else:
                 print "No command found for '%s'" % self.args[0]
 
+
 class cmd_install(abrek.command.AbrekCmd):
     """
     Install a test
@@ -70,6 +72,7 @@ class cmd_install(abrek.command.AbrekCmd):
         except RuntimeError as strerror:
             print "Test installation error: %s" % strerror
             sys.exit(1)
+
 
 class cmd_run(abrek.command.AbrekCmd):
     """
@@ -88,6 +91,7 @@ class cmd_run(abrek.command.AbrekCmd):
             print "Test execution error: %s" % strerror
             sys.exit(1)
 
+
 class cmd_parse(abrek.command.AbrekCmd):
     def run(self):
         if len(self.args) != 1:
@@ -104,6 +108,7 @@ class cmd_parse(abrek.command.AbrekCmd):
             print "Test parse error: %s" % strerror
             sys.exit(1)
         print test.parser.results
+
 
 class cmd_uninstall(abrek.command.AbrekCmd):
     """
@@ -122,6 +127,7 @@ class cmd_uninstall(abrek.command.AbrekCmd):
             print "Test uninstall error: %s" % strerror
             sys.exit(1)
 
+
 class cmd_list_installed(abrek.command.AbrekCmd):
     """
     List tests that are currently installed
@@ -134,6 +140,7 @@ class cmd_list_installed(abrek.command.AbrekCmd):
                 print dir
         except OSError:
             print "No tests installed"
+
 
 class cmd_list_tests(abrek.command.AbrekCmd):
     """

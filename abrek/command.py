@@ -15,12 +15,14 @@
 
 from optparse import OptionParser
 
+
 class _AbrekOptionParser(OptionParser):
     """
     This is just to override the epilog formatter to allow newlines
     """
     def format_epilog(self, formatter):
         return self.epilog
+
 
 class AbrekCmd(object):
     """ Base class for commands that can be passed to Abrek.

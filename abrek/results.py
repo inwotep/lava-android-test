@@ -22,6 +22,7 @@ from abrek.command import AbrekCmd
 from abrek.config import get_config
 from abrek.utils import read_file
 
+
 class subcmd_results_list(AbrekCmd):
     """
     List results of previous runs
@@ -34,6 +35,7 @@ class subcmd_results_list(AbrekCmd):
                 print dir
         except OSError:
             print "No results found"
+
 
 class subcmd_results_show(AbrekCmd):
     """
@@ -48,6 +50,7 @@ class subcmd_results_show(AbrekCmd):
         resultsdir = os.path.join(config.resultsdir,self.args[0])
         testoutput = os.path.join(resultsdir,"testoutput.log")
         print(read_file(testoutput))
+
 
 class subcmd_results_remove(AbrekCmd):
     """
@@ -72,6 +75,7 @@ class subcmd_results_remove(AbrekCmd):
                 sys.exit(0)
         shutil.rmtree(resultsdir)
 
+
 class subcmd_results_rename(AbrekCmd):
     """
     Rename the results from a previous test run
@@ -92,6 +96,7 @@ class subcmd_results_rename(AbrekCmd):
             print "Destination result name already exists"
             sys.exit(1)
         shutil.move(srcdir, destdir)
+
 
 class cmd_results(AbrekCmd):
     """
