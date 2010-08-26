@@ -49,6 +49,9 @@ class subcmd_results_show(AbrekCmd):
         config = get_config()
         resultsdir = os.path.join(config.resultsdir,self.args[0])
         testoutput = os.path.join(resultsdir,"testoutput.log")
+        if not os.path.exists(testoutput):
+            print "No result found for '%s'" % self.args[0]
+            sys.exit(1)
         print(read_file(testoutput))
 
 
