@@ -69,7 +69,7 @@ class subcmd_results_remove(AbrekCmd):
         config = get_config()
         resultsdir = os.path.join(config.resultsdir,self.args[0])
         if not os.path.exists(resultsdir):
-            print "Result directory not found"
+            print "No result found for '%s'" % self.args[0]
             sys.exit(1)
         if not self.opts.force:
             print "Delete result '%s' for good? [Y/N]" % self.args[0],
