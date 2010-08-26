@@ -1,39 +1,22 @@
 import os
-import sys
-import tempfile
-import unittest
-import StringIO
 
 import abrek.results
-from abrek.config import set_config
-from abrek.utils import read_file, write_file
+from abrek.utils import write_file
+from faketests import FakeConfigTests
 
-class FakeOutputTests(unittest.TestCase):
-        def setUp(self):
-            self.origstdout = sys.stdout
-            sys.stdout = self.fakestdout = StringIO.StringIO()
-
-        def tearDown(self):
-            sys.stdout = self.origstdout
-
-class ResultsTests(FakeOutputTests):
-    def setUp(self):
-        super(ResultsTests, self).setUp()
-        class fakeconfig:
-            def __init__(self, basedir):
-                self.configdir = os.path.join(basedir, "config")
-                self.installdir = os.path.join(basedir, "install")
-                self.resultsdir = os.path.join(basedir, "results")
-        self.tmpdir = tempfile.mkdtemp()
-        self.config = fakeconfig(self.tmpdir)
-        set_config(self.config)
-
+class ResultsTests(FakeConfigTests):
     def test_results_list(self):
         result_name = "test_results_list000"
         os.makedirs(os.path.join(self.config.resultsdir, result_name))
         cmd = abrek.results.subcmd_results_list()
         cmd.run()
         self.assertTrue(result_name in self.fakestdout.getvalue())
+
+    def test_results_list_nodir(self):
+        errmsg = "No results found"
+        cmd = abrek.results.subcmd_results_list()
+        cmd.run()
+        self.assertTrue(errmsg in self.fakestdout.getvalue())
 
     def test_results_show(self):
         result_name = "test_results_show000"
@@ -46,6 +29,19 @@ class ResultsTests(FakeOutputTests):
         cmd.main(argv=[result_name])
         self.assertEqual(result_output, self.fakestdout.getvalue().strip())
 
+    def test_results_show_noarg(self):
+        errmsg = "please specify the name of the result dir"
+        cmd = abrek.results.subcmd_results_show()
+        self.assertRaises(SystemExit, cmd.main, argv=[])
+        self.assertEqual(errmsg, self.fakestdout.getvalue().strip())
+
+    def test_results_show_nodir(self):
+        testname = "foo"
+        errmsg = "No result found for '%s'" % testname
+        cmd = abrek.results.subcmd_results_show()
+        self.assertRaises(SystemExit, cmd.main, argv=[testname])
+        self.assertEqual(errmsg, self.fakestdout.getvalue().strip())
+
     def test_results_remove(self):
         result_name = "test_results_remove000"
         result_dir = os.path.join(self.config.resultsdir, result_name)
@@ -53,6 +49,19 @@ class ResultsTests(FakeOutputTests):
         cmd = abrek.results.subcmd_results_remove()
         cmd.main(argv=[result_name, '-f'])
         self.assertFalse(os.path.exists(result_dir))
+
+    def test_results_remove_noarg(self):
+        errmsg = "please specify the name of the result dir"
+        cmd = abrek.results.subcmd_results_remove()
+        self.assertRaises(SystemExit, cmd.main, argv=[])
+        self.assertEqual(errmsg, self.fakestdout.getvalue().strip())
+
+    def test_results_remove_nodir(self):
+        testname = "foo"
+        errmsg = "No result found for '%s'" % testname
+        cmd = abrek.results.subcmd_results_remove()
+        self.assertRaises(SystemExit, cmd.main, argv=[testname])
+        self.assertEqual(errmsg, self.fakestdout.getvalue().strip())
 
     def test_results_rename(self):
         result_src = "test_results_old"
