@@ -20,6 +20,8 @@ from optparse import make_option
 
 import abrek.command
 import abrek.testdef
+from abrek.config import get_config
+from abrek.utils import read_file
 
 
 class cmd_version(abrek.command.AbrekCmd):
@@ -29,6 +31,7 @@ class cmd_version(abrek.command.AbrekCmd):
     def run(self):
         import abrek
         print abrek.__version__
+
 
 class cmd_help(abrek.command.AbrekCmd):
     """ Get help on abrek commands
@@ -52,6 +55,7 @@ class cmd_help(abrek.command.AbrekCmd):
             else:
                 print "No command found for '%s'" % self.args[0]
 
+
 class cmd_install(abrek.command.AbrekCmd):
     """
     Install a test
@@ -68,6 +72,7 @@ class cmd_install(abrek.command.AbrekCmd):
         except RuntimeError as strerror:
             print "Test installation error: %s" % strerror
             sys.exit(1)
+
 
 class cmd_run(abrek.command.AbrekCmd):
     """
@@ -86,6 +91,7 @@ class cmd_run(abrek.command.AbrekCmd):
             print "Test execution error: %s" % strerror
             sys.exit(1)
 
+
 class cmd_parse(abrek.command.AbrekCmd):
     def run(self):
         if len(self.args) != 1:
@@ -95,13 +101,14 @@ class cmd_parse(abrek.command.AbrekCmd):
         resultsdir = os.path.join(config.resultsdir,self.args[0])
         testdatafile = os.path.join(resultsdir,"testdata.json")
         testdata = json.loads(file(testdatafile,'r').read())
-        test = abrek.testdef.testloader(testdata['testname'])
+        test = abrek.testdef.testloader(testdata['test_id'])
         try:
             test.parse(self.args[0])
         except Exception as strerror:
             print "Test parse error: %s" % strerror
             sys.exit(1)
         print test.parser.results
+
 
 class cmd_uninstall(abrek.command.AbrekCmd):
     """
@@ -120,12 +127,12 @@ class cmd_uninstall(abrek.command.AbrekCmd):
             print "Test uninstall error: %s" % strerror
             sys.exit(1)
 
+
 class cmd_list_installed(abrek.command.AbrekCmd):
     """
     List tests that are currently installed
     """
     def run(self):
-        from abrek.config import get_config
         config = get_config()
         print "Installed tests:"
         try:
@@ -133,6 +140,7 @@ class cmd_list_installed(abrek.command.AbrekCmd):
                 print dir
         except OSError:
             print "No tests installed"
+
 
 class cmd_list_tests(abrek.command.AbrekCmd):
     """
@@ -145,16 +153,3 @@ class cmd_list_tests(abrek.command.AbrekCmd):
         for importer, mod, ispkg in walk_packages(test_definitions.__path__):
             print mod
 
-class cmd_list_results(abrek.command.AbrekCmd):
-    """
-    List results of previous runs
-    """
-    def run(self):
-        from abrek.config import get_config
-        config = get_config()
-        print "Saved results:"
-        try:
-            for dir in os.listdir(config.resultsdir):
-                print dir
-        except OSError:
-            print "No results found"

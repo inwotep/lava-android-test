@@ -29,6 +29,7 @@ from abrek.utils import geturl, write_file
 from abrek import hwprofile
 from abrek import swprofile
 
+
 class AbrekTest(object):
     """Base class for defining tests.
 
@@ -124,6 +125,7 @@ class AbrekTest(object):
         os.chdir(self.resultsdir)
         self.parser.parse()
 
+
 class AbrekTestInstaller(object):
     """Base class for defining an installer object.
 
@@ -182,6 +184,7 @@ class AbrekTestInstaller(object):
         self._download()
         self._runsteps()
 
+
 class AbrekTestRunner(object):
     """Base class for defining an test runner object.
 
@@ -208,6 +211,7 @@ class AbrekTestRunner(object):
         self.starttime = datetime.utcnow()
         self._runsteps(resultsdir)
         self.endtime = datetime.utcnow()
+
 
 class AbrekTestParser(object):
     """Base class for defining a test parser

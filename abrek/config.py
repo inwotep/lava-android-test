@@ -15,6 +15,7 @@
 
 import os
 
+
 class AbrekConfig(object):
     def __init__(self):
         home = os.environ.get('HOME', '/')
