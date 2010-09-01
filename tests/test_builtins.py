@@ -16,18 +16,22 @@
 import os
 
 import abrek.builtins
-from faketests import FakeConfigTests, FakeOutputTests
+from imposters import ConfigImposter, OutputImposter
+from fixtures import TestCaseWithFixtures
 
-class ListKnown(FakeOutputTests):
+class ListKnown(TestCaseWithFixtures):
     def test_list_tests(self):
+        out = self.add_fixture(OutputImposter())
         cmd = abrek.builtins.cmd_list_tests()
         cmd.run()
-        self.assertTrue("stream" in self.fakestdout.getvalue())
+        self.assertTrue("stream" in out.getvalue())
 
-class ListInstalled(FakeConfigTests):
+class ListInstalled(TestCaseWithFixtures):
     def test_list_installed(self):
+        config = self.add_fixture(ConfigImposter())
+        out = self.add_fixture(OutputImposter())
         test_name="test_list_installed000"
-        os.makedirs(os.path.join(self.config.installdir, test_name))
+        os.makedirs(os.path.join(config.installdir, test_name))
         cmd = abrek.builtins.cmd_list_installed()
         cmd.run()
-        self.assertTrue(test_name in self.fakestdout.getvalue())
+        self.assertTrue(test_name in out.getvalue())

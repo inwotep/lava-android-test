@@ -17,12 +17,11 @@ import os
 import shutil
 import sys
 import tempfile
-import unittest
 import StringIO
 
 from abrek.config import set_config
 
-class FakeOutputTests(unittest.TestCase):
+class OutputImposter(object):
     def setUp(self):
         self.origstdout = sys.stdout
         sys.stdout = self.fakestdout = StringIO.StringIO()
@@ -30,9 +29,11 @@ class FakeOutputTests(unittest.TestCase):
     def tearDown(self):
         sys.stdout = self.origstdout
 
-class FakeConfigTests(FakeOutputTests):
+    def getvalue(self):
+        return self.fakestdout.getvalue()
+
+class ConfigImposter(object):
     def setUp(self):
-        super(FakeConfigTests, self).setUp()
         class fakeconfig:
             def __init__(self, basedir):
                 self.configdir = os.path.join(basedir, "config")
@@ -43,5 +44,16 @@ class FakeConfigTests(FakeOutputTests):
         set_config(self.config)
 
     def tearDown(self):
-        super(FakeConfigTests, self).tearDown()
         shutil.rmtree(self.tmpdir)
+
+    @property
+    def configdir(self):
+        return self.config.configdir
+
+    @property
+    def installdir(self):
+        return self.config.installdir
+
+    @property
+    def resultsdir(self):
+        return self.config.resultsdir
