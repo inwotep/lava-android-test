@@ -30,7 +30,7 @@ class TestCaseWithFixtures(unittest.TestCase):
             self._fixtures.append(fixture)
         return fixture
 
-    def cleanup(self):
+    def tearDown(self):
         for fixture in self._fixtures:
             fixture.tearDown()
         self._fixtures = []

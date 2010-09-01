@@ -21,7 +21,7 @@ import StringIO
 
 from abrek.config import set_config
 
-class FakeOutputTests(object):
+class OutputImposter(object):
     def setUp(self):
         self.origstdout = sys.stdout
         sys.stdout = self.fakestdout = StringIO.StringIO()
@@ -32,7 +32,7 @@ class FakeOutputTests(object):
     def getvalue(self):
         return self.fakestdout.getvalue()
 
-class FakeConfigTests(object):
+class ConfigImposter(object):
     def setUp(self):
         class fakeconfig:
             def __init__(self, basedir):

@@ -2,16 +2,14 @@ import os
 
 import abrek.results
 from abrek.utils import write_file
-from faketests import FakeConfigTests, FakeOutputTests
+from imposters import ConfigImposter, OutputImposter
 from fixtures import TestCaseWithFixtures
 
 class ResultsTests(TestCaseWithFixtures):
     def setUp(self):
-        self.config = self.add_fixture(FakeConfigTests())
-        self.out = self.add_fixture(FakeOutputTests())
-
-    def tearDown(self):
-        self.cleanup()
+        super(ResultsTests, self).setUp()
+        self.config = self.add_fixture(ConfigImposter())
+        self.out = self.add_fixture(OutputImposter())
 
     def test_results_list(self):
         result_name = "test_results_list000"
