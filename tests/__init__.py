@@ -16,14 +16,15 @@
 import unittest
 
 def test_suite():
-    module_names = ['tests.test_builtins',
-                    'tests.test_abrekcmd',
+    module_names = ['tests.test_abrekcmd',
                     'tests.test_abrektestinstaller',
-                    'tests.test_abrektestrunner',
                     'tests.test_abrektestparser',
-                    'tests.test_swprofile',
+                    'tests.test_abrektestrunner',
+                    'tests.test_builtins',
+                    'tests.test_dashboard',
                     'tests.test_hwprofile',
-                    'tests.test_results']
+                    'tests.test_results',
+                    'tests.test_swprofile']
     loader = unittest.TestLoader()
     suite = loader.loadTestsFromNames(module_names)
     return suite

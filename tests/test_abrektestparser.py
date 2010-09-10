@@ -20,6 +20,7 @@ import unittest
 
 from abrek.testdef import AbrekTestParser
 
+
 class testAbrekTestParser(unittest.TestCase):
     def setUp(self):
         self.origdir = os.path.abspath(os.curdir)

@@ -15,6 +15,7 @@
 
 import unittest
 
+
 class TestCaseWithFixtures(unittest.TestCase):
     """TestCase extended to allow adding fixtures
 

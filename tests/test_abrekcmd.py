@@ -17,6 +17,7 @@ import unittest
 from optparse import make_option
 from abrek.command import AbrekCmd, get_command, get_all_cmds
 
+
 class testAbrekCmd(unittest.TestCase):
     def test_empty_run(self):
         cmd = AbrekCmd()

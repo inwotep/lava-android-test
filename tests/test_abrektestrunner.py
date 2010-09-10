@@ -21,6 +21,7 @@ from datetime import datetime
 
 from abrek.testdef import AbrekTestRunner
 
+
 class testAbrekTestInstaller(unittest.TestCase):
     def setUp(self):
         self.origdir = os.path.abspath(os.curdir)

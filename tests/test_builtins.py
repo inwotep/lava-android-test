@@ -19,6 +19,7 @@ import abrek.builtins
 from imposters import ConfigImposter, OutputImposter
 from fixtures import TestCaseWithFixtures
 
+
 class ListKnown(TestCaseWithFixtures):
     def test_list_tests(self):
         out = self.add_fixture(OutputImposter())
