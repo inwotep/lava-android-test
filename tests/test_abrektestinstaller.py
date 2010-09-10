@@ -21,6 +21,7 @@ import unittest
 
 from abrek.testdef import AbrekTestInstaller
 
+
 class testAbrekTestInstaller(unittest.TestCase):
     def setUp(self):
         self.origdir = os.path.abspath(os.curdir)

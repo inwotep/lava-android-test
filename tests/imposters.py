@@ -21,6 +21,7 @@ import StringIO
 
 from abrek.config import set_config
 
+
 class OutputImposter(object):
     def setUp(self):
         self.origstdout = sys.stdout

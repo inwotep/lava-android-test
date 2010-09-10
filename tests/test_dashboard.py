@@ -19,6 +19,7 @@ from abrek.dashboard import (DashboardConfig,
 from imposters import ConfigImposter, OutputImposter
 from fixtures import TestCaseWithFixtures
 
+
 class DashboardTests(TestCaseWithFixtures):
     def setUp(self):
         super(DashboardTests, self).setUp()

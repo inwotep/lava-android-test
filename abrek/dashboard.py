@@ -52,7 +52,7 @@ class DashboardConfig(object):
     host = property(get_host, set_host)
 
     def set_user(self, user):
-        self.dashboardconf.set(self.section,'user', user)
+        self.dashboardconf.set(self.section, 'user', user)
 
     def get_user(self):
         try:
@@ -116,6 +116,6 @@ class subcmd_dashboard_setup(AbrekCmd):
 
 class cmd_dashboard(AbrekCmd):
     """
-    Operate on results of previous test runs stored locally
+    Connect to the Launch-control dashboard
     """
     subcmds = {'setup':subcmd_dashboard_setup()}

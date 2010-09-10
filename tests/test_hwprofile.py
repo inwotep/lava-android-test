@@ -18,6 +18,7 @@ import unittest
 import abrek.hwprofile
 from abrek.utils import fake_file
 
+
 class AptCache:
     def __init__(self, packages=[]):
         self.packages = packages
