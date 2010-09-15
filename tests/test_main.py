@@ -13,19 +13,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import unittest
+from abrek.main import main
+from imposters import OutputImposter
+from fixtures import TestCaseWithFixtures
 
-def test_suite():
-    module_names = ['tests.test_abrekcmd',
-                    'tests.test_abrektestinstaller',
-                    'tests.test_abrektestparser',
-                    'tests.test_abrektestrunner',
-                    'tests.test_builtins',
-                    'tests.test_dashboard',
-                    'tests.test_hwprofile',
-                    'tests.test_main',
-                    'tests.test_results',
-                    'tests.test_swprofile']
-    loader = unittest.TestLoader()
-    suite = loader.loadTestsFromNames(module_names)
-    return suite
+
+class testMain(TestCaseWithFixtures):
+    def setUp(self):
+        super(testMain, self).setUp()
+        self.out = self.add_fixture(OutputImposter())
+        self._fixtures = []
+
+    def test_bad_subcmd(self):
+        errmsg = "Unknown usage './abrek results foo'\nUse 'abrek help [cmd]' for help\n"
+        main(['./abrek', 'results', 'foo'])
+        self.assertEqual(errmsg, self.out.getvalue())
+
