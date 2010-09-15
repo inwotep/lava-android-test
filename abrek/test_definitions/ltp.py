@@ -4,7 +4,6 @@ import abrek.testdef
 
 VERSION="20100831"
 URL='http://downloads.sourceforge.net/project/ltp/LTP Source/ltp-%s/ltp-full-%s.bz2' % (VERSION, VERSION)
-#URL="http://downloads.sourceforge.net/project/ltp/LTP Source/ltp-20100831/ltp-full-20100831.bz2"
 MD5="6982c72429a62f3917c13b2d529ad1ce"
 DEPS = ['bzip2', 'flex', 'bison', 'make']
 
