@@ -27,7 +27,7 @@ def geturl(url, path=""):
         filename = os.path.join(path,filename)
     fd = open(filename, "w")
     try:
-        response = urllib2.urlopen(url)
+        response = urllib2.urlopen(urllib2.quote(url, safe=":/"))
         fd = open(filename, 'wb')
         shutil.copyfileobj(response,fd,0x10000)
         fd.close()
