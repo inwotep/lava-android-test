@@ -27,5 +27,5 @@ if os.path.exists(ABREK_DIR) and ABREK_ROOT not in sys.path:
 import abrek.main
 
 if __name__ == '__main__':
-    exit_code = abrek.main.main()
+    exit_code = abrek.main.main(sys.argv)
     sys.exit(exit_code)
