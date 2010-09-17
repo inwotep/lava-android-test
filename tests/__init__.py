@@ -23,6 +23,7 @@ def test_suite():
                     'tests.test_builtins',
                     'tests.test_dashboard',
                     'tests.test_hwprofile',
+                    'tests.test_main',
                     'tests.test_results',
                     'tests.test_swprofile']
     loader = unittest.TestLoader()

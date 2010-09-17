@@ -25,10 +25,12 @@ from abrek.config import set_config
 class OutputImposter(object):
     def setUp(self):
         self.origstdout = sys.stdout
-        sys.stdout = self.fakestdout = StringIO.StringIO()
+        self.origstderr = sys.stderr
+        sys.stdout = sys.stderr = self.fakestdout = StringIO.StringIO()
 
     def tearDown(self):
         sys.stdout = self.origstdout
+        sys.stderr = self.origstderr
 
     def getvalue(self):
         return self.fakestdout.getvalue()

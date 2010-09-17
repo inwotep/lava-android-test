@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 # Copyright (c) 2010 Linaro
 #
 # This program is free software: you can redistribute it and/or modify
@@ -15,17 +13,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import os
-import sys
+from abrek.main import main
+from imposters import OutputImposter
+from fixtures import TestCaseWithFixtures
 
-ABREK_BINDIR=os.path.abspath(os.path.dirname(os.path.realpath(sys.argv[0])))
-ABREK_ROOT=os.path.dirname(ABREK_BINDIR)
-ABREK_DIR=os.path.join(ABREK_ROOT,'abrek')
-if os.path.exists(ABREK_DIR) and ABREK_ROOT not in sys.path:
-    sys.path.insert(0, ABREK_ROOT)
 
-import abrek.main
+class testMain(TestCaseWithFixtures):
+    def setUp(self):
+        super(testMain, self).setUp()
+        self.out = self.add_fixture(OutputImposter())
+        self._fixtures = []
 
-if __name__ == '__main__':
-    exit_code = abrek.main.main(sys.argv)
-    sys.exit(exit_code)
+    def test_bad_subcmd(self):
+        errmsg = "Unknown usage './abrek results foo'\nUse 'abrek help [cmd]' for help\n"
+        main(['./abrek', 'results', 'foo'])
+        self.assertEqual(errmsg, self.out.getvalue())
+
