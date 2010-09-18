@@ -22,7 +22,6 @@ class testMain(TestCaseWithFixtures):
     def setUp(self):
         super(testMain, self).setUp()
         self.out = self.add_fixture(OutputImposter())
-        self._fixtures = []
 
     def test_bad_subcmd(self):
         errmsg = "Unknown usage './abrek results foo'\nUse 'abrek help [cmd]' for help\n"
