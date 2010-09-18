@@ -13,10 +13,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import os
 import unittest
 
 import abrek.hwprofile
-from abrek.utils import fake_file
+from abrek.utils import fake_file, clear_fakes
+from imposters import OutputImposter
+from fixtures import TestCaseWithFixtures
 
 
 class AptCache:
@@ -92,3 +95,38 @@ class HwprofileTests(unittest.TestCase):
     def test_get_usb_devs(self):
         devs = abrek.hwprofile.get_usb_devs()
         self.assertEqual('device.usb', devs[0]['device_type'])
+
+
+class MissingFiles(TestCaseWithFixtures):
+    """
+    These are tests for situations where certain files used for gathering
+    hardware profile information may be missing
+    """
+    def setUp(self):
+        super(MissingFiles, self).setUp()
+        clear_fakes()
+        self.out = self.add_fixture(OutputImposter())
+
+    def test_bad_cpuinfo(self):
+        errmsg = "WARNING: Could not read cpu information\n"
+        fake_file('/proc/cpuinfo', newpath='/foo/bar')
+        devs = abrek.hwprofile.get_cpu_devs()
+        self.assertEqual([], devs)
+        self.assertEqual(errmsg, self.out.getvalue())
+
+    def test_bad_boardinfo(self):
+        machine = os.uname()[-1]
+        errmsg = "WARNING: Could not read board information\n"
+        fake_file('/sys/class/dmi/id/board_name', newpath='/foo/bar')
+        devs = abrek.hwprofile.get_board_devs()
+        self.assertEqual([], devs)
+        if machine in ('i686', 'x86_64'):
+            self.assertEqual(errmsg, self.out.getvalue())
+
+    def test_bad_meminfo(self):
+        errmsg = "WARNING: Could not read memory information\n"
+        fake_file('/proc/meminfo', newpath='/foo/bar')
+        devs = abrek.hwprofile.get_mem_devs()
+        self.assertEqual([], devs)
+        self.assertEqual(errmsg, self.out.getvalue())
+
