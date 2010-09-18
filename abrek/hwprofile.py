@@ -16,6 +16,7 @@
 import commands
 import os
 import re
+import sys
 from utils import read_file
 
 INTEL_KEYMAP = {
@@ -79,23 +80,26 @@ def get_cpu_devs():
     elif machine.startswith('arm'):
         keymap, valmap = ARM_KEYMAP, ARM_VALMAP
 
-    cpuinfo = read_file("/proc/cpuinfo")
-    for line in cpuinfo.splitlines():
-        match = pattern.match(line)
-        if match:
-            key, value = match.groups()
-            key, value = _translate_cpuinfo(keymap, valmap,
-                         key, value)
-            if cpudevs[cpunum].get(key):
-                cpunum += 1
-                cpudevs.append({})
-            cpudevs[cpunum][key] = value
-    for c in range(len(cpudevs)):
-        device = {}
-        device['device_type'] = 'device.cpu'
-        device['attributes'] = 'Processor #{0}'.format(c)
-        device['desc'] = cpudevs[c]
-        devices.append(device)
+    try:
+        cpuinfo = read_file("/proc/cpuinfo")
+        for line in cpuinfo.splitlines():
+            match = pattern.match(line)
+            if match:
+                key, value = match.groups()
+                key, value = _translate_cpuinfo(keymap, valmap,
+                    key, value)
+                if cpudevs[cpunum].get(key):
+                    cpunum += 1
+                    cpudevs.append({})
+                cpudevs[cpunum][key] = value
+        for c in range(len(cpudevs)):
+            device = {}
+            device['device_type'] = 'device.cpu'
+            device['attributes'] = 'Processor #{0}'.format(c)
+            device['desc'] = cpudevs[c]
+            devices.append(device)
+    except IOError:
+        print >> sys.stderr, "WARNING: Could not read cpu information"
     return devices
 
 
@@ -108,24 +112,32 @@ def get_board_devs():
     device = {}
     machine = os.uname()[-1]
     if machine in ('i686', 'x86_64'):
-        name = read_file('/sys/class/dmi/id/board_name') or None
-        vendor = read_file('/sys/class/dmi/id/board_vendor') or None
-        version = read_file('/sys/class/dmi/id/board_version') or None
-        if name:
-            device['attributes'] = name.strip()
-        if vendor:
-            desc['vendor'] = vendor.strip()
-        if version:
-            desc['version'] = version.strip()
+        try:
+            name = read_file('/sys/class/dmi/id/board_name') or None
+            vendor = read_file('/sys/class/dmi/id/board_vendor') or None
+            version = read_file('/sys/class/dmi/id/board_version') or None
+            if name:
+                device['attributes'] = name.strip()
+            if vendor:
+                desc['vendor'] = vendor.strip()
+            if version:
+                desc['version'] = version.strip()
+        except IOError:
+            print >> sys.stderr, "WARNING: Could not read board information"
+            return devices
     elif machine.startswith('arm'):
-        cpuinfo = read_file("/proc/cpuinfo")
-        if cpuinfo is None:
+        try:
+            cpuinfo = read_file("/proc/cpuinfo")
+            if cpuinfo is None:
+                return devices
+            pattern = re.compile("^Hardware\s*:\s*(?P<hardware>.+)$", re.M)
+            match = pattern.search(cpuinfo)
+            if match is None:
+                return devices
+            desc['hardware'] = match.group('hardware')
+        except IOError:
+            print >> sys.stderr, "WARNING: Could not read board information"
             return devices
-        pattern = re.compile("^Hardware\s*:\s*(?P<hardware>.+)$", re.M)
-        match = pattern.search(cpuinfo)
-        if match is None:
-            return devices
-        desc['hardware'] = match.group('hardware')
     else:
         return devices
     device['desc'] = desc
@@ -141,25 +153,28 @@ def get_mem_devs():
     pattern = re.compile('^(?P<key>.+?)\s*:\s*(?P<value>.+) kB$', re.M)
 
     devices = []
-    meminfo = read_file("/proc/meminfo")
-    for match in pattern.finditer(meminfo):
-        key, value = match.groups()
-        if key not in ('MemTotal', 'SwapTotal'):
-            continue
-        capacity = int(value) << 10 #Kernel reports in 2^10 units
-        if capacity == 0:
-            continue
-        if key == 'MemTotal':
-            kind = 'RAM'
-        else:
-            kind = 'swap'
-        name = "{capacity}MiB of {kind}".format(
-               capacity=capacity >> 20, kind=kind)
-        device = {}
-        device['attributes'] = name
-        device['desc'] = {'capacity': capacity, 'kind': kind}
-        device['device_type'] = "device.mem"
-        devices.append(device)
+    try:
+        meminfo = read_file("/proc/meminfo")
+        for match in pattern.finditer(meminfo):
+            key, value = match.groups()
+            if key not in ('MemTotal', 'SwapTotal'):
+                continue
+            capacity = int(value) << 10 #Kernel reports in 2^10 units
+            if capacity == 0:
+                continue
+            if key == 'MemTotal':
+                kind = 'RAM'
+            else:
+                kind = 'swap'
+            name = "{capacity}MiB of {kind}".format(
+                capacity=capacity >> 20, kind=kind)
+            device = {}
+            device['attributes'] = name
+            device['desc'] = {'capacity': capacity, 'kind': kind}
+            device['device_type'] = "device.mem"
+            devices.append(device)
+    except IOError:
+        print >> sys.stderr, "WARNING: Could not read memory information"
     return devices
 
 def get_usb_devs():
