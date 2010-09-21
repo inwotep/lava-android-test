@@ -13,13 +13,33 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import shutil
 import os
+import shutil
+import sys
 import urllib2
 import urlparse
+from subprocess import Popen, PIPE
 
 _fake_files = None
 _fake_paths = None
+
+class Tee(file):
+    """ A file-like object that optionally mimics tee functionality.
+
+    By default, output will go to both stdout and the file specified.
+    Optionally, quiet=True can be used to mute the output to stdout.
+    """
+    def __init__(self, *args, **kwargs):
+        try:
+            self.quiet = kwargs.pop('quiet')
+        except KeyError:
+            self.quiet = False
+        super(Tee, self).__init__(*args, **kwargs)
+
+    def write(self, data):
+        super(Tee, self).write(data)
+        if self.quiet is False:
+            sys.stdout.write(data)
 
 def geturl(url, path=""):
     urlpath = urlparse.urlsplit(url).path
@@ -77,3 +97,14 @@ def clear_fakes():
     global _fake_paths
     _fake_files = {}
     _fake_paths = {}
+
+def run_and_log(cmd, fd):
+    """
+    Run a command and log the output to fd
+    """
+    proc = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
+    while proc.poll() is None:
+        output, err = proc.communicate()
+        if output is not None:
+            fd.write(output)
+    return proc.returncode
