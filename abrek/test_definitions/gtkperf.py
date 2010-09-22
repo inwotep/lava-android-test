@@ -13,8 +13,8 @@ class GtkTestParser(abrek.testdef.AbrekTestParser):
         filename = "testoutput.log"
         pat1 = re.compile(PAT1)
         pat2 = re.compile(PAT2)
-        with open(filename, 'r') as fd:
-            for line in fd.readlines():
+        with open(filename) as fd:
+            for line in fd:
                 match = pat1.search(line)
                 if match:
                     d = match.groupdict()
