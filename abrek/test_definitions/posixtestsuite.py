@@ -1,3 +1,18 @@
+# Copyright (c) 2010 Linaro
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """
    This script automates the automate installation, execution, and 
    results parsing for the OpenPosix test suite. 
@@ -10,22 +25,22 @@
 import re
 import abrek.testdef
 
-VERSION="1.5.2"
-URL="http://sourceforge.net/projects/posixtest/files/posixtest/" \
-    "posixtestsuite-%s/posixtestsuite-%s.tar.gz" % (VERSION, VERSION)
-MD5="9a8e6516585c886fddc257270061b59c"
-INSTALLSTEPS = ['tar -zxvf posixtestsuite-1.5.2.tar.gz']
-RUNSTEPS = ['cd posixtestsuite && make']
-PATTERN = "((?P<test_case_id>\A(\w+[/]+)+(\d+[-]\d+):) (?P<message>\D+:)" \
-          " (?P<result>\D+))"
+VERSION="20100831"
+URL= "http://downloads.sourceforge.net/project/ltp/LTP Source/ltp-%s/"\
+     "ltp-full-%s.bz2" % (VERSION, VERSION)
+MD5="6982c72429a62f3917c13b2d529ad1ce"
+INSTALLSTEPS = ['tar -xjf ltp-full-20100831.bz2']
+RUNSTEPS = ['cd ltp-full-20100831/testcases/open_posix_testsuite/ && make']
+
+PATTERN = "((?P<test_case_id>\A(\w+[/]+)+\w+[-]*\w*[-]*\w*) .*? (?P<result>\w+))"
 FIXUPS = {   
             "FAILED"      :  "fail",
             "INTERRUPTED" :  "skip",
-            "PASS"        :  "pass",
+            "PASSED"      :  "pass",
             "UNRESOLVED"  :  "unknown",
             "UNSUPPORTED" :  "skip",
             "UNTESTED"    :  "skip",
-            "SKIP"        :  "skip"
+            "SKIPPING"    :  "skip"
          }
 
 
@@ -35,13 +50,9 @@ class PosixParser(abrek.testdef.AbrekTestParser):
         pat = re.compile(self.pattern)
         with open(filename, 'r') as fd:
             for line in fd.readlines():
-                match = pat.search(line)
+                match = pat.match(line)
                 if match:
                     results = match.groupdict()
-                    for key in results.keys():
-                        results[key] = results[key].rstrip("\n")
-                        results[key] = results[key].rstrip(":")
-                        results[key] = results[key].rstrip()
                     test_case_id = results['test_case_id']
                     results['test_case_id'] = test_case_id.replace("/", ".")
                     self.results['test_results'].append(results)
