@@ -103,8 +103,7 @@ def run_and_log(cmd, fd):
     Run a command and log the output to fd
     """
     proc = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
-    while proc.poll() is None:
-        output, err = proc.communicate()
-        if output is not None:
-            fd.write(output)
+    output, err = proc.communicate()
+    if output is not None:
+        fd.write(output)
     return proc.returncode
