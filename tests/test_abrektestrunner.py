@@ -20,9 +20,13 @@ import unittest
 from datetime import datetime
 
 from abrek.testdef import AbrekTestRunner
+from imposters import OutputImposter
+from fixtures import TestCaseWithFixtures
 
+def makerunner(**kwargs):
+    return AbrekTestRunner(**kwargs)
 
-class testAbrekTestInstaller(unittest.TestCase):
+class testAbrekTestRunner(unittest.TestCase):
     def setUp(self):
         self.origdir = os.path.abspath(os.curdir)
         self.tmpdir = tempfile.mkdtemp()
@@ -33,33 +37,68 @@ class testAbrekTestInstaller(unittest.TestCase):
         os.chdir(self.origdir)
         shutil.rmtree(self.tmpdir)
 
-    def makerunner(self,**kwargs):
-        return AbrekTestRunner(**kwargs)
-
     def test_starttime(self):
-        runner = self.makerunner()
+        runner = makerunner()
         runner.run(self.tmpdir)
         self.assertTrue(isinstance(runner.starttime, datetime))
 
     def test_endtime(self):
-        runner = self.makerunner()
+        runner = makerunner()
         runner.run(self.tmpdir)
         self.assertTrue(isinstance(runner.endtime, datetime))
 
     def test_timediff(self):
         steps = ['sleep 2']
-        runner = self.makerunner(steps=steps)
+        runner = makerunner(steps=steps)
         runner.run(self.tmpdir)
         self.assertNotEqual(runner.starttime, runner.endtime)
 
     def test_runsteps(self):
         steps = ["echo test > foo"]
-        runner = self.makerunner(steps=steps)
+        runner = makerunner(steps=steps)
         runner._runsteps(self.tmpdir)
         self.assertTrue(os.path.exists("./foo"))
 
     def test_logoutput(self):
         steps = ["echo test > foo"]
-        runner = self.makerunner(steps=steps)
+        runner = makerunner(steps=steps)
         runner._runsteps(self.tmpdir)
         self.assertTrue(os.path.exists("./testoutput.log"))
+
+class testAbrekTestRunnerVerbosity(TestCaseWithFixtures):
+    def setUp(self):
+        super(testAbrekTestRunnerVerbosity, self).setUp()
+        self.origdir = os.path.abspath(os.curdir)
+        self.tmpdir = tempfile.mkdtemp()
+        self.filename = os.path.abspath(__file__)
+        os.chdir(self.tmpdir)
+        self.out = self.add_fixture(OutputImposter())
+
+    def tearDown(self):
+        super(testAbrekTestRunnerVerbosity, self).tearDown()
+        os.chdir(self.origdir)
+        shutil.rmtree(self.tmpdir)
+
+    def test_runsteps_quiet_true(self):
+        steps = ["echo test"]
+        runner = makerunner(steps=steps)
+        runner._runsteps(self.tmpdir, quiet=True)
+        self.assertEqual("", self.out.getvalue().strip())
+
+    def test_runsteps_quiet_false(self):
+        steps = ["echo test"]
+        runner = makerunner(steps=steps)
+        runner._runsteps(self.tmpdir, quiet=False)
+        self.assertEqual("test", self.out.getvalue().strip())
+
+    def test_run_quiet_true(self):
+        steps = ["echo test"]
+        runner = makerunner(steps=steps)
+        runner.run(self.tmpdir, quiet=True)
+        self.assertEqual("", self.out.getvalue().strip())
+
+    def test_run_quiet_false(self):
+        steps = ["echo test"]
+        runner = makerunner(steps=steps)
+        runner.run(self.tmpdir, quiet=False)
+        self.assertEqual("test", self.out.getvalue().strip())

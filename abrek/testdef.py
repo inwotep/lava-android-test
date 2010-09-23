@@ -25,7 +25,7 @@ from datetime import datetime
 from uuid import uuid1
 
 from abrek.config import get_config
-from abrek.utils import geturl, write_file
+from abrek.utils import Tee, geturl, run_and_log, write_file
 from abrek import hwprofile
 from abrek import swprofile
 
@@ -105,7 +105,7 @@ class AbrekTest(object):
         testdata['sw_context'] = sw
         write_file(json.dumps(testdata), filename)
 
-    def run(self):
+    def run(self, quiet=False):
         if not self.runner:
             raise RuntimeError("no test runner defined for '%s'" %
                                 self.testname)
@@ -114,7 +114,7 @@ class AbrekTest(object):
         self.resultsdir = os.path.join(self.config.resultsdir, resultname)
         os.makedirs(self.resultsdir)
         os.chdir(self.installdir)
-        self.runner.run(self.resultsdir)
+        self.runner.run(self.resultsdir, quiet=quiet)
         self._savetestdata()
 
     def parse(self, resultname):
@@ -200,16 +200,15 @@ class AbrekTestRunner(object):
         self.steps = steps
         self.testoutput = []
 
-    def _runsteps(self, resultsdir):
+    def _runsteps(self, resultsdir, quiet=False):
         outputlog = os.path.join(resultsdir, 'testoutput.log')
-        with open(outputlog, 'a') as fd:
+        with Tee(outputlog, 'a', quiet=quiet) as fd:
             for cmd in self.steps:
-                rc, output = getstatusoutput(cmd)
-                fd.write(output)
+                run_and_log(cmd, fd)
 
-    def run(self, resultsdir):
+    def run(self, resultsdir, quiet=False):
         self.starttime = datetime.utcnow()
-        self._runsteps(resultsdir)
+        self._runsteps(resultsdir, quiet=quiet)
         self.endtime = datetime.utcnow()
 
 

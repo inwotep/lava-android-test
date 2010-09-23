@@ -79,6 +79,8 @@ class cmd_run(abrek.command.AbrekCmd):
     Run tests
     """
     arglist = ['*testname']
+    options = [make_option('-q', '--quiet', action='store_true',
+        default=False, dest='quiet')]
 
     def run(self):
         if len(self.args) != 1:
@@ -86,7 +88,7 @@ class cmd_run(abrek.command.AbrekCmd):
             sys.exit(1)
         test = abrek.testdef.testloader(self.args[0])
         try:
-            test.run()
+            test.run(quiet=self.opts.quiet)
         except Exception as strerror:
             print "Test execution error: %s" % strerror
             sys.exit(1)
