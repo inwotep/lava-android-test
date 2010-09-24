@@ -95,8 +95,8 @@ def get_cpu_devs():
         for c in range(len(cpudevs)):
             device = {}
             device['device_type'] = 'device.cpu'
-            device['attributes'] = 'Processor #{0}'.format(c)
-            device['desc'] = cpudevs[c]
+            device['description'] = 'Processor #{0}'.format(c)
+            device['attributes'] = cpudevs[c]
             devices.append(device)
     except IOError:
         print >> sys.stderr, "WARNING: Could not read cpu information"
@@ -117,7 +117,7 @@ def get_board_devs():
             vendor = read_file('/sys/class/dmi/id/board_vendor') or None
             version = read_file('/sys/class/dmi/id/board_version') or None
             if name:
-                device['attributes'] = name.strip()
+                device['description'] = name.strip()
             if vendor:
                 desc['vendor'] = vendor.strip()
             if version:
@@ -140,7 +140,7 @@ def get_board_devs():
             return devices
     else:
         return devices
-    device['desc'] = desc
+    device['attributes'] = desc
     device['device_type'] = 'device.board'
     devices.append(device)
     return devices
@@ -169,8 +169,8 @@ def get_mem_devs():
             name = "{capacity}MiB of {kind}".format(
                 capacity=capacity >> 20, kind=kind)
             device = {}
-            device['attributes'] = name
-            device['desc'] = {'capacity': capacity, 'kind': kind}
+            device['description'] = name
+            device['attributes'] = {'capacity': capacity, 'kind': kind}
             device['device_type'] = "device.mem"
             devices.append(device)
     except IOError:
@@ -193,8 +193,8 @@ def get_usb_devs():
             device = {}
             desc['vendor_id'] = int(vendor_id, 16)
             desc['product_id'] = int(product_id, 16)
-            device['desc'] = desc
-            device['attributes'] = name
+            device['attributes'] = desc
+            device['description'] = name
             device['device_type'] = 'device.usb'
             devices.append(device)
     return devices

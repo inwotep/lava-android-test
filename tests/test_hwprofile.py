@@ -80,17 +80,17 @@ class HwprofileTests(unittest.TestCase):
         fake_file('/proc/cpuinfo', ARM_CPUINFO_FILE)
         devs = abrek.hwprofile.get_cpu_devs()
         processor = "ARMv7 Processor rev 3 (v7l)"
-        self.assertEqual(processor, devs[0]['desc']['Processor'])
+        self.assertEqual(processor, devs[0]['attributes']['Processor'])
 
     def test_get_board_devs(self):
         fake_file('/sys/class/dmi/id/board_name', FAKE_BOARDNAME_FILE)
         devs = abrek.hwprofile.get_board_devs()
-        self.assertEqual(FAKE_BOARDNAME_FILE, devs[0]['attributes'])
+        self.assertEqual(FAKE_BOARDNAME_FILE, devs[0]['description'])
 
     def test_get_mem_devs(self):
         fake_file('/proc/meminfo', FAKE_MEMINFO_FILE)
         devs = abrek.hwprofile.get_mem_devs()
-        self.assertEqual(243937280, devs[0]['desc']['capacity'])
+        self.assertEqual(243937280, devs[0]['attributes']['capacity'])
 
     def test_get_usb_devs(self):
         devs = abrek.hwprofile.get_usb_devs()
