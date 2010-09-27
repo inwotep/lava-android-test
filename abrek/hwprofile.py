@@ -95,8 +95,8 @@ def get_cpu_devs():
         for c in range(len(cpudevs)):
             device = {}
             device['device_type'] = 'device.cpu'
-            device['attributes'] = 'Processor #{0}'.format(c)
-            device['desc'] = cpudevs[c]
+            device['description'] = 'Processor #{0}'.format(c)
+            device['attributes'] = cpudevs[c]
             devices.append(device)
     except IOError:
         print >> sys.stderr, "WARNING: Could not read cpu information"
@@ -108,20 +108,20 @@ def get_board_devs():
     Return a list of board devices
     """
     devices = []
-    desc = {}
+    attributes = {}
     device = {}
     machine = os.uname()[-1]
     if machine in ('i686', 'x86_64'):
         try:
-            name = read_file('/sys/class/dmi/id/board_name') or None
+            description = read_file('/sys/class/dmi/id/board_name') or None
             vendor = read_file('/sys/class/dmi/id/board_vendor') or None
             version = read_file('/sys/class/dmi/id/board_version') or None
-            if name:
-                device['attributes'] = name.strip()
+            if description:
+                device['description'] = description.strip()
             if vendor:
-                desc['vendor'] = vendor.strip()
+                attributes['vendor'] = vendor.strip()
             if version:
-                desc['version'] = version.strip()
+                attributes['version'] = version.strip()
         except IOError:
             print >> sys.stderr, "WARNING: Could not read board information"
             return devices
@@ -134,13 +134,13 @@ def get_board_devs():
             match = pattern.search(cpuinfo)
             if match is None:
                 return devices
-            desc['hardware'] = match.group('hardware')
+            attributes['hardware'] = match.group('hardware')
         except IOError:
             print >> sys.stderr, "WARNING: Could not read board information"
             return devices
     else:
         return devices
-    device['desc'] = desc
+    device['attributes'] = attributes
     device['device_type'] = 'device.board'
     devices.append(device)
     return devices
@@ -166,11 +166,11 @@ def get_mem_devs():
                 kind = 'RAM'
             else:
                 kind = 'swap'
-            name = "{capacity}MiB of {kind}".format(
+            description = "{capacity}MiB of {kind}".format(
                 capacity=capacity >> 20, kind=kind)
             device = {}
-            device['attributes'] = name
-            device['desc'] = {'capacity': capacity, 'kind': kind}
+            device['description'] = description
+            device['attributes'] = {'capacity': capacity, 'kind': kind}
             device['device_type'] = "device.mem"
             devices.append(device)
     except IOError:
@@ -183,18 +183,18 @@ def get_usb_devs():
     """
     pattern = re.compile(
               "^Bus \d{3} Device \d{3}: ID (?P<vendor_id>[0-9a-f]{4}):"
-              "(?P<product_id>[0-9a-f]{4}) (?P<name>.*)$")
+              "(?P<product_id>[0-9a-f]{4}) (?P<description>.*)$")
     devices = []
     for line in commands.getoutput('lsusb').splitlines():
         match = pattern.match(line)
         if match:
-            vendor_id, product_id, name = match.groups()
-            desc = {}
+            vendor_id, product_id, description = match.groups()
+            attributes = {}
             device = {}
-            desc['vendor_id'] = int(vendor_id, 16)
-            desc['product_id'] = int(product_id, 16)
-            device['desc'] = desc
-            device['attributes'] = name
+            attributes['vendor_id'] = int(vendor_id, 16)
+            attributes['product_id'] = int(product_id, 16)
+            device['attributes'] = attributes
+            device['description'] = description
             device['device_type'] = 'device.usb'
             devices.append(device)
     return devices

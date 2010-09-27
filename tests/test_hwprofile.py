@@ -79,22 +79,54 @@ class HwprofileTests(unittest.TestCase):
     def test_get_cpu_devs(self):
         fake_file('/proc/cpuinfo', ARM_CPUINFO_FILE)
         devs = abrek.hwprofile.get_cpu_devs()
-        processor = "ARMv7 Processor rev 3 (v7l)"
-        self.assertEqual(processor, devs[0]['desc']['Processor'])
+        cpuinfo = {
+            'attributes': {
+                'CPU implementer': '0x41',
+                'Features': 'swp half thumb fastmult vfp edsp neon vfpv3*',
+                'CPU architecture': '7',
+                'BogoMIPS': '483.16',
+                'Hardware': 'OMAP3 Beagle Board',
+                'CPU revision': '3',
+                'CPU part': '0xc08',
+                'Serial': '0000000000000000',
+                'Processor': 'ARMv7 Processor rev 3 (v7l)',
+                'CPU variant': '0x1',
+                'Revision': '0020'},
+            'description': 'Processor #0',
+            'device_type': 'device.cpu'}
+        self.assertEqual(cpuinfo, devs[0])
 
     def test_get_board_devs(self):
         fake_file('/sys/class/dmi/id/board_name', FAKE_BOARDNAME_FILE)
         devs = abrek.hwprofile.get_board_devs()
-        self.assertEqual(FAKE_BOARDNAME_FILE, devs[0]['attributes'])
+        boardinfo = {
+            'attributes': {
+                'version': 'Not Available',
+                'vendor': 'LENOVO'},
+            'description': 'XXXXXXX',
+            'device_type': 'device.board'}
+        self.assertEqual(boardinfo, devs[0])
 
     def test_get_mem_devs(self):
         fake_file('/proc/meminfo', FAKE_MEMINFO_FILE)
         devs = abrek.hwprofile.get_mem_devs()
-        self.assertEqual(243937280, devs[0]['desc']['capacity'])
+        meminfo = {
+            'attributes': {
+                'kind': 'RAM',
+                'capacity': 243937280},
+            'description': '232MiB of RAM',
+            'device_type': 'device.mem'}
+        self.assertEqual(meminfo, devs[0])
 
     def test_get_usb_devs(self):
         devs = abrek.hwprofile.get_usb_devs()
-        self.assertEqual('device.usb', devs[0]['device_type'])
+        usbinfo = {
+            'attributes': {
+                'vendor_id': 7531,
+                'product_id': 1},
+            'description': 'Linux Foundation 1.1 root hub',
+            'device_type': 'device.usb'}
+        self.assertEqual(usbinfo, devs[0])
 
 
 class MissingFiles(TestCaseWithFixtures):
