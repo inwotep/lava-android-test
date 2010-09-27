@@ -108,7 +108,7 @@ def get_board_devs():
     Return a list of board devices
     """
     devices = []
-    desc = {}
+    attributes = {}
     device = {}
     machine = os.uname()[-1]
     if machine in ('i686', 'x86_64'):
@@ -119,9 +119,9 @@ def get_board_devs():
             if description:
                 device['description'] = description.strip()
             if vendor:
-                desc['vendor'] = vendor.strip()
+                attributes['vendor'] = vendor.strip()
             if version:
-                desc['version'] = version.strip()
+                attributes['version'] = version.strip()
         except IOError:
             print >> sys.stderr, "WARNING: Could not read board information"
             return devices
@@ -134,13 +134,13 @@ def get_board_devs():
             match = pattern.search(cpuinfo)
             if match is None:
                 return devices
-            desc['hardware'] = match.group('hardware')
+            attributes['hardware'] = match.group('hardware')
         except IOError:
             print >> sys.stderr, "WARNING: Could not read board information"
             return devices
     else:
         return devices
-    device['attributes'] = desc
+    device['attributes'] = attributes
     device['device_type'] = 'device.board'
     devices.append(device)
     return devices
