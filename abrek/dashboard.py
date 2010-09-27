@@ -14,6 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import base64
+import json
 import os
 import sys
 from ConfigParser import ConfigParser, NoOptionError
@@ -22,6 +23,7 @@ from optparse import make_option
 
 from abrek.command import AbrekCmd
 from abrek.config import get_config
+from abrek.testdef import testloader
 
 
 class DashboardConfig(object):
@@ -114,8 +116,41 @@ class subcmd_dashboard_setup(AbrekCmd):
         config.write()
 
 
+class subcmd_dashboard_bundle(AbrekCmd):
+    """
+    Print JSON output that can be imported into the dashboard
+    """
+    arglist = ["*result"]
+
+    def run(self):
+        if len(self.args) != 1:
+            print "You must specify a result"
+            sys.exit(1)
+        bundle = generate_bundle(self.args[0])
+        print json.dumps(bundle)
+
+
+def generate_bundle(result):
+    config = get_config()
+    resultdir = os.path.join(config.resultsdir,result)
+    if not os.path.exists(resultdir):
+        print "Result directory not found"
+        sys.exit(1)
+    testdatafile = os.path.join(resultdir,"testdata.json")
+    testdata = json.loads(file(testdatafile).read())
+    test = testloader(testdata['test_runs'][0]['test_id'])
+    try:
+        test.parse(result)
+    except Exception as strerror:
+        print "Test parse error: %s" % strerror
+        sys.exit(1)
+    testdata['test_runs'][0].update(test.parser.results)
+    return testdata
+
+
 class cmd_dashboard(AbrekCmd):
     """
     Connect to the Launch-control dashboard
     """
-    subcmds = {'setup':subcmd_dashboard_setup()}
+    subcmds = {'bundle':subcmd_dashboard_bundle(),
+               'setup':subcmd_dashboard_setup()}
