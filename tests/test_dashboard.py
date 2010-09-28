@@ -15,6 +15,7 @@
 
 import json
 import os
+from uuid import uuid1
 from abrek.dashboard import (DashboardConfig,
                              cmd_dashboard,
                              subcmd_dashboard_bundle,
@@ -71,10 +72,12 @@ class DashboardConfigOutputTests(TestCaseWithFixtures):
         self.out = self.add_fixture(OutputImposter())
 
     def test_dashboard_bundle_good(self):
+        cmd = subcmd_dashboard_bundle()
+        (testname, testuuid) = make_stream_result(self.config)
         expected_dict = {
             "test_runs": [{
             "analyzer_assigned_date": "2010-10-10T00:00:00Z",
-            "analyzer_assigned_uuid": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+            "analyzer_assigned_uuid": testuuid,
             "hw_context": {},
             "sw_context": {},
             "test_id": "stream",
@@ -105,10 +108,7 @@ class DashboardConfigOutputTests(TestCaseWithFixtures):
             "time_check_performed": False
              }]
         }
-
-        cmd = subcmd_dashboard_bundle()
-        make_stream_result(self.config)
-        cmd.main(argv=['stream000'])
+        cmd.main(argv=[testname])
         returned_dict = json.loads(self.out.getvalue())
         self.assertEqual(expected_dict, returned_dict)
 
@@ -117,17 +117,19 @@ def make_stream_result(config):
     """
     Make a fake set of test results for the stream test
     """
+    testname = "stream000"
+    testuuid = str(uuid1())
     testdata_data = """
 {"test_runs": [{
     "analyzer_assigned_date": "2010-10-10T00:00:00Z",
-    "analyzer_assigned_uuid": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+    "analyzer_assigned_uuid": "%s",
     "hw_context": {},
     "sw_context": {},
     "test_id": "stream",
     "time_check_performed": false
     }]
 }
-"""
+""" % testuuid
     testoutput_data = """
 Function      Rate (MB/s)   Avg time     Min time     Max time
 Copy:        1111.1111       0.0180       0.0112       0.0242
@@ -135,9 +137,10 @@ Scale:       2222.2222       0.0198       0.0122       0.0243
 Add:         3333.3333       0.0201       0.0176       0.0223
 Triad:       4444.4444       0.0197       0.0138       0.0223
 """
-    result_dir = os.path.join(config.resultsdir, "stream000")
+    result_dir = os.path.join(config.resultsdir, testname)
     os.makedirs(result_dir)
     with open(os.path.join(result_dir, "testdata.json"), "w") as fd:
         fd.write(testdata_data)
     with open(os.path.join(result_dir, "testoutput.log"), "w") as fd:
         fd.write(testoutput_data)
+    return (testname, testuuid)
