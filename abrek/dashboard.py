@@ -132,7 +132,7 @@ class subcmd_dashboard_bundle(AbrekCmd):
 
 def generate_bundle(result):
     config = get_config()
-    resultdir = os.path.join(config.resultsdir,result)
+    resultdir = os.path.join(config.resultsdir, result)
     if not os.path.exists(resultdir):
         print "Result directory not found"
         sys.exit(1)

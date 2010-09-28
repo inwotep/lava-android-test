@@ -112,6 +112,7 @@ class DashboardConfigOutputTests(TestCaseWithFixtures):
         returned_dict = json.loads(self.out.getvalue())
         self.assertEqual(expected_dict, returned_dict)
 
+
 def make_stream_result(config):
     """
     Make a fake set of test results for the stream test

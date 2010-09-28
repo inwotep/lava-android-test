@@ -47,8 +47,8 @@ class subcmd_results_show(AbrekCmd):
             print "please specify the name of the result dir"
             sys.exit(1)
         config = get_config()
-        resultsdir = os.path.join(config.resultsdir,self.args[0])
-        testoutput = os.path.join(resultsdir,"testoutput.log")
+        resultsdir = os.path.join(config.resultsdir, self.args[0])
+        testoutput = os.path.join(resultsdir, "testoutput.log")
         if not os.path.exists(testoutput):
             print "No result found for '%s'" % self.args[0]
             sys.exit(1)
@@ -67,7 +67,7 @@ class subcmd_results_remove(AbrekCmd):
             print "please specify the name of the result dir"
             sys.exit(1)
         config = get_config()
-        resultsdir = os.path.join(config.resultsdir,self.args[0])
+        resultsdir = os.path.join(config.resultsdir, self.args[0])
         if not os.path.exists(resultsdir):
             print "No result found for '%s'" % self.args[0]
             sys.exit(1)
@@ -90,8 +90,8 @@ class subcmd_results_rename(AbrekCmd):
             print "please specify the name of the result, and the new name"
             sys.exit(1)
         config = get_config()
-        srcdir = os.path.join(config.resultsdir,self.args[0])
-        destdir = os.path.join(config.resultsdir,self.args[1])
+        srcdir = os.path.join(config.resultsdir, self.args[0])
+        destdir = os.path.join(config.resultsdir, self.args[1])
         if not os.path.exists(srcdir):
             print "Result directory not found"
             sys.exit(1)
