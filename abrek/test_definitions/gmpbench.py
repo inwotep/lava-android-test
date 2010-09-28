@@ -17,7 +17,8 @@
    This script automates the automate installation, execution, and
    results parsing for the GMPbench test suite.
    The GMPbench test Suite is an open source test suite with the goal of
-   comparing different processor’s performance against eachother.
+   comparing different processors performance against eachother.
+
 """
 
 import re
