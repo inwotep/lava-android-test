@@ -21,7 +21,6 @@ from optparse import make_option
 import abrek.command
 import abrek.testdef
 from abrek.config import get_config
-from abrek.utils import read_file
 
 
 class cmd_version(abrek.command.AbrekCmd):
@@ -100,8 +99,8 @@ class cmd_parse(abrek.command.AbrekCmd):
             print "please specify the name of the result dir"
             sys.exit(1)
         config = abrek.config.AbrekConfig()
-        resultsdir = os.path.join(config.resultsdir,self.args[0])
-        testdatafile = os.path.join(resultsdir,"testdata.json")
+        resultsdir = os.path.join(config.resultsdir, self.args[0])
+        testdatafile = os.path.join(resultsdir, "testdata.json")
         testdata = json.loads(file(testdatafile,'r').read())
         test = abrek.testdef.testloader(testdata['test_id'])
         try:
