@@ -31,28 +31,17 @@ URL_gexpr="http://www.gmplib.org/gexpr.c"
 DEPS = ['libgmp3-dev', 'wget']
 
 INSTALLSTEPS = ['tar -xjf  gmpbench-0.2.tar.bz2',
-                    'wget -c %s' %(URL_gexpr),
-                    'mv gexpr.c gmpbench-0.2', 
-                    'cd gmpbench-0.2 && gcc -o gexpr gexpr.c  -static -lm']
+                'wget -c %s' %(URL_gexpr),
+                'mv gexpr.c gmpbench-0.2', 
+                'cd gmpbench-0.2 && gcc -o gexpr gexpr.c  -static -lm']
                        
 RUNSTEPS = ['cd  gmpbench-0.2 && PATH=$PATH:. ./runbench ']
-PATTERN = "\s*(?P<test_case_id>GMPbench\.*\w*\.*\w*):?\s*(?P<result>\d+.\d+)"
-
-class GMPParser(abrek.testdef.AbrekTestParser):
-    def parse(self):
-        filename = "testoutput.log"
-        pat = re.compile(self.pattern)
-        with open(filename) as fd:
-            for line in fd:
-                match = pat.match(line)
-                if match:
-                    results = match.groupdict()
-                    self.results['test_results'].append(results)
-
+PATTERN = "\s*(?P<test_case_id>GMPbench\.*\w*\.*\w*):?\s*"\
+          "(?P<measurement>\d+.\d+)"
 
 gmpbenchinst = abrek.testdef.AbrekTestInstaller(INSTALLSTEPS, deps=DEPS, 
                                                 url=URL)
 gmpbenchrun = abrek.testdef.AbrekTestRunner(RUNSTEPS)
-gmpbenchparser = GMPParser(PATTERN)
+gmpbenchparser = abrek.testdef.AbrekTestParser(PATTERN)
 testobj = abrek.testdef.AbrekTest(testname="gmpbench", installer=gmpbenchinst, 
                                   runner=gmpbenchrun, parser=gmpbenchparser)
