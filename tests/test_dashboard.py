@@ -13,8 +13,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import json
+import os
+from uuid import uuid1
 from abrek.dashboard import (DashboardConfig,
                              cmd_dashboard,
+                             subcmd_dashboard_bundle,
                              subcmd_dashboard_setup)
 from imposters import ConfigImposter, OutputImposter
 from fixtures import TestCaseWithFixtures
@@ -42,8 +46,101 @@ class DashboardOutputTests(TestCaseWithFixtures):
         super(DashboardOutputTests, self).setUp()
         self.out = self.add_fixture(OutputImposter())
 
-    def test_dashboard_noserver(self):
+    def test_dashboard_setup_noserver(self):
         errmsg = "You must specify a server"
         cmd = subcmd_dashboard_setup()
         self.assertRaises(SystemExit, cmd.main, argv=[])
         self.assertEqual(errmsg, self.out.getvalue().strip())
+
+    def test_dashboard_bundle_badresult(self):
+        errmsg = "Result directory not found"
+        cmd = subcmd_dashboard_bundle()
+        self.assertRaises(SystemExit, cmd.main, argv=['badresult'])
+        self.assertEqual(errmsg, self.out.getvalue().strip())
+
+    def test_dashboard_bundle_noresult(self):
+        errmsg = "You must specify a result"
+        cmd = subcmd_dashboard_bundle()
+        self.assertRaises(SystemExit, cmd.main, argv=[])
+        self.assertEqual(errmsg, self.out.getvalue().strip())
+
+
+class DashboardConfigOutputTests(TestCaseWithFixtures):
+    def setUp(self):
+        super(DashboardConfigOutputTests, self).setUp()
+        self.config = self.add_fixture(ConfigImposter())
+        self.out = self.add_fixture(OutputImposter())
+
+    def test_dashboard_bundle_good(self):
+        cmd = subcmd_dashboard_bundle()
+        (testname, testuuid) = make_stream_result(self.config)
+        expected_dict = {
+            "test_runs": [{
+            "analyzer_assigned_date": "2010-10-10T00:00:00Z",
+            "analyzer_assigned_uuid": testuuid,
+            "hw_context": {},
+            "sw_context": {},
+            "test_id": "stream",
+            "test_results": [{
+                    "measurement": "1111.1111",
+                    "result": "pass",
+                    "test_case_id": "Copy",
+                    "units": "MB/s"
+                },
+                {
+                    "measurement": "2222.2222",
+                    "result": "pass",
+                    "test_case_id": "Scale",
+                    "units": "MB/s"
+                },
+                {
+                    "measurement": "3333.3333",
+                    "result": "pass",
+                    "test_case_id": "Add",
+                    "units": "MB/s"
+                },
+                {
+                    "measurement": "4444.4444",
+                    "result": "pass",
+                    "test_case_id": "Triad",
+                    "units": "MB/s"
+                }],
+            "time_check_performed": False
+             }]
+        }
+        cmd.main(argv=[testname])
+        returned_dict = json.loads(self.out.getvalue())
+        self.assertEqual(expected_dict, returned_dict)
+
+
+def make_stream_result(config):
+    """
+    Make a fake set of test results for the stream test
+    """
+    testname = "stream000"
+    testuuid = str(uuid1())
+    testdata_data = """
+{"test_runs": [{
+    "analyzer_assigned_date": "2010-10-10T00:00:00Z",
+    "analyzer_assigned_uuid": "%s",
+    "hw_context": {},
+    "sw_context": {},
+    "test_id": "stream",
+    "time_check_performed": false
+    }]
+}
+""" % testuuid
+    testoutput_data = """
+Function      Rate (MB/s)   Avg time     Min time     Max time
+Copy:        1111.1111       0.0180       0.0112       0.0242
+Scale:       2222.2222       0.0198       0.0122       0.0243
+Add:         3333.3333       0.0201       0.0176       0.0223
+Triad:       4444.4444       0.0197       0.0138       0.0223
+"""
+    result_dir = os.path.join(config.resultsdir, testname)
+    os.makedirs(result_dir)
+    with open(os.path.join(result_dir, "testdata.json"), "w") as fd:
+        fd.write(testdata_data)
+    with open(os.path.join(result_dir, "testoutput.log"), "w") as fd:
+        fd.write(testoutput_data)
+    return (testname, testuuid)
