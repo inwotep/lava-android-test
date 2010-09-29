@@ -21,8 +21,6 @@
 
 """
 
-import re
-
 import abrek.testdef
 
 VERSION='0.2'
@@ -32,18 +30,16 @@ DEPS = ['libgmp3-dev', 'wget']
 
 INSTALLSTEPS = ['tar -xjf  gmpbench-0.2.tar.bz2',
                 'wget -c %s' %(URL_gexpr),
-                'mv gexpr.c gmpbench-0.2', 
+                'mv gexpr.c gmpbench-0.2',
                 'cd gmpbench-0.2 && gcc -o gexpr gexpr.c  -static -lm']
-                       
 RUNSTEPS = ['cd  gmpbench-0.2 && PATH=$PATH:. ./runbench ']
 PATTERN = "\s*(?P<test_case_id>GMPbench\.*\w*\.*\w*):?\s*"\
           "(?P<measurement>\d+.\d+)"
 
-gmpbenchinst = abrek.testdef.AbrekTestInstaller(INSTALLSTEPS, deps=DEPS, 
+gmpbenchinst = abrek.testdef.AbrekTestInstaller(INSTALLSTEPS, deps=DEPS,
                                                 url=URL)
 gmpbenchrun = abrek.testdef.AbrekTestRunner(RUNSTEPS)
-gmpbenchparser = abrek.testdef.AbrekTestParser(PATTERN, 
-                                               appendall={'units':'operations/s',
-                                               'result':'pass'})
-testobj = abrek.testdef.AbrekTest(testname="gmpbench", installer=gmpbenchinst, 
-                                  runner=gmpbenchrun, parser=gmpbenchparser)
+gmpbenchparser = abrek.testdef.AbrekTestParser(PATTERN,
+    appendall={'units':'operations/s', 'result':'pass'})
+testobj = abrek.testdef.AbrekTest(testname="gmpbench", installer=gmpbenchinst,
+    runner=gmpbenchrun, parser=gmpbenchparser)
