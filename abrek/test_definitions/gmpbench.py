@@ -42,6 +42,8 @@ PATTERN = "\s*(?P<test_case_id>GMPbench\.*\w*\.*\w*):?\s*"\
 gmpbenchinst = abrek.testdef.AbrekTestInstaller(INSTALLSTEPS, deps=DEPS, 
                                                 url=URL)
 gmpbenchrun = abrek.testdef.AbrekTestRunner(RUNSTEPS)
-gmpbenchparser = abrek.testdef.AbrekTestParser(PATTERN)
+gmpbenchparser = abrek.testdef.AbrekTestParser(PATTERN, 
+                                               appendall={'units':'operations/s',
+                                               'result':'pass'})
 testobj = abrek.testdef.AbrekTest(testname="gmpbench", installer=gmpbenchinst, 
                                   runner=gmpbenchrun, parser=gmpbenchparser)
