@@ -93,24 +93,6 @@ class cmd_run(abrek.command.AbrekCmd):
             sys.exit(1)
 
 
-class cmd_parse(abrek.command.AbrekCmd):
-    def run(self):
-        if len(self.args) != 1:
-            print "please specify the name of the result dir"
-            sys.exit(1)
-        config = abrek.config.AbrekConfig()
-        resultsdir = os.path.join(config.resultsdir, self.args[0])
-        testdatafile = os.path.join(resultsdir, "testdata.json")
-        testdata = json.loads(file(testdatafile,'r').read())
-        test = abrek.testdef.testloader(testdata['test_id'])
-        try:
-            test.parse(self.args[0])
-        except Exception as strerror:
-            print "Test parse error: %s" % strerror
-            sys.exit(1)
-        print test.parser.results
-
-
 class cmd_uninstall(abrek.command.AbrekCmd):
     """
     Uninstall a test
