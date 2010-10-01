@@ -27,7 +27,9 @@ class GtkTestParser(abrek.testdef.AbrekTestParser):
                     if match:
                         self.results['test_results'].append(match.groupdict())
 
-parse = GtkTestParser(appendall={'units':'seconds', 'result':'pass'})
+        self.appendtoall({'units':'seconds', 'result':'pass'})
+
+parse = GtkTestParser()
 inst = abrek.testdef.AbrekTestInstaller(deps=["gtkperf"])
 run = abrek.testdef.AbrekTestRunner(RUNSTEPS)
 
