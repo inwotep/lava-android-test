@@ -34,7 +34,6 @@ INTEL_VALMAP = {
     'model': int,
     'stepping': int,
     'cpu MHz': float,
-    'flags': lambda value: list(sorted(value.split())),
 }
 
 ARM_KEYMAP = {
@@ -53,7 +52,6 @@ ARM_VALMAP = {
     'CPU variant': lambda value: int(value, 16),
     'CPU part': lambda value: int(value, 16),
     'CPU revision': int,
-    'Features': lambda value: list(sorted(value.split()))
 }
 
 
