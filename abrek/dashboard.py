@@ -139,7 +139,8 @@ class subcmd_dashboard_put(AbrekCmd):
                 "dashboard setup [host]'"
             sys.exit(1)
         try:
-            result = server.put(json.dumps(bundle), "filename", self.args[0])
+            result = server.put(json.dumps(bundle, indent=2), "filename",
+                self.args[0])
             print "Bundle successfully uploaded to id: %s" % result
         except xmlrpclib.Fault as strerror:
             print "Error uploading bundle: %s" % strerror.faultString
