@@ -151,6 +151,9 @@ class subcmd_dashboard_put(AbrekCmd):
         except socket.error as strerror:
             print "Unable to connect to host: %s" % strerror
             sys.exit(1)
+        except xmlrpclib.ProtocolError as strerror:
+            print "Connection error: %s" % strerror
+            sys.exit(1)
 
 
 class subcmd_dashboard_bundle(AbrekCmd):
