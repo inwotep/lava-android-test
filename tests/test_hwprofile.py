@@ -40,6 +40,8 @@ Revision        : 0020
 Serial          : 0000000000000000"""
 
 FAKE_BOARDNAME_FILE = "XXXXXXX"
+FAKE_BOARDVENDOR_FILE = "YYYYYYY"
+FAKE_BOARDVERSION_FILE = "ZZZZZZZ"
 
 FAKE_MEMINFO_FILE = """MemTotal:         238220 kB
 MemFree:           45992 kB
@@ -98,11 +100,13 @@ class HwprofileTests(unittest.TestCase):
 
     def test_get_board_devs(self):
         fake_file('/sys/class/dmi/id/board_name', FAKE_BOARDNAME_FILE)
+        fake_file('/sys/class/dmi/id/board_vendor', FAKE_BOARDVENDOR_FILE)
+        fake_file('/sys/class/dmi/id/board_version', FAKE_BOARDVERSION_FILE)
         devs = abrek.hwprofile.get_board_devs()
         boardinfo = {
             'attributes': {
-                'version': 'Not Available',
-                'vendor': 'LENOVO'},
+                'version': 'ZZZZZZZ',
+                'vendor': 'YYYYYYY'},
             'description': 'XXXXXXX',
             'device_type': 'device.board'}
         self.assertEqual(boardinfo, devs[0])
