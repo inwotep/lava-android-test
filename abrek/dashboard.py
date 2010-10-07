@@ -127,7 +127,7 @@ class subcmd_dashboard_bundle(AbrekCmd):
             print "You must specify a result"
             sys.exit(1)
         bundle = generate_bundle(self.args[0])
-        print json.dumps(bundle)
+        print json.dumps(bundle, indent=2)
 
 
 def generate_bundle(result):
