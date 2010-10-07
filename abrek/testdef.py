@@ -106,7 +106,7 @@ class AbrekTest(object):
         sw = swprofile.get_sw_context()
         test_runs[0]['sw_context'] = sw
         testdata['test_runs'] = test_runs
-        write_file(json.dumps(testdata), filename)
+        write_file(json.dumps(testdata, indent=2), filename)
 
     def run(self, quiet=False):
         if not self.runner:
