@@ -24,14 +24,13 @@ import re
 import abrek.testdef
 
 VERSION="0.3.3"
-FILE_SIZE=1024
 URL="http://prdownloads.sourceforge.net/tiobench/tiobench-%s.tar.gz" %(VERSION)
 MD5="bf485bf820e693c79e6bd2a38702a128"
 INSTALLSTEPS = ['tar -zxvf tiobench-%s.tar.gz' % VERSION, 
                 'cd tiobench-%s && make' % VERSION]
 RUNSTEPS = ["cd tiobench-%s && "\
-            "./tiobench.pl --block=4096 --block=8192 --threads=10 "\
-            " --size=%s --numruns=2" % (VERSION, FILE_SIZE)]
+            "./tiobench.pl --block=4096 --block=8192 --threads=2 "\
+            "--numruns=2" % (VERSION)]
 
 
 class TIObenchTestParser(abrek.testdef.AbrekTestParser):
@@ -39,7 +38,7 @@ class TIObenchTestParser(abrek.testdef.AbrekTestParser):
         # Pattern to match the test case name
         pattern1="(?P<test_case_id>^(Sequential|Random) (Writes|Reads))"
         # Pattern to match the parameter details and measurement
-        pattern2="(?P<kernel>^(\d\.\d\.\d+\-\d+\-[a-z]+))\s+ .*? "\
+        pattern2="(?P<kernel>^(\d\.\d\.\d+\-\d+\-[a-z]+))\s+(?P<file_size>\d+)\s+"\
          "(?P<blks_size>\d+)\s+.*?  (?P<measurement>((\d|#)+\.?\d*))"
         filename = "testoutput.log"
         pat1 = re.compile(pattern1)
@@ -55,8 +54,9 @@ class TIObenchTestParser(abrek.testdef.AbrekTestParser):
                     results = match2.groupdict()
                     kernel = results.pop('kernel')
                     blks_size = results.pop('blks_size')
+                    filesize = results.pop('file_size')
                     test_id = ('%s_%s[kernel]_%s[filesize]_%s[blksize]') \
-                          % (test_case_id, kernel, FILE_SIZE, blks_size)
+                          % (test_case_id, kernel, filesize, blks_size)
                     results['test_case_id'] = test_id
                     self.results['test_results'].append(results)
         if self.appendall:
