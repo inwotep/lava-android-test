@@ -129,6 +129,16 @@ class PutConfigOutputTests(TestCaseWithFixtures):
         self.assertRaises(SystemExit, cmd.main, argv=args)
         self.assertEqual(errmsg, self.out.getvalue().strip())
 
+    def test_put_badhost(self):
+        testname, testuuid = make_stream_result(self.config)
+        host, user, passwd = setup_dashboard(host = "http://badhost.foo")
+        errmsg = "Unable to connect to host: [Errno -2] Name or service " \
+                "not known"
+        args = ["put", "somestream", testname]
+        cmd = cmd_dashboard()
+        self.assertRaises(SystemExit, cmd.main, argv=args)
+        self.assertEqual(errmsg, self.out.getvalue().strip())
+
 
 class PutOutputTests(TestCaseWithFixtures):
     def setUp(self):

@@ -16,6 +16,7 @@
 import base64
 import json
 import os
+import socket
 import sys
 import urllib
 import xmlrpclib
@@ -146,6 +147,9 @@ class subcmd_dashboard_put(AbrekCmd):
             print "Bundle successfully uploaded to id: %s" % result
         except xmlrpclib.Fault as strerror:
             print "Error uploading bundle: %s" % strerror.faultString
+            sys.exit(1)
+        except socket.error as strerror:
+            print "Unable to connect to host: %s" % strerror
             sys.exit(1)
 
 
