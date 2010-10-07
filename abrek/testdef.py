@@ -45,13 +45,11 @@ class AbrekTest(object):
     """
     def __init__(self, testname, version="", installer=None, runner=None,
                  parser=None):
-        self.config = get_config()
         self.testname = testname
         self.version = version
         self.installer = installer
         self.runner = runner
         self.parser = parser
-        self.installdir = os.path.join(self.config.installdir, self.testname)
         self.origdir = os.path.abspath(os.curdir)
 
     def install(self):
@@ -65,10 +63,12 @@ class AbrekTest(object):
         if not self.installer:
             raise RuntimeError("no installer defined for '%s'" %
                                 self.testname)
-        if os.path.exists(self.installdir):
+        config = get_config()
+        installdir = os.path.join(config.installdir, self.testname)
+        if os.path.exists(installdir):
             raise RuntimeError("%s is already installed" % self.testname)
-        os.makedirs(self.installdir)
-        os.chdir(self.installdir)
+        os.makedirs(installdir)
+        os.chdir(installdir)
         try:
             self.installer.install()
         except Exception as strerror:
@@ -86,7 +86,8 @@ class AbrekTest(object):
         not removed by this.
         """
         os.chdir(self.origdir)
-        path = os.path.join(self.config.installdir, self.testname)
+        config = get_config()
+        path = os.path.join(config.installdir, self.testname)
         if os.path.exists(path):
             shutil.rmtree(path)
 
@@ -106,17 +107,19 @@ class AbrekTest(object):
         sw = swprofile.get_sw_context()
         test_runs[0]['sw_context'] = sw
         testdata['test_runs'] = test_runs
-        write_file(json.dumps(testdata), filename)
+        write_file(json.dumps(testdata, indent=2), filename)
 
     def run(self, quiet=False):
         if not self.runner:
             raise RuntimeError("no test runner defined for '%s'" %
                                 self.testname)
+        config = get_config()
+        installdir = os.path.join(config.installdir, self.testname)
         resultname = (self.testname +
                      str(time.mktime(datetime.utcnow().timetuple())))
-        self.resultsdir = os.path.join(self.config.resultsdir, resultname)
+        self.resultsdir = os.path.join(config.resultsdir, resultname)
         os.makedirs(self.resultsdir)
-        os.chdir(self.installdir)
+        os.chdir(installdir)
         self.runner.run(self.resultsdir, quiet=quiet)
         self._savetestdata()
 
@@ -124,8 +127,9 @@ class AbrekTest(object):
         if not self.parser:
             raise RuntimeError("no test parser defined for '%s'" %
                                 self.testname)
-        self.resultsdir = os.path.join(self.config.resultsdir, resultname)
-        os.chdir(self.resultsdir)
+        config = get_config()
+        resultsdir = os.path.join(config.resultsdir, resultname)
+        os.chdir(resultsdir)
         self.parser.parse()
 
 
