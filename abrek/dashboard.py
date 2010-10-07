@@ -129,7 +129,9 @@ class subcmd_dashboard_put(AbrekCmd):
         if len(self.args) != 2:
             print "You must specify a stream and a result"
             sys.exit(1)
-        bundle = generate_bundle(self.args[1])
+        stream_name = self.args[0]
+        result_name = self.args[1]
+        bundle = generate_bundle(result_name)
         db_config = DashboardConfig()
         hosturl = urllib.basejoin(db_config.host, "xml-rpc/")
         try:
@@ -139,8 +141,8 @@ class subcmd_dashboard_put(AbrekCmd):
                 "dashboard setup [host]'"
             sys.exit(1)
         try:
-            result = server.put(json.dumps(bundle, indent=2), "filename",
-                self.args[0])
+            result = server.put(json.dumps(bundle, indent=2), result_name,
+                stream_name)
             print "Bundle successfully uploaded to id: %s" % result
         except xmlrpclib.Fault as strerror:
             print "Error uploading bundle: %s" % strerror.faultString
