@@ -16,7 +16,10 @@
 import base64
 import json
 import os
+import socket
 import sys
+import urllib
+import xmlrpclib
 from ConfigParser import ConfigParser, NoOptionError
 from getpass import getpass
 from optparse import make_option
@@ -116,6 +119,43 @@ class subcmd_dashboard_setup(AbrekCmd):
         config.write()
 
 
+class subcmd_dashboard_put(AbrekCmd):
+    """
+    Push the results from a test to the server
+    The stream name must include slashes (e.g. /anonymous/foo/)
+    """
+    arglist = ["*stream", "*result"]
+
+    def run(self):
+        if len(self.args) != 2:
+            print "You must specify a stream and a result"
+            sys.exit(1)
+        stream_name = self.args[0]
+        result_name = self.args[1]
+        bundle = generate_bundle(result_name)
+        db_config = DashboardConfig()
+        hosturl = urllib.basejoin(db_config.host, "xml-rpc/")
+        try:
+            server = xmlrpclib.Server(hosturl)
+        except IOError:
+            print "Error connecting to server, please run 'abrek " \
+                "dashboard setup [host]'"
+            sys.exit(1)
+        try:
+            result = server.put(json.dumps(bundle, indent=2), result_name,
+                stream_name)
+            print "Bundle successfully uploaded to id: %s" % result
+        except xmlrpclib.Fault as strerror:
+            print "Error uploading bundle: %s" % strerror.faultString
+            sys.exit(1)
+        except socket.error as strerror:
+            print "Unable to connect to host: %s" % strerror
+            sys.exit(1)
+        except xmlrpclib.ProtocolError as strerror:
+            print "Connection error: %s" % strerror
+            sys.exit(1)
+
+
 class subcmd_dashboard_bundle(AbrekCmd):
     """
     Print JSON output that can be imported into the dashboard
@@ -136,7 +176,7 @@ def generate_bundle(result):
     if not os.path.exists(resultdir):
         print "Result directory not found"
         sys.exit(1)
-    testdatafile = os.path.join(resultdir,"testdata.json")
+    testdatafile = os.path.join(resultdir, "testdata.json")
     testdata = json.loads(file(testdatafile).read())
     test = testloader(testdata['test_runs'][0]['test_id'])
     try:
@@ -153,4 +193,5 @@ class cmd_dashboard(AbrekCmd):
     Connect to the Launch-control dashboard
     """
     subcmds = {'bundle':subcmd_dashboard_bundle(),
+               'put':subcmd_dashboard_put(),
                'setup':subcmd_dashboard_setup()}

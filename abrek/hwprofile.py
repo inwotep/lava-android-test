@@ -128,17 +128,18 @@ def get_board_devs():
             cpuinfo = read_file("/proc/cpuinfo")
             if cpuinfo is None:
                 return devices
-            pattern = re.compile("^Hardware\s*:\s*(?P<hardware>.+)$", re.M)
+            pattern = re.compile("^Hardware\s*:\s*(?P<description>.+)$", re.M)
             match = pattern.search(cpuinfo)
             if match is None:
                 return devices
-            attributes['hardware'] = match.group('hardware')
+            device['description'] = match.group('description')
         except IOError:
             print >> sys.stderr, "WARNING: Could not read board information"
             return devices
     else:
         return devices
-    device['attributes'] = attributes
+    if attributes:
+        device['attributes'] = attributes
     device['device_type'] = 'device.board'
     devices.append(device)
     return devices

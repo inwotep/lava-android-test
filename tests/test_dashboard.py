@@ -24,26 +24,22 @@ from imposters import ConfigImposter, OutputImposter
 from fixtures import TestCaseWithFixtures
 
 
-class DashboardTests(TestCaseWithFixtures):
+class SetupTests(TestCaseWithFixtures):
     def setUp(self):
-        super(DashboardTests, self).setUp()
+        super(SetupTests, self).setUp()
         self.config = self.add_fixture(ConfigImposter())
 
     def test_dashboard_setup(self):
-        server = "foo"
-        user = "bar"
-        passwd = "baz"
-        args = ["setup", server, "-u", user, "-p", passwd]
-        cmd = cmd_dashboard()
-        cmd.main(argv=args)
+        host, user, passwd = setup_dashboard()
         conf = DashboardConfig()
-        self.assertEqual(server, conf.host)
+        self.assertEqual(host, conf.host)
         self.assertEqual(user, conf.user)
         self.assertEqual(passwd, conf.password)
 
-class DashboardOutputTests(TestCaseWithFixtures):
+
+class SetupOutputTests(TestCaseWithFixtures):
     def setUp(self):
-        super(DashboardOutputTests, self).setUp()
+        super(SetupOutputTests, self).setUp()
         self.out = self.add_fixture(OutputImposter())
 
     def test_dashboard_setup_noserver(self):
@@ -51,6 +47,12 @@ class DashboardOutputTests(TestCaseWithFixtures):
         cmd = subcmd_dashboard_setup()
         self.assertRaises(SystemExit, cmd.main, argv=[])
         self.assertEqual(errmsg, self.out.getvalue().strip())
+
+
+class BundleOutputTests(TestCaseWithFixtures):
+    def setUp(self):
+        super(BundleOutputTests, self).setUp()
+        self.out = self.add_fixture(OutputImposter())
 
     def test_dashboard_bundle_badresult(self):
         errmsg = "Result directory not found"
@@ -64,10 +66,9 @@ class DashboardOutputTests(TestCaseWithFixtures):
         self.assertRaises(SystemExit, cmd.main, argv=[])
         self.assertEqual(errmsg, self.out.getvalue().strip())
 
-
-class DashboardConfigOutputTests(TestCaseWithFixtures):
+class BundleConfigOutputTests(TestCaseWithFixtures):
     def setUp(self):
-        super(DashboardConfigOutputTests, self).setUp()
+        super(BundleConfigOutputTests, self).setUp()
         self.config = self.add_fixture(ConfigImposter())
         self.out = self.add_fixture(OutputImposter())
 
@@ -113,6 +114,44 @@ class DashboardConfigOutputTests(TestCaseWithFixtures):
         self.assertEqual(expected_dict, returned_dict)
 
 
+class PutConfigOutputTests(TestCaseWithFixtures):
+    def setUp(self):
+        super(PutConfigOutputTests, self).setUp()
+        self.config = self.add_fixture(ConfigImposter())
+        self.out = self.add_fixture(OutputImposter())
+
+    def test_put_nosetup(self):
+        testname, testuuid = make_stream_result(self.config)
+        errmsg = "Error connecting to server, please run 'abrek dashboard " \
+                "setup [host]'"
+        args = ["put", "somestream", testname]
+        cmd = cmd_dashboard()
+        self.assertRaises(SystemExit, cmd.main, argv=args)
+        self.assertEqual(errmsg, self.out.getvalue().strip())
+
+    def test_put_badhost(self):
+        testname, testuuid = make_stream_result(self.config)
+        host, user, passwd = setup_dashboard(host = "http://badhost.foo")
+        errmsg = "Unable to connect to host: [Errno -2] Name or service " \
+                "not known"
+        args = ["put", "somestream", testname]
+        cmd = cmd_dashboard()
+        self.assertRaises(SystemExit, cmd.main, argv=args)
+        self.assertEqual(errmsg, self.out.getvalue().strip())
+
+
+class PutOutputTests(TestCaseWithFixtures):
+    def setUp(self):
+        super(PutOutputTests, self).setUp()
+        self.out = self.add_fixture(OutputImposter())
+
+    def test_put_noargs(self):
+        errmsg = "You must specify a stream and a result"
+        cmd = cmd_dashboard()
+        self.assertRaises(SystemExit, cmd.main, argv=["put"])
+        self.assertEqual(errmsg, self.out.getvalue().strip())
+
+
 def make_stream_result(config):
     """
     Make a fake set of test results for the stream test
@@ -144,3 +183,9 @@ Triad:       4444.4444       0.0197       0.0138       0.0223
     with open(os.path.join(result_dir, "testoutput.log"), "w") as fd:
         fd.write(testoutput_data)
     return (testname, testuuid)
+
+def setup_dashboard(host="http://localhost:8080", user="foo", passwd="baz"):
+    args = ["setup", host, "-u", user, "-p", passwd]
+    cmd = cmd_dashboard()
+    cmd.main(argv=args)
+    return host, user, passwd
