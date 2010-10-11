@@ -53,27 +53,25 @@ class AbrekCmd(object):
     """
     options = []
     arglist = []
-    subcmds = {}
 
-    def __init__(self):
+    def __init__(self, name_prefix=''):
+        self._name_prefix = name_prefix
         self.parser = _AbrekOptionParser(usage=self._usage(),
                                          epilog=self._desc())
         for opt in self.options:
             self.parser.add_option(opt)
 
     def main(self, argv):
-        if len(argv) and argv[0] in self.subcmds.keys():
-            return self.subcmds[argv[0]].main(argv[1:])
-        else:
-            (self.opts, self.args) = self.parser.parse_args(argv)
-            return self.run()
+        (self.opts, self.args) = self.parser.parse_args(argv)
+        return self.run()
 
     def name(self):
-        return _convert_command_name(self.__class__.__name__)
+        return self._name_prefix + _convert_command_name(self.__class__.__name__)
 
     def run(self):
         raise NotImplementedError("%s: command defined but not implemented!" %
                                   self.name())
+
     def _usage(self):
         usagestr = "Usage: abrek %s" % self.name()
         for arg in self.arglist:
@@ -81,7 +79,6 @@ class AbrekCmd(object):
                 usagestr += " %s" % arg[1:].upper()
             else:
                 usagestr += " [%s]" % arg.upper()
-        usagestr += self._list_subcmds()
         return usagestr
 
     def _desc(self):
@@ -93,27 +90,68 @@ class AbrekCmd(object):
         description += docstr + "\n"
         return description
 
-    def _list_subcmds(self):
-        str = ""
-        if self.subcmds:
-            str = "\n\nSub-Commands:"
-            for cmd in self.subcmds.keys():
-                str += "\n  " + cmd
-        return str
-
     def help(self):
         #For some reason, format_help includes an extra \n
         return self.parser.format_help()[:-1]
+
+    def get_subcommand(self, name):
+        return None
+
+
+class AbrekCmdWithSubcommands(AbrekCmd):
+    def main(self, argv):
+        if not argv:
+            print "Missing subcommand." + self._list_subcmds()
+        else:
+            subcmd = self.get_subcommand(argv[0])
+            if subcmd is None:
+                # This line might print the help for one reason or another.
+                opts, args = self.parser.parse_args(argv)
+                # If it didn't, complain.
+                print args[0], 'not found as a sub-command of', self.name()
+            else:
+                subcmd.main(argv[1])
+
+    def get_subcommand(self, name):
+        subcmd_cls = getattr(self, 'cmd_' + name.replace('_', '-'), None)
+        if subcmd_cls is None:
+            return None
+        return subcmd_cls(self.name() + ' ')
+
+    def _usage(self):
+        usagestr = AbrekCmd._usage(self)
+        usagestr += self._list_subcmds()
+        return usagestr
+
+    def _list_subcmds(self):
+        subcmds = []
+        for attrname in self.__class__.__dict__.keys():
+            if attrname.startswith('cmd_'):
+                subcmds.append(_convert_command_name(attrname))
+        if not subcmds:
+            return ''
+        return "\n\nSub-Commands:\n  " + "\n  ".join(subcmds)
+
 
 def _convert_command_name(cmd):
     return cmd[4:].replace('_','-')
 
 def _find_commands(module):
     cmds = {}
+    # Iterate once to find the commands
     for name, func in module.__dict__.iteritems():
         if name.startswith("cmd_"):
             real_name = _convert_command_name(name)
-            cmds[real_name] = func
+            cmds[real_name] = func()
+    # Iterate again to register the subcommands.
+    for name, func in module.__dict__.iteritems():
+        if name.startswith("subcmd__"):
+            name = name[len("subcmd__"):]
+            parts = name.split('__')
+            if len(parts) != 2:
+                raise RuntimeError("XXX")
+            base_cmd = cmds[parts[0]]
+            base_cmd.subcmds[parts[1].replace('_', '-')] = func()
     return cmds
 
 def get_all_cmds():
@@ -126,6 +164,6 @@ def get_all_cmds():
 def get_command(cmd_name):
     cmds = get_all_cmds()
     try:
-        return cmds[cmd_name]()
+        return cmds[cmd_name]
     except KeyError:
         return None

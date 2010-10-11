@@ -13,12 +13,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import sys
 import abrek.command
 
 
 def main(argv):
-    origargv = argv
     argv = argv[1:]
     if not argv:
         argv = ['help']
@@ -27,9 +25,4 @@ def main(argv):
     if not cmd_func:
         print "command '%s' not found" % cmd
         return 1
-    main = cmd_func.main
-    try:
-        main(argv)
-    except NotImplementedError:
-        print >>sys.stderr, "Unknown usage '%s'" % " ".join(origargv)
-        print >>sys.stderr, "Use 'abrek help [cmd]' for help"
+    return cmd_func.main(argv)
