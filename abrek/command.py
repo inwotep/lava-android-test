@@ -141,6 +141,7 @@ class AbrekCmdWithSubcommands(AbrekCmd):
 def _convert_command_name(cmd):
     return cmd[4:].replace('_','-')
 
+
 def _find_commands(module):
     cmds = {}
     for name, func in module.__dict__.iteritems():
@@ -149,6 +150,7 @@ def _find_commands(module):
             cmds[real_name] = func()
     return cmds
 
+
 def get_all_cmds():
     from abrek import builtins, dashboard, results
     cmds = _find_commands(builtins)
@@ -156,9 +158,7 @@ def get_all_cmds():
     cmds.update(_find_commands(results))
     return cmds
 
+
 def get_command(cmd_name):
     cmds = get_all_cmds()
-    try:
-        return cmds[cmd_name]
-    except KeyError:
-        return None
+    return cmds.get(cmd_name)
