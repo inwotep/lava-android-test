@@ -99,16 +99,21 @@ class AbrekCmd(object):
 
 
 class AbrekCmdWithSubcommands(AbrekCmd):
+
+    arglist = ['subcommand']
+
     def main(self, argv):
         if not argv:
-            print "Missing subcommand." + self._list_subcmds()
+            print "Missing sub-command." + self._list_subcmds()
         else:
             subcmd = self.get_subcommand(argv[0])
             if subcmd is None:
-                # This line might print the help for one reason or another.
+                # This line might print the help and raise SystemExit if
+                # --help is passed or if an invalid option was passed.
                 opts, args = self.parser.parse_args(argv)
                 # If it didn't, complain.
-                print args[0], 'not found as a sub-command of', self.name()
+                print "'%s' not found as a sub-command of '%s'" % (
+                    args[0], self.name()) + self._list_subcmds()
             else:
                 return subcmd.main(argv[1:])
 
@@ -130,7 +135,7 @@ class AbrekCmdWithSubcommands(AbrekCmd):
                 subcmds.append(_convert_command_name(attrname))
         if not subcmds:
             return ''
-        return "\n\nSub-Commands:\n  " + "\n  ".join(subcmds)
+        return "\n\nAvailable sub-commands:\n  " + "\n  ".join(subcmds)
 
 
 def _convert_command_name(cmd):

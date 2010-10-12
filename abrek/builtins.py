@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import json
 import os
 import sys
 from optparse import make_option
@@ -38,7 +37,7 @@ class cmd_help(abrek.command.AbrekCmd):
     If the command name is ommited, calling the help command will return a
     list of valid commands.
     """
-    arglist = ['command']
+    arglist = ['command', 'subcommand']
     def run(self):
         if len(self.args) < 1:
             print "Available commands:"
