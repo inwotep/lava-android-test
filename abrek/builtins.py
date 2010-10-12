@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import json
 import os
 import sys
 from optparse import make_option
@@ -38,21 +37,30 @@ class cmd_help(abrek.command.AbrekCmd):
     If the command name is ommited, calling the help command will return a
     list of valid commands.
     """
-    arglist = ['command']
+    arglist = ['command', 'subcommand']
     def run(self):
-        if len(self.args) != 1:
+        if len(self.args) < 1:
             print "Available commands:"
             for cmd in abrek.command.get_all_cmds():
                 print "  %s" % cmd
             print
             print "To access extended help on a command use 'abrek help " \
                   "[command]'"
-        else:
-            cmd = abrek.command.get_command(self.args[0])
-            if cmd:
-                print cmd.help()
-            else:
-                print "No command found for '%s'" % self.args[0]
+            return
+        command_name = self.args.pop(0)
+        cmd = abrek.command.get_command(command_name)
+        if not cmd:
+            print "No command found for '%s'" % command_name
+            return
+        while self.args:
+            subcommand_name = self.args.pop(0)
+            cmd = cmd.get_subcommand(subcommand_name)
+            if not cmd:
+                print "No sub-command of '%s' found for '%s'" % (
+                    command_name, subcommand_name)
+                return
+            command_name += ' ' + subcommand_name
+        print cmd.help()
 
 
 class cmd_install(abrek.command.AbrekCmd):

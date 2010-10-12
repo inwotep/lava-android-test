@@ -15,7 +15,12 @@
 
 import unittest
 from optparse import make_option
-from abrek.command import AbrekCmd, get_command, get_all_cmds
+from abrek.command import (
+    AbrekCmd,
+    AbrekCmdWithSubcommands,
+    get_command,
+    get_all_cmds,
+    )
 
 
 class testAbrekCmd(unittest.TestCase):
@@ -72,40 +77,60 @@ class testAbrekCmd(unittest.TestCase):
         self.assertTrue(expected_str in cmd.help())
 
     def test_subcmds(self):
-        expected_str = 'Sub-Commands:\n  foo'
-        class subcmd_test(AbrekCmd):
-            pass
+        expected_str = 'Available sub-commands:\n  foo'
 
-        class cmd_test_subcmds(AbrekCmd):
-            subcmds = {'foo':subcmd_test()}
-            pass
+        class cmd_test_subcmds(AbrekCmdWithSubcommands):
+            """Help for test-subcmds."""
+            class cmd_foo(AbrekCmd):
+                pass
         cmd = cmd_test_subcmds()
-        self.assertTrue(expected_str in cmd.help())
+        self.assertTrue(
+            expected_str in cmd.help()
+            and 'Help for test-subcmds.' in cmd.help())
 
     def test_subcmds_run(self):
         expected_str = "subcmd test str"
-        class subcmd_test(AbrekCmd):
-            def run(self):
-                return expected_str
 
-        class cmd_test_subcmds(AbrekCmd):
-            subcmds = {'foo':subcmd_test()}
-            pass
+        class cmd_test_subcmds(AbrekCmdWithSubcommands):
+            class cmd_foo(AbrekCmd):
+                def run(self):
+                    return expected_str
         cmd = cmd_test_subcmds()
         argv = ['foo']
         self.assertEqual(expected_str, cmd.main(argv))
+
+    def test_subcmds_name(self):
+        expected_str = "subcmd test str"
+
+        class cmd_test_subcmds(AbrekCmdWithSubcommands):
+            class cmd_foo(AbrekCmd):
+                def run(self):
+                    return expected_str
+        cmd = cmd_test_subcmds().get_subcommand('foo')
+        self.assertEqual('test-subcmds foo', cmd.name())
+
+    def test_subcmds_help(self):
+        expected_str = "subcmd test str"
+
+        class cmd_test_subcmds(AbrekCmdWithSubcommands):
+            class cmd_foo(AbrekCmd):
+                """Help for foo."""
+                def run(self):
+                    return expected_str
+        cmd = cmd_test_subcmds().get_subcommand('foo')
+        self.assertTrue(
+            'test-subcmds foo' in cmd.help()
+            and 'Help for foo.' in cmd.help())
 
     def test_subcmd_strip_argv(self):
         """
         Make sure that the argv list is stripped after calling the subcmd
         """
-        class subcmd_test(AbrekCmd):
-            def main(self, argv):
-                return len(argv)
 
-        class cmd_test_subcmds(AbrekCmd):
-            subcmds = {'foo':subcmd_test()}
-            pass
+        class cmd_test_subcmds(AbrekCmdWithSubcommands):
+            class cmd_foo(AbrekCmd):
+                def main(self, argv):
+                    return len(argv)
         cmd = cmd_test_subcmds()
         argv = ['foo']
         self.assertEqual(0, cmd.main(argv))

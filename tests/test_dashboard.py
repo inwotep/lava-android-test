@@ -16,10 +16,10 @@
 import json
 import os
 from uuid import uuid1
-from abrek.dashboard import (DashboardConfig,
-                             cmd_dashboard,
-                             subcmd_dashboard_bundle,
-                             subcmd_dashboard_setup)
+from abrek.dashboard import (
+    DashboardConfig,
+    cmd_dashboard,
+    )
 from imposters import ConfigImposter, OutputImposter
 from fixtures import TestCaseWithFixtures
 
@@ -44,7 +44,7 @@ class SetupOutputTests(TestCaseWithFixtures):
 
     def test_dashboard_setup_noserver(self):
         errmsg = "You must specify a server"
-        cmd = subcmd_dashboard_setup()
+        cmd = cmd_dashboard.cmd_setup()
         self.assertRaises(SystemExit, cmd.main, argv=[])
         self.assertEqual(errmsg, self.out.getvalue().strip())
 
@@ -56,13 +56,13 @@ class BundleOutputTests(TestCaseWithFixtures):
 
     def test_dashboard_bundle_badresult(self):
         errmsg = "Result directory not found"
-        cmd = subcmd_dashboard_bundle()
+        cmd = cmd_dashboard.cmd_bundle()
         self.assertRaises(SystemExit, cmd.main, argv=['badresult'])
         self.assertEqual(errmsg, self.out.getvalue().strip())
 
     def test_dashboard_bundle_noresult(self):
         errmsg = "You must specify a result"
-        cmd = subcmd_dashboard_bundle()
+        cmd = cmd_dashboard.cmd_bundle()
         self.assertRaises(SystemExit, cmd.main, argv=[])
         self.assertEqual(errmsg, self.out.getvalue().strip())
 
@@ -73,7 +73,7 @@ class BundleConfigOutputTests(TestCaseWithFixtures):
         self.out = self.add_fixture(OutputImposter())
 
     def test_dashboard_bundle_good(self):
-        cmd = subcmd_dashboard_bundle()
+        cmd = cmd_dashboard.cmd_bundle()
         (testname, testuuid) = make_stream_result(self.config)
         expected_dict = {
             "test_runs": [{

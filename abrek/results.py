@@ -18,94 +18,91 @@ import shutil
 import sys
 from optparse import make_option
 
-from abrek.command import AbrekCmd
+from abrek.command import AbrekCmd, AbrekCmdWithSubcommands
 from abrek.config import get_config
 from abrek.utils import read_file
 
 
-class subcmd_results_list(AbrekCmd):
-    """
-    List results of previous runs
-    """
-    def run(self):
-        config = get_config()
-        print "Saved results:"
-        try:
-            for dir in os.listdir(config.resultsdir):
-                print dir
-        except OSError:
-            print "No results found"
-
-
-class subcmd_results_show(AbrekCmd):
-    """
-    Display the output from a previous test run
-    """
-    arglist = ['*result']
-    def run(self):
-        if len(self.args) != 1:
-            print "please specify the name of the result dir"
-            sys.exit(1)
-        config = get_config()
-        resultsdir = os.path.join(config.resultsdir, self.args[0])
-        testoutput = os.path.join(resultsdir, "testoutput.log")
-        if not os.path.exists(testoutput):
-            print "No result found for '%s'" % self.args[0]
-            sys.exit(1)
-        print(read_file(testoutput))
-
-
-class subcmd_results_remove(AbrekCmd):
-    """
-    Remove the results of a previous test run
-    """
-    arglist = ['*result']
-    options = [make_option('-f', '--force', action='store_true',
-                           dest='force')]
-    def run(self):
-        if len(self.args) != 1:
-            print "please specify the name of the result dir"
-            sys.exit(1)
-        config = get_config()
-        resultsdir = os.path.join(config.resultsdir, self.args[0])
-        if not os.path.exists(resultsdir):
-            print "No result found for '%s'" % self.args[0]
-            sys.exit(1)
-        if not self.opts.force:
-            print "Delete result '%s' for good? [Y/N]" % self.args[0],
-            response = raw_input()
-            if response[0].upper() != 'Y':
-                sys.exit(0)
-        shutil.rmtree(resultsdir)
-
-
-class subcmd_results_rename(AbrekCmd):
-    """
-    Rename the results from a previous test run
-    """
-    arglist = ['*source', '*destination']
-
-    def run(self):
-        if len(self.args) != 2:
-            print "please specify the name of the result, and the new name"
-            sys.exit(1)
-        config = get_config()
-        srcdir = os.path.join(config.resultsdir, self.args[0])
-        destdir = os.path.join(config.resultsdir, self.args[1])
-        if not os.path.exists(srcdir):
-            print "Result directory not found"
-            sys.exit(1)
-        if os.path.exists(destdir):
-            print "Destination result name already exists"
-            sys.exit(1)
-        shutil.move(srcdir, destdir)
-
-
-class cmd_results(AbrekCmd):
+class cmd_results(AbrekCmdWithSubcommands):
     """
     Operate on results of previous test runs stored locally
     """
-    subcmds = {'list':subcmd_results_list(),
-               'rm':subcmd_results_remove(),
-               'rename':subcmd_results_rename(),
-               'show':subcmd_results_show()}
+
+    class cmd_list(AbrekCmd):
+        """
+        List results of previous runs
+        """
+        def run(self):
+            config = get_config()
+            print "Saved results:"
+            try:
+                for dir in os.listdir(config.resultsdir):
+                    print dir
+            except OSError:
+                print "No results found"
+
+
+    class cmd_show(AbrekCmd):
+        """
+        Display the output from a previous test run
+        """
+        arglist = ['*result']
+        def run(self):
+            if len(self.args) != 1:
+                print "please specify the name of the result dir"
+                sys.exit(1)
+            config = get_config()
+            resultsdir = os.path.join(config.resultsdir, self.args[0])
+            testoutput = os.path.join(resultsdir, "testoutput.log")
+            if not os.path.exists(testoutput):
+                print "No result found for '%s'" % self.args[0]
+                sys.exit(1)
+            print(read_file(testoutput))
+
+
+    class cmd_remove(AbrekCmd):
+        """
+        Remove the results of a previous test run
+        """
+        arglist = ['*result']
+        options = [make_option('-f', '--force', action='store_true',
+                               dest='force')]
+        def run(self):
+            if len(self.args) != 1:
+                print "please specify the name of the result dir"
+                sys.exit(1)
+            config = get_config()
+            resultsdir = os.path.join(config.resultsdir, self.args[0])
+            if not os.path.exists(resultsdir):
+                print "No result found for '%s'" % self.args[0]
+                sys.exit(1)
+            if not self.opts.force:
+                print "Delete result '%s' for good? [Y/N]" % self.args[0],
+                response = raw_input()
+                if response[0].upper() != 'Y':
+                    sys.exit(0)
+            shutil.rmtree(resultsdir)
+
+
+    class cmd_rename(AbrekCmd):
+        """
+        Rename the results from a previous test run
+        """
+        arglist = ['*source', '*destination']
+
+        def run(self):
+            if len(self.args) != 2:
+                print "please specify the name of the result, and the new name"
+                sys.exit(1)
+            config = get_config()
+            srcdir = os.path.join(config.resultsdir, self.args[0])
+            destdir = os.path.join(config.resultsdir, self.args[1])
+            if not os.path.exists(srcdir):
+                print "Result directory not found"
+                sys.exit(1)
+            if os.path.exists(destdir):
+                print "Destination result name already exists"
+                sys.exit(1)
+            shutil.move(srcdir, destdir)
+
+

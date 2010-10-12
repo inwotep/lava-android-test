@@ -36,3 +36,31 @@ class ListInstalled(TestCaseWithFixtures):
         cmd = abrek.builtins.cmd_list_installed()
         cmd.run()
         self.assertTrue(test_name in out.getvalue())
+
+class TestHelp(TestCaseWithFixtures):
+
+    def test_command_help(self):
+        out = self.add_fixture(OutputImposter())
+        abrek.builtins.cmd_help().main(['results'])
+        self.assertEqual(
+            abrek.results.cmd_results().help() + '\n', out.getvalue())
+
+    def test_subcommand_help(self):
+        out = self.add_fixture(OutputImposter())
+        abrek.builtins.cmd_help().main(['results', 'list'])
+        self.assertEqual(
+            abrek.results.cmd_results().get_subcommand('list').help() + '\n',
+            out.getvalue())
+
+    def test_bad_command(self):
+        out = self.add_fixture(OutputImposter())
+        abrek.builtins.cmd_help().main(['foo'])
+        self.assertEqual(
+            "No command found for 'foo'\n", out.getvalue())
+
+    def test_bad_subcommand(self):
+        out = self.add_fixture(OutputImposter())
+        abrek.builtins.cmd_help().main(['results', 'foo'])
+        self.assertEqual(
+            "No sub-command of 'results' found for 'foo'\n",
+            out.getvalue())

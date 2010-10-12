@@ -24,7 +24,7 @@ from ConfigParser import ConfigParser, NoOptionError
 from getpass import getpass
 from optparse import make_option
 
-from abrek.command import AbrekCmd
+from abrek.command import AbrekCmd, AbrekCmdWithSubcommands
 from abrek.config import get_config
 from abrek.testdef import testloader
 
@@ -92,82 +92,87 @@ class DashboardConfig(object):
             self.dashboardconf.write(fd)
 
 
-class subcmd_dashboard_setup(AbrekCmd):
+class cmd_dashboard(AbrekCmdWithSubcommands):
     """
-    Configure information needed to push results to the dashboard
+    Connect to the Launch-control dashboard
     """
-    options = [make_option("-u", "--user", dest="user"),
-               make_option("-p", "--password", dest="password")]
-    arglist = ["*server"]
 
-    def run(self):
-        if len(self.args) != 1:
-            print "You must specify a server"
-            sys.exit(1)
-        config = DashboardConfig()
-        if self.opts.user:
-            user = self.opts.user
-        else:
-            user = raw_input("Username: ")
-        if self.opts.password:
-            password = self.opts.password
-        else:
-            password = getpass()
-        config.host = self.args[0]
-        config.user = user
-        config.password = password
-        config.write()
+    class cmd_setup(AbrekCmd):
+        """
+        Configure information needed to push results to the dashboard
+        """
+        options = [make_option("-u", "--user", dest="user"),
+                   make_option("-p", "--password", dest="password")]
+        arglist = ["*server"]
 
-
-class subcmd_dashboard_put(AbrekCmd):
-    """
-    Push the results from a test to the server
-    The stream name must include slashes (e.g. /anonymous/foo/)
-    """
-    arglist = ["*stream", "*result"]
-
-    def run(self):
-        if len(self.args) != 2:
-            print "You must specify a stream and a result"
-            sys.exit(1)
-        stream_name = self.args[0]
-        result_name = self.args[1]
-        bundle = generate_bundle(result_name)
-        db_config = DashboardConfig()
-        hosturl = urllib.basejoin(db_config.host, "xml-rpc/")
-        try:
-            server = xmlrpclib.Server(hosturl)
-        except IOError:
-            print "Error connecting to server, please run 'abrek " \
-                "dashboard setup [host]'"
-            sys.exit(1)
-        try:
-            result = server.put(json.dumps(bundle, indent=2), result_name,
-                stream_name)
-            print "Bundle successfully uploaded to id: %s" % result
-        except xmlrpclib.Fault as strerror:
-            print "Error uploading bundle: %s" % strerror.faultString
-            sys.exit(1)
-        except socket.error as strerror:
-            print "Unable to connect to host: %s" % strerror
-            sys.exit(1)
-        except xmlrpclib.ProtocolError as strerror:
-            print "Connection error: %s" % strerror
-            sys.exit(1)
+        def run(self):
+            if len(self.args) != 1:
+                print "You must specify a server"
+                sys.exit(1)
+            config = DashboardConfig()
+            if self.opts.user:
+                user = self.opts.user
+            else:
+                user = raw_input("Username: ")
+            if self.opts.password:
+                password = self.opts.password
+            else:
+                password = getpass()
+            config.host = self.args[0]
+            config.user = user
+            config.password = password
+            config.write()
 
 
-class subcmd_dashboard_bundle(AbrekCmd):
-    """
-    Print JSON output that can be imported into the dashboard
-    """
-    arglist = ["*result"]
+    class cmd_put(AbrekCmd):
+        """
+        Push the results from a test to the server
+        The stream name must include slashes (e.g. /anonymous/foo/)
+        """
+        arglist = ["*stream", "*result"]
 
-    def run(self):
-        if len(self.args) != 1:
-            print "You must specify a result"
-            sys.exit(1)
-        bundle = generate_bundle(self.args[0])
-        print json.dumps(bundle, indent=2)
+        def run(self):
+            if len(self.args) != 2:
+                print "You must specify a stream and a result"
+                sys.exit(1)
+            stream_name = self.args[0]
+            result_name = self.args[1]
+            bundle = generate_bundle(result_name)
+            db_config = DashboardConfig()
+            hosturl = urllib.basejoin(db_config.host, "xml-rpc/")
+            try:
+                server = xmlrpclib.Server(hosturl)
+            except IOError:
+                print "Error connecting to server, please run 'abrek " \
+                    "dashboard setup [host]'"
+                sys.exit(1)
+            try:
+                result = server.put(json.dumps(bundle, indent=2), result_name,
+                    stream_name)
+                print "Bundle successfully uploaded to id: %s" % result
+            except xmlrpclib.Fault as strerror:
+                print "Error uploading bundle: %s" % strerror.faultString
+                sys.exit(1)
+            except socket.error as strerror:
+                print "Unable to connect to host: %s" % strerror
+                sys.exit(1)
+            except xmlrpclib.ProtocolError as strerror:
+                print "Connection error: %s" % strerror
+                sys.exit(1)
+
+
+    class cmd_bundle(AbrekCmd):
+        """
+        Print JSON output that can be imported into the dashboard
+        """
+        arglist = ["*result"]
+
+        def run(self):
+            if len(self.args) != 1:
+                print "You must specify a result"
+                sys.exit(1)
+            bundle = generate_bundle(self.args[0])
+            print json.dumps(bundle, indent=2)
 
 
 def generate_bundle(result):
@@ -188,10 +193,3 @@ def generate_bundle(result):
     return testdata
 
 
-class cmd_dashboard(AbrekCmd):
-    """
-    Connect to the Launch-control dashboard
-    """
-    subcmds = {'bundle':subcmd_dashboard_bundle(),
-               'put':subcmd_dashboard_put(),
-               'setup':subcmd_dashboard_setup()}
