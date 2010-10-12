@@ -110,7 +110,7 @@ class AbrekCmdWithSubcommands(AbrekCmd):
                 # If it didn't, complain.
                 print args[0], 'not found as a sub-command of', self.name()
             else:
-                subcmd.main(argv[1:])
+                return subcmd.main(argv[1:])
 
     def get_subcommand(self, name):
         subcmd_cls = getattr(self, 'cmd_' + name.replace('_', '-'), None)
