@@ -138,20 +138,10 @@ def _convert_command_name(cmd):
 
 def _find_commands(module):
     cmds = {}
-    # Iterate once to find the commands
     for name, func in module.__dict__.iteritems():
         if name.startswith("cmd_"):
             real_name = _convert_command_name(name)
             cmds[real_name] = func()
-    # Iterate again to register the subcommands.
-    for name, func in module.__dict__.iteritems():
-        if name.startswith("subcmd__"):
-            name = name[len("subcmd__"):]
-            parts = name.split('__')
-            if len(parts) != 2:
-                raise RuntimeError("XXX")
-            base_cmd = cmds[parts[0]]
-            base_cmd.subcmds[parts[1].replace('_', '-')] = func()
     return cmds
 
 def get_all_cmds():
