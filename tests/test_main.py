@@ -26,7 +26,7 @@ class testMain(TestCaseWithFixtures):
     def test_bad_subcmd(self):
         # Running a subcommand that does not exist of a command that does
         # gives a nice error message.
-        errmsg = "foo not found as a sub-command of results\n"
+        errmsg = "'foo' not found as a sub-command of 'results'"
         main(['./abrek', 'results', 'foo'])
-        self.assertEqual(errmsg, self.out.getvalue())
+        self.assertEqual(errmsg, self.out.getvalue().splitlines()[0])
 

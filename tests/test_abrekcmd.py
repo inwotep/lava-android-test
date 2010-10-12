@@ -77,7 +77,7 @@ class testAbrekCmd(unittest.TestCase):
         self.assertTrue(expected_str in cmd.help())
 
     def test_subcmds(self):
-        expected_str = 'Sub-Commands:\n  foo'
+        expected_str = 'Available sub-commands:\n  foo'
 
         class cmd_test_subcmds(AbrekCmdWithSubcommands):
             class cmd_foo(AbrekCmd):
