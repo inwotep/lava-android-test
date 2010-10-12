@@ -13,10 +13,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import commands
 import os
 import re
 import sys
+from subprocess import Popen, PIPE
 from utils import read_file
 
 INTEL_KEYMAP = {
@@ -184,7 +184,7 @@ def get_usb_devs():
               "^Bus \d{3} Device \d{3}: ID (?P<vendor_id>[0-9a-f]{4}):"
               "(?P<product_id>[0-9a-f]{4}) (?P<description>.*)$")
     devices = []
-    for line in commands.getoutput('lsusb').splitlines():
+    for line in Popen('lsusb', stdout=PIPE).communicate()[0].splitlines():
         match = pattern.match(line)
         if match:
             vendor_id, product_id, description = match.groups()

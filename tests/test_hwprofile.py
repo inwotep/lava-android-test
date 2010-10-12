@@ -124,13 +124,7 @@ class HwprofileTests(unittest.TestCase):
 
     def test_get_usb_devs(self):
         devs = abrek.hwprofile.get_usb_devs()
-        usbinfo = {
-            'attributes': {
-                'vendor_id': 7531,
-                'product_id': 1},
-            'description': 'Linux Foundation 1.1 root hub',
-            'device_type': 'device.usb'}
-        self.assertEqual(usbinfo, devs[0])
+        self.assertEqual('device.usb', devs[0]['device_type'])
 
 
 class MissingFiles(TestCaseWithFixtures):
