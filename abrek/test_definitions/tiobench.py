@@ -36,29 +36,28 @@ RUNSTEPS = ["cd tiobench-%s && "\
 class TIObenchTestParser(abrek.testdef.AbrekTestParser):
     def parse(self):
         # Pattern to match the test case name
-        pattern1="(?P<test_case_id>^(Sequential|Random) (Writes|Reads))"
+        pattern1="(?P<test_id>^(Sequential|Random) (Writes|Reads))"
         # Pattern to match the parameter details and measurement
-        pattern2="(?P<kernel>^(\d\.\d\.\d+\-\d+\-[a-z]+))\s+(?P<file_size>\d+)\s+"\
-         "(?P<blks_size>\d+)\s+.*?  (?P<measurement>((\d|#)+\.?\d*))"
+        pattern2=".*?(?P<file_size>\d+)\s+(?P<blks_size>\d+)\s+.*?  "\
+                 "(?P<measurement>((\d|#)+\.?\d*))"
         filename = "testoutput.log"
         pat1 = re.compile(pattern1)
         pat2 = re.compile(pattern2)
-        test_case_id = None
+        tc_id = None
         with open(filename) as fd:
             for line in fd:
                 match1 = pat1.match(line)
                 match2 = pat2.search(line)
                 if match1:
-                    test_case_id = match1.group('test_case_id').replace(" ", "")
-                if match2 and test_case_id != None:
+                    tc_id = match1.group('test_id').replace(" ", "")
+                if match2 and tc_id != None:
                     results = match2.groupdict()
-                    kernel = results.pop('kernel')
                     blks_size = results.pop('blks_size')
                     filesize = results.pop('file_size')
-                    test_id = ('%s_%s[kernel]_%s[filesize]_%s[blksize]') \
-                          % (test_case_id, kernel, filesize, blks_size)
-                    results['test_case_id'] = test_id
+                    results['test_case_id'] = ('%s_%sMBfilesize_%sbytesblksize') \
+                                              % (tc_id, filesize, blks_size)
                     self.results['test_results'].append(results)
+
         if self.appendall:
             self.appendtoall(self.appendall)
 
