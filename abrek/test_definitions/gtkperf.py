@@ -36,6 +36,7 @@ class GtkTestParser(abrek.testdef.AbrekTestParser):
                     d['test_case_id'] = "%s.%s" % (d['test_case_id'],
                         d['subtest'])
                     d.pop('subtest')
+                    d['test_case_id'] = d['test_case_id'].replace(" ", "_")
                     self.results['test_results'].append(d)
                 else:
                     match = pat2.search(line)
