@@ -19,7 +19,7 @@ import abrek.testdef
 # Run tests automatically, 500 repetitions each
 gtkperf_options = "-a -c 500"
 
-RUNSTEPS = ["gtkperf %s" % gtkperf_options]
+RUNSTEPS = ["LANG=C gtkperf %s" % gtkperf_options]
 
 class GtkTestParser(abrek.testdef.AbrekTestParser):
     def parse(self):
