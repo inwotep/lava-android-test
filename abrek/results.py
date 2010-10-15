@@ -57,7 +57,10 @@ class cmd_results(AbrekCmdWithSubcommands):
             if not os.path.exists(testoutput):
                 print "No result found for '%s'" % self.args[0]
                 sys.exit(1)
-            print(read_file(testoutput))
+            try:
+                print(read_file(testoutput))
+            except IOError:
+                pass
 
 
     class cmd_remove(AbrekCmd):
