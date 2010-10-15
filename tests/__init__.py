@@ -17,6 +17,7 @@ import unittest
 
 def test_suite():
     module_names = ['tests.test_abrekcmd',
+                    'tests.test_abrektest',
                     'tests.test_abrektestinstaller',
                     'tests.test_abrektestparser',
                     'tests.test_abrektestrunner',
