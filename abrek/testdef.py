@@ -75,6 +75,8 @@ class AbrekTest(object):
             self.uninstall()
             raise RuntimeError("An error was detected during",
                 "installation, cleaning up: %s" % strerror)
+        finally:
+            os.chdir(self.origdir)
 
     def uninstall(self):
         """Uninstall the test suite.
@@ -122,6 +124,9 @@ class AbrekTest(object):
         os.chdir(installdir)
         self.runner.run(self.resultsdir, quiet=quiet)
         self._savetestdata()
+        os.chdir(self.origdir)
+        print("ABREK TEST RUN COMPLETE: Result id is '%s'" %
+            os.path.basename(self.resultsdir))
 
     def parse(self, resultname):
         if not self.parser:
@@ -131,6 +136,7 @@ class AbrekTest(object):
         resultsdir = os.path.join(config.resultsdir, resultname)
         os.chdir(resultsdir)
         self.parser.parse()
+        os.chdir(self.origdir)
 
 
 class AbrekTestInstaller(object):
