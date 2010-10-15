@@ -19,7 +19,7 @@ import abrek.testdef
 # Run tests automatically, 500 repetitions each
 gtkperf_options = "-a -c 500"
 
-RUNSTEPS = ["gtkperf %s" % gtkperf_options]
+RUNSTEPS = ["LANG=C gtkperf %s" % gtkperf_options]
 
 class GtkTestParser(abrek.testdef.AbrekTestParser):
     def parse(self):
@@ -36,6 +36,7 @@ class GtkTestParser(abrek.testdef.AbrekTestParser):
                     d['test_case_id'] = "%s.%s" % (d['test_case_id'],
                         d['subtest'])
                     d.pop('subtest')
+                    d['test_case_id'] = d['test_case_id'].replace(" ", "_")
                     self.results['test_results'].append(d)
                 else:
                     match = pat2.search(line)
