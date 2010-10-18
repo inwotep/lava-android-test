@@ -280,6 +280,7 @@ class AbrekTestParser(object):
             self.fixresults(self.fixupdict)
         if self.appendall:
             self.appendtoall(self.appendall)
+        self.fixids()
 
     def append(self, testid, entry):
         """Appends a dict to the test_results entry for a specified testid
@@ -309,6 +310,16 @@ class AbrekTestParser(object):
         for t in self.results['test_results']:
             if t.has_key("result"):
                 t['result'] = fixupdict[t['result']]
+
+    def fixids(self):
+        """
+        Convert spaces to _ in test_case_id and remove illegal characters
+        """
+        badchars = "[^a-zA-Z0-9_-]"
+        for id in self.results['test_results']:
+            if id.has_key('test_case_id'):
+                id['test_case_id'] = id['test_case_id'].replace(" ", "_")
+                id['test_case_id'] = re.sub(badchars, "", id['test_case_id'])
 
 
 def testloader(testname):
