@@ -15,6 +15,7 @@
 
 import apt
 import lsb_release
+from utils import read_file
 
 def get_packages(apt_cache=None):
     """ Get information about the packages installed
@@ -51,13 +52,14 @@ def get_sw_context(apt_cache=None, lsb_information=None):
 def get_sw_image(lsb_information=None):
     """ Get information about the image we are running
 
-    For now, this just uses the description from lsb-release.  This will
-    be extended to provide more detailed information about the image if
-    it becomes available
-
-    lsb_information - if not provided, this will be read from the system
+    If /etc/buildstamp exists, get the sw_image id from that.  Otherwise
+    just use the lsb-release description for a rough idea.
     """
-    if lsb_information == None:
-        lsb_information = lsb_release.get_lsb_information()
-    desc = lsb_information['DESCRIPTION']
+    try:
+        buildstamp = read_file("/etc/buildstamp")
+        desc = buildstamp.splitlines()[1]
+    except IOError:
+        if lsb_information == None:
+            lsb_information = lsb_release.get_lsb_information()
+        desc = lsb_information['DESCRIPTION']
     return {"desc":desc}
