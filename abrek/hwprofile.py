@@ -17,7 +17,7 @@ import os
 import re
 import sys
 from subprocess import Popen, PIPE
-from utils import read_file
+from utils import read_file, get_machine_type
 
 INTEL_KEYMAP = {
     'vendor_id': 'cpu_vendor_name',
@@ -72,7 +72,7 @@ def get_cpu_devs():
     devices = []
     cpudevs = []
     cpudevs.append({})
-    machine = os.uname()[-1]
+    machine = get_machine_type()
     if machine in ('i686', 'x86_64'):
         keymap, valmap = INTEL_KEYMAP, INTEL_VALMAP
     elif machine.startswith('arm'):
@@ -108,7 +108,7 @@ def get_board_devs():
     devices = []
     attributes = {}
     device = {}
-    machine = os.uname()[-1]
+    machine = get_machine_type()
     if machine in ('i686', 'x86_64'):
         try:
             description = read_file('/sys/class/dmi/id/board_name') or None
