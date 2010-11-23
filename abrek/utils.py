@@ -22,6 +22,7 @@ from subprocess import Popen, PIPE
 
 _fake_files = None
 _fake_paths = None
+_fake_machine = None
 
 class Tee(file):
     """ A file-like object that optionally mimics tee functionality.
@@ -92,11 +93,22 @@ def fake_file(path, data=None, newpath=None):
             _fake_paths = {}
         _fake_paths[path] = newpath
 
+def fake_machine(type):
+    """
+    Set up a fake machine type for testing
+    """
+    global _fake_machine
+    _fake_machine = type
+
 def clear_fakes():
     global _fake_files
     global _fake_paths
     _fake_files = {}
     _fake_paths = {}
+
+def clear_fake_machine():
+    global _fake_machine
+    _fake_machine = None
 
 def run_and_log(cmd, fd):
     """
@@ -107,3 +119,13 @@ def run_and_log(cmd, fd):
     if output is not None:
         fd.write(output)
     return proc.returncode
+
+def get_machine_type():
+    """
+    Return the machine type
+    """
+    global _fake_machine
+    if _fake_machine is None:
+        return os.uname()[-1]
+    return _fake_machine
+

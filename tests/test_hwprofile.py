@@ -17,7 +17,7 @@ import os
 import unittest
 
 import abrek.hwprofile
-from abrek.utils import fake_file, clear_fakes
+from abrek.utils import fake_file, clear_fakes, fake_machine, clear_fake_machine
 from imposters import OutputImposter
 from fixtures import TestCaseWithFixtures
 
@@ -78,37 +78,53 @@ VmallocUsed:        1936 kB
 VmallocChunk:     643316 kB"""
 
 class HwprofileTests(unittest.TestCase):
-    def test_get_cpu_devs(self):
+    def test_get_cpu_devs_arm(self):
         fake_file('/proc/cpuinfo', ARM_CPUINFO_FILE)
+        fake_machine('arm')
         devs = abrek.hwprofile.get_cpu_devs()
+        clear_fake_machine()
         cpuinfo = {
             'attributes': {
-                'CPU implementer': '0x41',
-                'Features': 'swp half thumb fastmult vfp edsp neon vfpv3*',
-                'CPU architecture': '7',
+                'cpu_model_name': 'ARMv7 Processor rev 3 (v7l)',
+                'cpu_features': 'swp half thumb fastmult vfp edsp neon vfpv3*',
+                'cpu_variant': 1,
+                'cpu_architecture': 7,
                 'BogoMIPS': '483.16',
                 'Hardware': 'OMAP3 Beagle Board',
-                'CPU revision': '3',
-                'CPU part': '0xc08',
+                'cpu_implementer': 65,
+                'cpu_part': 3080,
+                'cpu_revision': 3,
                 'Serial': '0000000000000000',
-                'Processor': 'ARMv7 Processor rev 3 (v7l)',
-                'CPU variant': '0x1',
                 'Revision': '0020'},
             'description': 'Processor #0',
             'device_type': 'device.cpu'}
         self.assertEqual(cpuinfo, devs[0])
 
-    def test_get_board_devs(self):
+    def test_get_board_devs_x86(self):
+        fake_machine('x86_64')
         fake_file('/sys/class/dmi/id/board_name', FAKE_BOARDNAME_FILE)
-        fake_file('/sys/class/dmi/id/board_vendor', FAKE_BOARDVENDOR_FILE)
-        fake_file('/sys/class/dmi/id/board_version', FAKE_BOARDVERSION_FILE)
-        devs = abrek.hwprofile.get_board_devs()
+        fake_file('/sys/class/dmi/id/board_vendor',
+            FAKE_BOARDVENDOR_FILE)
+        fake_file('/sys/class/dmi/id/board_version',
+            FAKE_BOARDVERSION_FILE)
         boardinfo = {
             'attributes': {
                 'version': 'ZZZZZZZ',
                 'vendor': 'YYYYYYY'},
             'description': 'XXXXXXX',
             'device_type': 'device.board'}
+        devs = abrek.hwprofile.get_board_devs()
+        clear_fake_machine()
+        self.assertEqual(boardinfo, devs[0])
+
+    def test_get_board_devs_arm(self):
+        fake_machine('arm')
+        fake_file('/proc/cpuinfo', ARM_CPUINFO_FILE)
+        boardinfo = {
+            'description': 'OMAP3 Beagle Board',
+            'device_type': 'device.board'}
+        devs = abrek.hwprofile.get_board_devs()
+        clear_fake_machine()
         self.assertEqual(boardinfo, devs[0])
 
     def test_get_mem_devs(self):
@@ -145,13 +161,14 @@ class MissingFiles(TestCaseWithFixtures):
         self.assertEqual(errmsg, self.out.getvalue())
 
     def test_bad_boardinfo(self):
-        machine = os.uname()[-1]
+        fake_machine('x86_64')
         errmsg = "WARNING: Could not read board information\n"
         fake_file('/sys/class/dmi/id/board_name', newpath='/foo/bar')
+        fake_file('/proc/cpuinfo', newpath='/foo/bar')
         devs = abrek.hwprofile.get_board_devs()
+        clear_fake_machine()
         self.assertEqual([], devs)
-        if machine in ('i686', 'x86_64'):
-            self.assertEqual(errmsg, self.out.getvalue())
+        self.assertEqual(errmsg, self.out.getvalue())
 
     def test_bad_meminfo(self):
         errmsg = "WARNING: Could not read memory information\n"
