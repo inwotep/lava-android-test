@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import os
 import unittest
 
 import abrek.swprofile
@@ -63,6 +64,8 @@ class SwprofileTests(unittest.TestCase):
 
     def test_sw_image_desc_lsb(self):
         a = self.make_profile()
+        if os.path.exists('/etc/buildstamp'):
+            return
         self.assertEqual(self.lsb_desc, a['sw_image']['desc'])
 
     def test_sw_image_desc_buildstamp(self):
