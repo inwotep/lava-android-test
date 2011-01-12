@@ -73,8 +73,7 @@ class AbrekTest(object):
             self.installer.install()
         except Exception as strerror:
             self.uninstall()
-            raise RuntimeError("An error was detected during",
-                "installation, cleaning up: %s" % strerror)
+            raise
         finally:
             os.chdir(self.origdir)
 
