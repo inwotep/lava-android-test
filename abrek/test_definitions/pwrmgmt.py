@@ -23,5 +23,12 @@ RUNSTEPS = [' cd pm-qa && awk -f testcases.awk  testcases ']
 
 pwrmgmtinst = abrek.testdef.AbrekTestInstaller(INSTALLSTEPS)
 pwrmgmtrun = abrek.testdef.AbrekTestRunner(RUNSTEPS)
-testobj = abrek.testdef.AbrekTest(testname="pwrmgmt", installer=pwrmgmtinst, runner=pwrmgmtrun)
 
+# test case name is between "pm-qa-"  and  ":"  and results and/or measurements are rest of the line
+PATTERN = "^pm-qa-(?P<test_case_id>\w+):\s+(?P<message>.*)"
+
+
+pwrmgmtparser = abrek.testdef.AbrekTestParser(PATTERN, appendall={'result':'pass'})
+
+testobj = abrek.testdef.AbrekTest(testname="pwrmgmt", installer=pwrmgmtinst,
+                                  runner=pwrmgmtrun, parser=pwrmgmtparser)
