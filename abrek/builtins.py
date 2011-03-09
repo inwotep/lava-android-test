@@ -87,7 +87,10 @@ class cmd_run(abrek.command.AbrekCmd):
     """
     arglist = ['*testname']
     options = [make_option('-q', '--quiet', action='store_true',
-        default=False, dest='quiet')]
+                           default=False, dest='quiet'),
+               make_option('-o', '--output',  action='store',
+                           default=None, metavar="FILE",
+                           help="Store processed test output to FILE")]
 
     def run(self):
         if len(self.args) != 1:
@@ -95,7 +98,13 @@ class cmd_run(abrek.command.AbrekCmd):
             sys.exit(1)
         test = abrek.testdef.testloader(self.args[0])
         try:
-            test.run(quiet=self.opts.quiet)
+            result_id = test.run(quiet=self.opts.quiet)
+            if self.opts.output:
+                from abrek.dashboard import generate_bundle
+                import json
+                bundle = generate_bundle(result_id)
+                with open(self.opts.output, "wt") as stream:
+                    json.dump(bundle, stream)
         except Exception as strerror:
             print "Test execution error: %s" % strerror
             sys.exit(1)

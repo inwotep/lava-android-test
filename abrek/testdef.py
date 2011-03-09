@@ -124,8 +124,9 @@ class AbrekTest(object):
         self.runner.run(self.resultsdir, quiet=quiet)
         self._savetestdata()
         os.chdir(self.origdir)
-        print("ABREK TEST RUN COMPLETE: Result id is '%s'" %
-            os.path.basename(self.resultsdir))
+        result_id = os.path.basename(self.resultsdir)
+        print("ABREK TEST RUN COMPLETE: Result id is '%s'" % result_id)
+        return result_id
 
     def parse(self, resultname):
         if not self.parser:
