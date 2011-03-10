@@ -19,7 +19,7 @@ import abrek.testdef
 INSTALLSTEPS = ['git clone git://git.linaro.org/people/torez/pm-qa.git',
                 'cd pm-qa && make clean && make all']
 RUNSTEPS = ['cd pm-qa && awk -f testcases.awk  run_template']
-DEPS = ['git-core', 'make']
+DEPS = ['git-core', 'make', 'alsa-utils', 'pulseaudio-utils', 'lame', 'festival', 'wget']
 
 pwrmgmtinst = abrek.testdef.AbrekTestInstaller(INSTALLSTEPS, deps=DEPS)
 pwrmgmtrun = abrek.testdef.AbrekTestRunner(RUNSTEPS)
