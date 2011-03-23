@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import os
 import re
 import sys
 from subprocess import Popen, PIPE
@@ -169,7 +168,7 @@ def get_mem_devs():
                 capacity=capacity >> 20, kind=kind)
             device = {}
             device['description'] = description
-            device['attributes'] = {'capacity': capacity, 'kind': kind}
+            device['attributes'] = {'capacity': str(capacity), 'kind': kind}
             device['device_type'] = "device.mem"
             devices.append(device)
     except IOError:

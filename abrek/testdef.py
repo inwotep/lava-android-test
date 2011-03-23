@@ -274,8 +274,12 @@ class AbrekTestParser(object):
         with open(filename, 'r') as fd:
             for line in fd.readlines():
                 match = pat.search(line)
-                if match:
-                    self.results['test_results'].append(match.groupdict())
+                if not match:
+                    continue
+                data = match.groupdict()
+                if 'measurement' in data:
+                    data['measurement'] = float(data['measurement'])
+                self.results['test_results'].append(data)
         if self.fixupdict:
             self.fixresults(self.fixupdict)
         if self.appendall:
