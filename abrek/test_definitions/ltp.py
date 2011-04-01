@@ -35,7 +35,7 @@ INSTALLSTEPS = ["echo '%s' > installltp.sh" % SCRIPT,
                 'chmod +x installltp.sh',
                 './installltp.sh']
 RUNSTEPS = ['cd build && sudo ./runltp -f syscalls -p -q']
-PATTERN = "^(?P<test_case_id>\S+)    (?P<subid>\d+)  (?P<result>\w+)  :  (?P<message>\S+)"
+PATTERN = "^(?P<test_case_id>\S+)    (?P<subid>\d+)  (?P<result>\w+)  :  (?P<message>.+)"
 FIXUPS = {"TBROK":"fail",
           "TCONF":"skip",
           "TFAIL":"fail",
@@ -53,12 +53,18 @@ class LTPParser(abrek.testdef.AbrekTestParser):
                 match = pat.search(line)
                 if match:
                     results = match.groupdict()
-                    results['test_case_id'] += "." + results.pop('subid')
+                    subid = results.pop('subid')
+                    #The .0 results in ltp are all TINFO, filtering them
+                    #should help eliminate meaningless, duplicate results
+                    if subid == '0':
+                        continue
+                    results['test_case_id'] += "." + subid
                     self.results['test_results'].append(results)
         if self.fixupdict:
             self.fixresults(self.fixupdict)
         if self.appendall:
             self.appendtoall(self.appendall)
+        self.fixids()
 
 
 ltpinst = abrek.testdef.AbrekTestInstaller(INSTALLSTEPS, deps=DEPS, url=URL,
