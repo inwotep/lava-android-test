@@ -319,7 +319,7 @@ class AbrekTestParser(object):
         """
         Convert spaces to _ in test_case_id and remove illegal characters
         """
-        badchars = "[^a-zA-Z0-9_-]"
+        badchars = "[^a-zA-Z0-9\._-]"
         for id in self.results['test_results']:
             if id.has_key('test_case_id'):
                 id['test_case_id'] = id['test_case_id'].replace(" ", "_")
