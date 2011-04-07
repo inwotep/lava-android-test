@@ -133,7 +133,7 @@ class HwprofileTests(unittest.TestCase):
         meminfo = {
             'attributes': {
                 'kind': 'RAM',
-                'capacity': 243937280},
+                'capacity': '243937280'},
             'description': '232MiB of RAM',
             'device_type': 'device.mem'}
         self.assertEqual(meminfo, devs[0])

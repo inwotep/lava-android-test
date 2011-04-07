@@ -79,29 +79,29 @@ class BundleConfigOutputTests(TestCaseWithFixtures):
             "test_runs": [{
             "analyzer_assigned_date": "2010-10-10T00:00:00Z",
             "analyzer_assigned_uuid": testuuid,
-            "hw_context": {},
-            "sw_context": {},
+            "hardware_context": {},
+            "software_context": {},
             "test_id": "stream",
             "test_results": [{
-                    "measurement": "1111.1111",
+                    "measurement": 1111.1111,
                     "result": "pass",
                     "test_case_id": "Copy",
                     "units": "MB/s"
                 },
                 {
-                    "measurement": "2222.2222",
+                    "measurement": 2222.2222,
                     "result": "pass",
                     "test_case_id": "Scale",
                     "units": "MB/s"
                 },
                 {
-                    "measurement": "3333.3333",
+                    "measurement": 3333.3333,
                     "result": "pass",
                     "test_case_id": "Add",
                     "units": "MB/s"
                 },
                 {
-                    "measurement": "4444.4444",
+                    "measurement": 4444.4444,
                     "result": "pass",
                     "test_case_id": "Triad",
                     "units": "MB/s"
@@ -162,8 +162,8 @@ def make_stream_result(config):
 {"test_runs": [{
     "analyzer_assigned_date": "2010-10-10T00:00:00Z",
     "analyzer_assigned_uuid": "%s",
-    "hw_context": {},
-    "sw_context": {},
+    "hardware_context": {},
+    "software_context": {},
     "test_id": "stream",
     "time_check_performed": false
     }]

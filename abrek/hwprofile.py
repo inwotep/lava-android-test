@@ -197,16 +197,16 @@ def get_usb_devs():
             devices.append(device)
     return devices
 
-def get_hw_context():
+def get_hardware_context():
     """
     Return a dict with all of the hardware profile information gathered
     """
-    hw_context = {}
+    hardware_context = {}
     devices = []
     devices.extend(get_cpu_devs())
     devices.extend(get_board_devs())
     devices.extend(get_mem_devs())
     devices.extend(get_usb_devs())
-    hw_context['devices'] = devices
-    return hw_context
+    hardware_context['devices'] = devices
+    return hardware_context
 
