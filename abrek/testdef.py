@@ -96,17 +96,17 @@ class AbrekTest(object):
         TIMEFORMAT = '%Y-%m-%dT%H:%M:%SZ'
         testdata = {}
         test_runs = [{}]
-        testdata['format'] = "Dashboard Bundle Format 1.0"
+        testdata['format'] = "Dashboard Bundle Format 1.2"
         filename = os.path.join(self.resultsdir, 'testdata.json')
         test_runs[0]['test_id'] = self.testname
         test_runs[0]['analyzer_assigned_uuid'] = str(uuid1())
         test_runs[0]['time_check_performed'] = False
         test_runs[0]['analyzer_assigned_date'] = datetime.strftime(
                                              self.runner.starttime,TIMEFORMAT)
-        hw = hwprofile.get_hw_context()
-        test_runs[0]['hw_context'] = hw
-        sw = swprofile.get_sw_context()
-        test_runs[0]['sw_context'] = sw
+        hw = hwprofile.get_hardware_context()
+        test_runs[0]['hardware_context'] = hw
+        sw = swprofile.get_software_context()
+        test_runs[0]['software_context'] = sw
         testdata['test_runs'] = test_runs
         write_file(json.dumps(testdata, indent=2), filename)
 

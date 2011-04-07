@@ -35,8 +35,8 @@ def get_packages(apt_cache=None):
             packages.append(pkg)
     return packages
 
-def get_sw_context(apt_cache=None, lsb_information=None):
-    """ Return dict used for storing sw_context information
+def get_software_context(apt_cache=None, lsb_information=None):
+    """ Return dict used for storing software_context information
 
     test_id - Unique identifier for this test
     time_check - whether or not a check was performed to see if
@@ -44,22 +44,22 @@ def get_sw_context(apt_cache=None, lsb_information=None):
     apt_cache - if not provided, this will be read from the system
     lsb_information - if not provided, this will be read from the system
     """
-    sw_context = {}
-    sw_context['sw_image'] = get_sw_image(lsb_information)
-    sw_context['packages'] = get_packages(apt_cache)
-    return sw_context
+    software_context = {}
+    software_context['image'] = get_image(lsb_information)
+    software_context['packages'] = get_packages(apt_cache)
+    return software_context
 
-def get_sw_image(lsb_information=None):
+def get_image(lsb_information=None):
     """ Get information about the image we are running
 
-    If /etc/buildstamp exists, get the sw_image id from that.  Otherwise
+    If /etc/buildstamp exists, get the image id from that.  Otherwise
     just use the lsb-release description for a rough idea.
     """
     try:
         buildstamp = read_file("/etc/buildstamp")
-        desc = buildstamp.splitlines()[1]
+        name = buildstamp.splitlines()[1]
     except IOError:
         if lsb_information == None:
             lsb_information = lsb_release.get_lsb_information()
-        desc = lsb_information['DESCRIPTION']
-    return {"desc":desc}
+        name = lsb_information['DESCRIPTION']
+    return {"name":name}

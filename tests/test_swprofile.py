@@ -49,7 +49,7 @@ class SwprofileTests(unittest.TestCase):
             cache = self.cache
         if info == None:
             info = self.lsb_information
-        return abrek.swprofile.get_sw_context(apt_cache=cache,
+        return abrek.swprofile.get_software_context(apt_cache=cache,
                 lsb_information=info)
 
     def test_pkg_name(self):
@@ -62,18 +62,18 @@ class SwprofileTests(unittest.TestCase):
         for pkg in a['packages']:
             self.assertEqual(self.testpackage.installed.version, pkg['version'])
 
-    def test_sw_image_desc_lsb(self):
+    def test_image_name_lsb(self):
         a = self.make_profile()
         if os.path.exists('/etc/buildstamp'):
             return
-        self.assertEqual(self.lsb_desc, a['sw_image']['desc'])
+        self.assertEqual(self.lsb_desc, a['image']['name'])
 
-    def test_sw_image_desc_buildstamp(self):
+    def test_image_name_buildstamp(self):
         BUILDSTAMP = "linaro-m-headless-20101101-0"
         BUILDSTAMPFILE = "lexbuild6 Mon, 01 Nov 2010 02:11:39 -0400\n%s" % (
                          BUILDSTAMP)
         fake_file('/etc/buildstamp', BUILDSTAMPFILE)
         a = self.make_profile()
         clear_fakes()
-        self.assertEqual(BUILDSTAMP, a['sw_image']['desc'])
+        self.assertEqual(BUILDSTAMP, a['image']['name'])
 
