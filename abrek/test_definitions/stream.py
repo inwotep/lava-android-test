@@ -17,10 +17,11 @@ import abrek.testdef
 
 URL="http://www.cs.virginia.edu/stream/FTP/Code/stream.c"
 INSTALLSTEPS = ['cc stream.c -O2 -fopenmp -o stream']
+DEPS = ['gcc']
 RUNSTEPS = ['./stream']
 PATTERN = "^(?P<test_case_id>\w+):\W+(?P<measurement>\d+\.\d+)"
 
-streaminst = abrek.testdef.AbrekTestInstaller(INSTALLSTEPS, url=URL)
+streaminst = abrek.testdef.AbrekTestInstaller(INSTALLSTEPS, deps=DEPS, url=URL)
 streamrun = abrek.testdef.AbrekTestRunner(RUNSTEPS)
 streamparser = abrek.testdef.AbrekTestParser(PATTERN,
                appendall={'units':'MB/s', 'result':'pass'})

@@ -30,6 +30,7 @@ URL= "http://downloads.sourceforge.net/project/ltp/LTP Source/ltp-%s/"\
      "ltp-full-%s.bz2" % (VERSION, VERSION)
 MD5="6982c72429a62f3917c13b2d529ad1ce"
 INSTALLSTEPS = ['tar -xjf ltp-full-20100831.bz2']
+DEPS = ['gcc']
 RUNSTEPS = ['cd ltp-full-20100831/testcases/open_posix_testsuite/ && make']
 
 PATTERN = "((?P<test_case_id>\A(\w+[/]+)+\w+[-]*\w*[-]*\w*) .*? (?P<result>\w+))"
@@ -59,7 +60,8 @@ class PosixParser(abrek.testdef.AbrekTestParser):
         if self.fixupdict:
             self.fixresults(self.fixupdict)
 
-posix_inst = abrek.testdef.AbrekTestInstaller(INSTALLSTEPS, url=URL, md5=MD5)
+posix_inst = abrek.testdef.AbrekTestInstaller(INSTALLSTEPS, deps=DEPS,
+    url=URL, md5=MD5)
 posix_run = abrek.testdef.AbrekTestRunner(RUNSTEPS)
 posixparser = PosixParser(PATTERN, fixupdict = FIXUPS)
 testobj = abrek.testdef.AbrekTest(testname="posixtestsuite", version=VERSION,
