@@ -277,13 +277,12 @@ class AbrekTestParser(object):
                 if not match:
                     continue
                 data = match.groupdict()
-                if 'measurement' in data:
-                    data['measurement'] = float(data['measurement'])
                 self.results['test_results'].append(data)
         if self.fixupdict:
             self.fixresults(self.fixupdict)
         if self.appendall:
             self.appendtoall(self.appendall)
+        self.fixmeasurements()
         self.fixids()
 
     def append(self, testid, entry):
@@ -314,6 +313,13 @@ class AbrekTestParser(object):
         for t in self.results['test_results']:
             if t.has_key("result"):
                 t['result'] = fixupdict[t['result']]
+
+    def fixmeasurements(self):
+        """Measurements are often read as strings, but need to be float
+        """
+        for id in self.results['test_results']:
+            if id.has_key('measurement'):
+                id['measurement'] = float(id['measurement'])
 
     def fixids(self):
         """

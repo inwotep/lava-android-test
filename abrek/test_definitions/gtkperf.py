@@ -43,6 +43,7 @@ class GtkTestParser(abrek.testdef.AbrekTestParser):
                     if match:
                         self.results['test_results'].append(match.groupdict())
         self.appendtoall({'units':'seconds', 'result':'pass'})
+        self.fixmeasurements()
 
 parse = GtkTestParser()
 inst = abrek.testdef.AbrekTestInstaller(deps=["gtkperf"])

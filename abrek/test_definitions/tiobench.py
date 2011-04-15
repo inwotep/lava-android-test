@@ -61,6 +61,7 @@ class TIObenchTestParser(abrek.testdef.AbrekTestParser):
 
         if self.appendall:
             self.appendtoall(self.appendall)
+        self.fixmeasurements()
 
 tiobench_inst = abrek.testdef.AbrekTestInstaller(INSTALLSTEPS, url=URL,
     md5=MD5)
