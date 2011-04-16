@@ -107,6 +107,8 @@ class AbrekTest(object):
         test_runs[0]['hardware_context'] = hw
         sw = swprofile.get_software_context()
         test_runs[0]['software_context'] = sw
+        test_runs[0]['test_results'] = self.parser.results['test_results']
+
         testdata['test_runs'] = test_runs
         write_file(json.dumps(testdata, indent=2), filename)
 
@@ -122,6 +124,7 @@ class AbrekTest(object):
         os.makedirs(self.resultsdir)
         os.chdir(installdir)
         self.runner.run(self.resultsdir, quiet=quiet)
+        self.parse(resultname)
         self._savetestdata()
         os.chdir(self.origdir)
         result_id = os.path.basename(self.resultsdir)
@@ -162,7 +165,7 @@ class AbrekTestInstaller(object):
         cmd = "sudo apt-get install -y %s" % " ".join(self.deps)
         rc, output = getstatusoutput(cmd)
         if rc:
-            raise RuntimeError("Dependency installation failed")
+            raise RuntimeError("Dependency installation failed. %d : %s" %(rc,output))
 
     def _download(self):
         """Download the file specified by the url and check the md5.
@@ -191,6 +194,9 @@ class AbrekTestInstaller(object):
     def _runsteps(self):
         for cmd in self.steps:
             rc, output = getstatusoutput(cmd)
+            if rc:
+                raise RuntimeError("Run step '%s' failed. %d : %s" %(cmd,rc,output))
+
 
     def install(self):
         self._installdeps()
@@ -270,7 +276,11 @@ class AbrekTestParser(object):
         it is used to convert test result strings to a standard format.
         """
         filename = "testoutput.log"
-        pat = re.compile(self.pattern)
+        try:
+            pat = re.compile(self.pattern)
+        except Exception as strerror:
+            raise RuntimeError("AbrekTestParser - Invalid regular expression '%s' - %s" %(self.pattern,strerror))
+
         with open(filename, 'r') as fd:
             for line in fd.readlines():
                 match = pat.search(line)
