@@ -272,12 +272,14 @@ class AbrekTestParser(object):
         """
         filename = "testoutput.log"
         pat = re.compile(self.pattern)
-        with open(filename, 'r') as fd:
-            for line in fd.readlines():
+        with open(filename, 'r') as stream:
+            for lineno, line in enumerate(stream, 1):
                 match = pat.search(line)
                 if not match:
                     continue
                 data = match.groupdict()
+                data["log_filename"] = filename
+                data["log_lineno"] = lineno
                 self.results['test_results'].append(data)
         if self.fixupdict:
             self.fixresults(self.fixupdict)

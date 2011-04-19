@@ -86,25 +86,33 @@ class BundleConfigOutputTests(TestCaseWithFixtures):
                     "measurement": 1111.1111,
                     "result": "pass",
                     "test_case_id": "Copy",
-                    "units": "MB/s"
+                    "units": "MB/s",
+                    "log_filename": "testoutput.log",
+                    "log_lineno": 3
                 },
                 {
                     "measurement": 2222.2222,
                     "result": "pass",
                     "test_case_id": "Scale",
-                    "units": "MB/s"
+                    "units": "MB/s",
+                    "log_filename": "testoutput.log",
+                    "log_lineno": 4
                 },
                 {
                     "measurement": 3333.3333,
                     "result": "pass",
                     "test_case_id": "Add",
-                    "units": "MB/s"
+                    "units": "MB/s",
+                    "log_filename": "testoutput.log",
+                    "log_lineno": 5
                 },
                 {
                     "measurement": 4444.4444,
                     "result": "pass",
                     "test_case_id": "Triad",
-                    "units": "MB/s"
+                    "units": "MB/s",
+                    "log_filename": "testoutput.log",
+                    "log_lineno": 6
                 }],
             "time_check_performed": False
              }]
