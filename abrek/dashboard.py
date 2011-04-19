@@ -24,6 +24,7 @@ from ConfigParser import ConfigParser, NoOptionError
 from getpass import getpass
 from optparse import make_option
 
+from abrek.bundle import DocumentIO
 from abrek.command import AbrekCmd, AbrekCmdWithSubcommands
 from abrek.config import get_config
 from abrek.testdef import testloader
@@ -147,7 +148,7 @@ class cmd_dashboard(AbrekCmdWithSubcommands):
                     "dashboard setup [host]'"
                 sys.exit(1)
             try:
-                result = server.put(json.dumps(bundle, indent=2), result_name,
+                result = server.put(DocumentIO.dumps(bundle), result_name,
                     stream_name)
                 print "Bundle successfully uploaded to id: %s" % result
             except xmlrpclib.Fault as strerror:
@@ -173,7 +174,7 @@ class cmd_dashboard(AbrekCmdWithSubcommands):
                 sys.exit(1)
             bundle = generate_bundle(self.args[0])
             try:
-                print json.dumps(bundle, indent=2)
+                print DocumentIO.dumps(bundle)
             except IOError:
                 pass
 
@@ -189,7 +190,7 @@ def generate_bundle(result):
         bundle_text = stream.read()
     with open(os.path.join(resultdir, "testoutput.log")) as stream:
         output_text = stream.read()
-    bundle = json.loads(bundle_text)
+    fmt, bundle = DocumentIO.loads(bundle_text)
     test = testloader(bundle['test_runs'][0]['test_id'])
     test.parse(result)
     bundle['test_runs'][0]["test_results"] = test.parser.results["test_results"]

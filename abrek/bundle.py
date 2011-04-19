@@ -29,8 +29,14 @@ try:
     from linaro_dashboard_bundle import DocumentIO
 except ImportError:
     class DocumentIO(object):
-        """ Replacement DocumentIO without any fancy features """
+        """ Bare replacement DocumentIO without any fancy features """
+
         @classmethod
         def dumps(cls, doc):
             return json.dumps(doc, indent=2)
 
+        @classmethod
+        def loads(cls, text):
+            doc = json.loads(text)
+            fmt = doc.get("format")
+            return fmt, doc
