@@ -76,10 +76,13 @@ class BundleConfigOutputTests(TestCaseWithFixtures):
         cmd = cmd_dashboard.cmd_bundle()
         (testname, testuuid) = make_stream_result(self.config)
         expected_dict = {
+            "format": "Dashboard Bundle Format 1.2",
             "test_runs": [{
             "analyzer_assigned_date": "2010-10-10T00:00:00Z",
             "analyzer_assigned_uuid": testuuid,
-            "hardware_context": {},
+            "hardware_context": {
+                "devices": []
+            },
             "software_context": {},
             "test_id": "stream",
             "test_results": [{
@@ -173,13 +176,18 @@ def make_stream_result(config):
     testname = "stream000"
     testuuid = str(uuid1())
     testdata_data = """
-{"test_runs": [{
+{
+"format": "Dashboard Bundle Format 1.2",
+"test_runs": [{
     "analyzer_assigned_date": "2010-10-10T00:00:00Z",
     "analyzer_assigned_uuid": "%s",
-    "hardware_context": {},
+    "hardware_context": {
+        "devices": []
+    },
     "software_context": {},
     "test_id": "stream",
-    "time_check_performed": false
+    "time_check_performed": false,
+    "test_results": []
     }]
 }
 """ % testuuid
