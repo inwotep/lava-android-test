@@ -28,6 +28,8 @@ without having to install (too many) dependencies.
 try:
     from linaro_dashboard_bundle import DocumentIO
 except ImportError:
+    import json
+
     class DocumentIO(object):
         """ Bare replacement DocumentIO without any fancy features """
 
