@@ -114,7 +114,13 @@ class BundleConfigOutputTests(TestCaseWithFixtures):
                     "log_filename": "testoutput.log",
                     "log_lineno": 6
                 }],
-            "time_check_performed": False
+            "time_check_performed": False,
+            "attachments": [
+                {
+                "mime_type": "text/plain",
+                "pathname": "testoutput.log",
+                "content": "CkZ1bmN0aW9uICAgICAgUmF0ZSAoTUIvcykgICBBdmcgdGltZSAgICAgTWluIHRpbWUgICAgIE1heCB0aW1lCkNvcHk6ICAgICAgICAxMTExLjExMTEgICAgICAgMC4wMTgwICAgICAgIDAuMDExMiAgICAgICAwLjAyNDIKU2NhbGU6ICAgICAgIDIyMjIuMjIyMiAgICAgICAwLjAxOTggICAgICAgMC4wMTIyICAgICAgIDAuMDI0MwpBZGQ6ICAgICAgICAgMzMzMy4zMzMzICAgICAgIDAuMDIwMSAgICAgICAwLjAxNzYgICAgICAgMC4wMjIzClRyaWFkOiAgICAgICA0NDQ0LjQ0NDQgICAgICAgMC4wMTk3ICAgICAgIDAuMDEzOCAgICAgICAwLjAyMjMK"
+                }]
              }]
         }
         cmd.main(argv=[testname])

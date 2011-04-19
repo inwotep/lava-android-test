@@ -182,17 +182,24 @@ def generate_bundle(result):
     config = get_config()
     resultdir = os.path.join(config.resultsdir, result)
     if not os.path.exists(resultdir):
+        # FIXME: UI and sys.exit mixed with internal implementation, yuck
         print "Result directory not found"
         sys.exit(1)
-    testdatafile = os.path.join(resultdir, "testdata.json")
-    testdata = json.loads(file(testdatafile).read())
-    test = testloader(testdata['test_runs'][0]['test_id'])
-    try:
-        test.parse(result)
-    except Exception as strerror:
-        print "Test parse error: %s" % strerror
-        sys.exit(1)
-    testdata['test_runs'][0].update(test.parser.results)
-    return testdata
+    with open(os.path.join(resultdir, "testdata.json")) as stream:
+        bundle_text = stream.read()
+    with open(os.path.join(resultdir, "testoutput.log")) as stream:
+        output_text = stream.read()
+    bundle = json.loads(bundle_text)
+    test = testloader(bundle['test_runs'][0]['test_id'])
+    test.parse(result)
+    bundle['test_runs'][0]["test_results"] = test.parser.results["test_results"]
+    bundle['test_runs'][0]["attachments"] = [
+        {
+            "pathname": "testoutput.log",
+            "mime_type": "text/plain",
+            "content":  base64.standard_b64encode(output_text)
+        }
+    ]
+    return bundle 
 
 
