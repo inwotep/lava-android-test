@@ -95,21 +95,22 @@ class AbrekTest(ITest):
 
     def _savetestdata(self):
         TIMEFORMAT = '%Y-%m-%dT%H:%M:%SZ'
-        testdata = {}
-        test_runs = [{}]
-        testdata['format'] = "Dashboard Bundle Format 1.2"
+        bundle = {
+            'format': 'Dashboard Bundle Format 1.2',
+            'test_runs': [
+                {
+                    'test_id': self.testname,
+                    'analyzer_assigned_uuid': str(uuid1()),
+                    'analyzer_assigned_date': self.runner.starttime.strftime(TIMEFORMAT),
+                    'time_check_performed': False,
+                    'hardware_context': hwprofile.get_hardware_context(),
+                    'software_context': swprofile.get_software_context(),
+                    'test_results': []
+                }
+            ]
+        }
         filename = os.path.join(self.resultsdir, 'testdata.json')
-        test_runs[0]['test_id'] = self.testname
-        test_runs[0]['analyzer_assigned_uuid'] = str(uuid1())
-        test_runs[0]['time_check_performed'] = False
-        test_runs[0]['analyzer_assigned_date'] = datetime.strftime(
-                                             self.runner.starttime,TIMEFORMAT)
-        hw = hwprofile.get_hardware_context()
-        test_runs[0]['hardware_context'] = hw
-        sw = swprofile.get_software_context()
-        test_runs[0]['software_context'] = sw
-        testdata['test_runs'] = test_runs
-        write_file(json.dumps(testdata, indent=2), filename)
+        write_file(json.dumps(bundle, indent=2), filename)
 
     def run(self, quiet=False):
         if not self.runner:
