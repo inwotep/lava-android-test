@@ -122,10 +122,12 @@ class AbrekTest(ITest):
                      str(time.mktime(datetime.utcnow().timetuple())))
         self.resultsdir = os.path.join(config.resultsdir, resultname)
         os.makedirs(self.resultsdir)
-        os.chdir(installdir)
-        self.runner.run(self.resultsdir, quiet=quiet)
-        self._savetestdata()
-        os.chdir(self.origdir)
+        try:
+            os.chdir(installdir)
+            self.runner.run(self.resultsdir, quiet=quiet)
+            self._savetestdata()
+        finally:
+            os.chdir(self.origdir)
         result_id = os.path.basename(self.resultsdir)
         print("ABREK TEST RUN COMPLETE: Result id is '%s'" % result_id)
         return result_id
