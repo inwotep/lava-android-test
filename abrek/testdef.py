@@ -24,11 +24,11 @@ from commands import getstatusoutput
 from datetime import datetime
 from uuid import uuid1
 
+from abrek import swprofile, hwprofile
+from abrek.api import ITest
+from abrek.bundle import DocumentIO
 from abrek.config import get_config
 from abrek.utils import Tee, geturl, run_and_log, write_file
-from abrek.api import ITest
-from abrek import hwprofile
-from abrek import swprofile
 
 
 class AbrekTest(ITest):
@@ -110,7 +110,7 @@ class AbrekTest(ITest):
             ]
         }
         filename = os.path.join(self.resultsdir, 'testdata.json')
-        write_file(json.dumps(bundle, indent=2), filename)
+        write_file(DocumentIO.dumps(bundle), filename)
 
     def run(self, quiet=False):
         if not self.runner:
