@@ -162,7 +162,7 @@ class AbrekTestInstaller(object):
         cmd = "sudo apt-get install -y %s" % " ".join(self.deps)
         rc, output = getstatusoutput(cmd)
         if rc:
-            raise RuntimeError("Dependency installation failed")
+            raise RuntimeError("Dependency installation failed. %d : %s" %(rc,output))
 
     def _download(self):
         """Download the file specified by the url and check the md5.
@@ -191,6 +191,9 @@ class AbrekTestInstaller(object):
     def _runsteps(self):
         for cmd in self.steps:
             rc, output = getstatusoutput(cmd)
+            if rc:
+                raise RuntimeError("Run step '%s' failed. %d : %s" %(cmd,rc,output))
+
 
     def install(self):
         self._installdeps()
@@ -270,7 +273,11 @@ class AbrekTestParser(object):
         it is used to convert test result strings to a standard format.
         """
         filename = "testoutput.log"
-        pat = re.compile(self.pattern)
+        try:
+            pat = re.compile(self.pattern)
+        except Exception as strerror:
+            raise RuntimeError("AbrekTestParser - Invalid regular expression '%s' - %s" %(self.pattern,strerror))
+
         with open(filename, 'r') as fd:
             for line in fd.readlines():
                 match = pat.search(line)

@@ -1,1 +1,5 @@
+.idea
 .testrepository
+*~
+*.tmp
+*.py[co]
