@@ -119,9 +119,6 @@ def run_and_log(cmd, fd):
     if output is not None:
         fd.write(output)
 
-    if err is not None:
-        fd.write(err)
-
     return proc.returncode
 
 def get_machine_type():

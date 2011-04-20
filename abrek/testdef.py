@@ -107,8 +107,6 @@ class AbrekTest(object):
         test_runs[0]['hardware_context'] = hw
         sw = swprofile.get_software_context()
         test_runs[0]['software_context'] = sw
-        test_runs[0]['test_results'] = self.parser.results['test_results']
-
         testdata['test_runs'] = test_runs
         write_file(json.dumps(testdata, indent=2), filename)
 
@@ -124,7 +122,6 @@ class AbrekTest(object):
         os.makedirs(self.resultsdir)
         os.chdir(installdir)
         self.runner.run(self.resultsdir, quiet=quiet)
-        self.parse(resultname)
         self._savetestdata()
         os.chdir(self.origdir)
         result_id = os.path.basename(self.resultsdir)
