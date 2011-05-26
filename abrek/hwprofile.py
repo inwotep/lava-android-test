@@ -183,18 +183,21 @@ def get_usb_devs():
               "^Bus \d{3} Device \d{3}: ID (?P<vendor_id>[0-9a-f]{4}):"
               "(?P<product_id>[0-9a-f]{4}) (?P<description>.*)$")
     devices = []
-    for line in Popen('lsusb', stdout=PIPE).communicate()[0].splitlines():
-        match = pattern.match(line)
-        if match:
-            vendor_id, product_id, description = match.groups()
-            attributes = {}
-            device = {}
-            attributes['vendor_id'] = int(vendor_id, 16)
-            attributes['product_id'] = int(product_id, 16)
-            device['attributes'] = attributes
-            device['description'] = description
-            device['device_type'] = 'device.usb'
-            devices.append(device)
+    try:
+        for line in Popen('lsusb', stdout=PIPE).communicate()[0].splitlines():
+            match = pattern.match(line)
+            if match:
+                vendor_id, product_id, description = match.groups()
+                attributes = {}
+                device = {}
+                attributes['vendor_id'] = int(vendor_id, 16)
+                attributes['product_id'] = int(product_id, 16)
+                device['attributes'] = attributes
+                device['description'] = description
+                device['device_type'] = 'device.usb'
+                devices.append(device)
+    except OSError:
+        print >> sys.stderr, "WARNING: Could not read usb device information"
     return devices
 
 def get_hardware_context():
