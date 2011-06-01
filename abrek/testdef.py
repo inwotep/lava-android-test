@@ -26,11 +26,12 @@ from uuid import uuid1
 
 from abrek.config import get_config
 from abrek.utils import Tee, geturl, run_and_log, write_file
+from abrek.api import ITest
 from abrek import hwprofile
 from abrek import swprofile
 
 
-class AbrekTest(object):
+class AbrekTest(ITest):
     """Base class for defining tests.
 
     This can be used by test definition files to create an object that
