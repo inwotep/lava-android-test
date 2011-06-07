@@ -280,8 +280,8 @@ class AbrekTestParser(object):
         except Exception as strerror:
             raise RuntimeError("AbrekTestParser - Invalid regular expression '%s' - %s" %(self.pattern,strerror))
 
-        with open(filename, 'r') as fd:
-            for line in fd.readlines():
+        with open(filename, 'r') as stream:
+            for lineno, line in enumerate(stream, 1):
                 match = pat.search(line)
                 if not match:
                     continue

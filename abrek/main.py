@@ -26,3 +26,9 @@ def main(argv):
         print "command '%s' not found" % cmd
         return 1
     return cmd_func.main(argv)
+
+if __name__ == '__main__':
+    import os
+    import sys
+    exit_code = main(sys.argv)
+    sys.exit(exit_code)
