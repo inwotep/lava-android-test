@@ -43,6 +43,6 @@ class AbrekTestConfigOutput(TestCaseWithFixtures):
         test.run()
         self.assertEqual("foo", self.out.getvalue().splitlines()[0])
         completion_message = self.out.getvalue().splitlines()[1]
-        completion_pattern = "ABREK TEST RUN COMPLETE: Result id is '[0-9A-Za-z-]+'"
+        completion_pattern = "ABREK TEST RUN COMPLETE: Result id is 'foo\d+\.0'"
         self.assertTrue(re.match(completion_pattern, completion_message))
 
