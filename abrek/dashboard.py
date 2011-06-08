@@ -14,7 +14,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import base64
-import json
 import os
 import socket
 import sys
@@ -24,6 +23,7 @@ from ConfigParser import ConfigParser, NoOptionError
 from getpass import getpass
 from optparse import make_option
 
+from abrek.bundle import DocumentIO
 from abrek.command import AbrekCmd, AbrekCmdWithSubcommands
 from abrek.config import get_config
 from abrek.testdef import testloader
@@ -147,7 +147,7 @@ class cmd_dashboard(AbrekCmdWithSubcommands):
                     "dashboard setup [host]'"
                 sys.exit(1)
             try:
-                result = server.put(json.dumps(bundle, indent=2), result_name,
+                result = server.put(DocumentIO.dumps(bundle), result_name,
                     stream_name)
                 print "Bundle successfully uploaded to id: %s" % result
             except xmlrpclib.Fault as strerror:
@@ -173,7 +173,7 @@ class cmd_dashboard(AbrekCmdWithSubcommands):
                 sys.exit(1)
             bundle = generate_bundle(self.args[0])
             try:
-                print json.dumps(bundle, indent=2)
+                print DocumentIO.dumps(bundle)
             except IOError:
                 pass
 
@@ -182,17 +182,24 @@ def generate_bundle(result):
     config = get_config()
     resultdir = os.path.join(config.resultsdir, result)
     if not os.path.exists(resultdir):
+        # FIXME: UI and sys.exit mixed with internal implementation, yuck
         print "Result directory not found"
         sys.exit(1)
-    testdatafile = os.path.join(resultdir, "testdata.json")
-    testdata = json.loads(file(testdatafile).read())
-    test = testloader(testdata['test_runs'][0]['test_id'])
-    try:
-        test.parse(result)
-    except Exception as strerror:
-        print "Test parse error: %s" % strerror
-        sys.exit(1)
-    testdata['test_runs'][0].update(test.parser.results)
-    return testdata
+    with open(os.path.join(resultdir, "testdata.json")) as stream:
+        bundle_text = stream.read()
+    with open(os.path.join(resultdir, "testoutput.log")) as stream:
+        output_text = stream.read()
+    fmt, bundle = DocumentIO.loads(bundle_text)
+    test = testloader(bundle['test_runs'][0]['test_id'])
+    test.parse(result)
+    bundle['test_runs'][0]["test_results"] = test.parser.results["test_results"]
+    bundle['test_runs'][0]["attachments"] = [
+        {
+            "pathname": "testoutput.log",
+            "mime_type": "text/plain",
+            "content":  base64.standard_b64encode(output_text)
+        }
+    ]
+    return bundle 
 
 

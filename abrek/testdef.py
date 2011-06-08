@@ -14,7 +14,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import hashlib
-import json
 import os
 import re
 import shutil
@@ -22,15 +21,15 @@ import sys
 import time
 from commands import getstatusoutput
 from datetime import datetime
-from uuid import uuid1
 
+from abrek import swprofile, hwprofile
+from abrek.api import ITest
+from abrek.bundle import DocumentIO
 from abrek.config import get_config
 from abrek.utils import Tee, geturl, run_and_log, write_file
-from abrek import hwprofile
-from abrek import swprofile
 
 
-class AbrekTest(object):
+class AbrekTest(ITest):
     """Base class for defining tests.
 
     This can be used by test definition files to create an object that
@@ -94,21 +93,21 @@ class AbrekTest(object):
 
     def _savetestdata(self):
         TIMEFORMAT = '%Y-%m-%dT%H:%M:%SZ'
-        testdata = {}
-        test_runs = [{}]
-        testdata['format'] = "Dashboard Bundle Format 1.2"
+        bundle = {
+            'format': 'Dashboard Bundle Format 1.2',
+            'test_runs': [
+                {
+                    'test_id': self.testname,
+                    'analyzer_assigned_date': self.runner.starttime.strftime(TIMEFORMAT),
+                    'time_check_performed': False,
+                    'hardware_context': hwprofile.get_hardware_context(),
+                    'software_context': swprofile.get_software_context(),
+                    'test_results': []
+                }
+            ]
+        }
         filename = os.path.join(self.resultsdir, 'testdata.json')
-        test_runs[0]['test_id'] = self.testname
-        test_runs[0]['analyzer_assigned_uuid'] = str(uuid1())
-        test_runs[0]['time_check_performed'] = False
-        test_runs[0]['analyzer_assigned_date'] = datetime.strftime(
-                                             self.runner.starttime,TIMEFORMAT)
-        hw = hwprofile.get_hardware_context()
-        test_runs[0]['hardware_context'] = hw
-        sw = swprofile.get_software_context()
-        test_runs[0]['software_context'] = sw
-        testdata['test_runs'] = test_runs
-        write_file(json.dumps(testdata, indent=2), filename)
+        write_file(DocumentIO.dumps(bundle), filename)
 
     def run(self, quiet=False):
         if not self.runner:
@@ -120,10 +119,12 @@ class AbrekTest(object):
                      str(time.mktime(datetime.utcnow().timetuple())))
         self.resultsdir = os.path.join(config.resultsdir, resultname)
         os.makedirs(self.resultsdir)
-        os.chdir(installdir)
-        self.runner.run(self.resultsdir, quiet=quiet)
-        self._savetestdata()
-        os.chdir(self.origdir)
+        try:
+            os.chdir(installdir)
+            self.runner.run(self.resultsdir, quiet=quiet)
+            self._savetestdata()
+        finally:
+            os.chdir(self.origdir)
         result_id = os.path.basename(self.resultsdir)
         print("ABREK TEST RUN COMPLETE: Result id is '%s'" % result_id)
         return result_id
@@ -278,12 +279,14 @@ class AbrekTestParser(object):
         except Exception as strerror:
             raise RuntimeError("AbrekTestParser - Invalid regular expression '%s' - %s" %(self.pattern,strerror))
 
-        with open(filename, 'r') as fd:
-            for line in fd.readlines():
+        with open(filename, 'r') as stream:
+            for lineno, line in enumerate(stream, 1):
                 match = pat.search(line)
                 if not match:
                     continue
                 data = match.groupdict()
+                data["log_filename"] = filename
+                data["log_lineno"] = lineno
                 self.results['test_results'].append(data)
         if self.fixupdict:
             self.fixresults(self.fixupdict)
