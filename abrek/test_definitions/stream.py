@@ -17,7 +17,7 @@ import abrek.testdef
 
 URL="http://www.cs.virginia.edu/stream/FTP/Code/stream.c"
 INSTALLSTEPS = ['cc stream.c -O2 -fopenmp -o stream']
-DEPS = ['gcc']
+DEPS = ['gcc', 'build-essential']
 RUNSTEPS = ['./stream']
 PATTERN = "^(?P<test_case_id>\w+):\W+(?P<measurement>\d+\.\d+)"
 

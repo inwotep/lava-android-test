@@ -76,37 +76,54 @@ class BundleConfigOutputTests(TestCaseWithFixtures):
         cmd = cmd_dashboard.cmd_bundle()
         (testname, testuuid) = make_stream_result(self.config)
         expected_dict = {
+            "format": "Dashboard Bundle Format 1.2",
             "test_runs": [{
             "analyzer_assigned_date": "2010-10-10T00:00:00Z",
             "analyzer_assigned_uuid": testuuid,
-            "hardware_context": {},
+            "hardware_context": {
+                "devices": []
+            },
             "software_context": {},
             "test_id": "stream",
             "test_results": [{
                     "measurement": 1111.1111,
                     "result": "pass",
                     "test_case_id": "Copy",
-                    "units": "MB/s"
+                    "units": "MB/s",
+                    "log_filename": "testoutput.log",
+                    "log_lineno": 3
                 },
                 {
                     "measurement": 2222.2222,
                     "result": "pass",
                     "test_case_id": "Scale",
-                    "units": "MB/s"
+                    "units": "MB/s",
+                    "log_filename": "testoutput.log",
+                    "log_lineno": 4
                 },
                 {
                     "measurement": 3333.3333,
                     "result": "pass",
                     "test_case_id": "Add",
-                    "units": "MB/s"
+                    "units": "MB/s",
+                    "log_filename": "testoutput.log",
+                    "log_lineno": 5
                 },
                 {
                     "measurement": 4444.4444,
                     "result": "pass",
                     "test_case_id": "Triad",
-                    "units": "MB/s"
+                    "units": "MB/s",
+                    "log_filename": "testoutput.log",
+                    "log_lineno": 6
                 }],
-            "time_check_performed": False
+            "time_check_performed": False,
+            "attachments": [
+                {
+                "mime_type": "text/plain",
+                "pathname": "testoutput.log",
+                "content": "CkZ1bmN0aW9uICAgICAgUmF0ZSAoTUIvcykgICBBdmcgdGltZSAgICAgTWluIHRpbWUgICAgIE1heCB0aW1lCkNvcHk6ICAgICAgICAxMTExLjExMTEgICAgICAgMC4wMTgwICAgICAgIDAuMDExMiAgICAgICAwLjAyNDIKU2NhbGU6ICAgICAgIDIyMjIuMjIyMiAgICAgICAwLjAxOTggICAgICAgMC4wMTIyICAgICAgIDAuMDI0MwpBZGQ6ICAgICAgICAgMzMzMy4zMzMzICAgICAgIDAuMDIwMSAgICAgICAwLjAxNzYgICAgICAgMC4wMjIzClRyaWFkOiAgICAgICA0NDQ0LjQ0NDQgICAgICAgMC4wMTk3ICAgICAgIDAuMDEzOCAgICAgICAwLjAyMjMK"
+                }]
              }]
         }
         cmd.main(argv=[testname])
@@ -159,13 +176,18 @@ def make_stream_result(config):
     testname = "stream000"
     testuuid = str(uuid1())
     testdata_data = """
-{"test_runs": [{
+{
+"format": "Dashboard Bundle Format 1.2",
+"test_runs": [{
     "analyzer_assigned_date": "2010-10-10T00:00:00Z",
     "analyzer_assigned_uuid": "%s",
-    "hardware_context": {},
+    "hardware_context": {
+        "devices": []
+    },
     "software_context": {},
     "test_id": "stream",
-    "time_check_performed": false
+    "time_check_performed": false,
+    "test_results": []
     }]
 }
 """ % testuuid

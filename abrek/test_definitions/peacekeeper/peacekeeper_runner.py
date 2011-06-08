@@ -25,6 +25,7 @@ browser_data = {
 }
 
 site = "http://service.futuremark.com/peacekeeper/run.action"
+#site = "http://service.futuremark.com/peacekeeper/results.action?key=5sdG"
 
 try:
     browser = browser_data[sys.argv[1]]
@@ -46,7 +47,7 @@ time.sleep(10)
 
 while not re.search('results.action', result_url) and wait_loop > 0:
     result_url = gettextvalue(browser["title"], browser["urlfield"])
-    print "waiting..."
+    print "waiting %d ..."%wait_loop
     time.sleep(30)
     wait_loop = wait_loop-1
 

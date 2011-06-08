@@ -26,7 +26,7 @@ import os
 curdir = os.path.realpath(os.path.dirname(__file__))
 
 INSTALLSTEPS = ['cp -rf %s/peacekeeper/* .'%curdir]
-RUNSTEPS = ['python peacekeeper.py firefox']
+RUNSTEPS = ['python peacekeeper_runner.py firefox']
 DEPS = ['python-ldtp','firefox']
 
 my_installer = abrek.testdef.AbrekTestInstaller(INSTALLSTEPS, deps=DEPS)
