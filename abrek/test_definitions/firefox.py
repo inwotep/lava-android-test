@@ -18,7 +18,7 @@ import abrek.testdef
 INSTALLSTEPS = ['git clone git://github.com/janimo/firefox-startup-timing.git']
 DEPS = ['firefox', 'git-core', 'gcalctool']
 RUNSTEPS = ['cd firefox-startup-timing; ./firefox_startup_timing.sh']
-PATTERN = "^(?P<test_case_id>):(?P<measurement>\d+)"
+PATTERN = "^(?P<test_case_id>\w+):(?P<measurement>\d+)"
 
 firefoxinst = abrek.testdef.AbrekTestInstaller(INSTALLSTEPS, deps=DEPS)
 firefoxrun = abrek.testdef.AbrekTestRunner(RUNSTEPS)
