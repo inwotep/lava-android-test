@@ -21,16 +21,16 @@ import sys
 try:
     from DistUtilsExtra.auto import setup
 except ImportError:
-    print >> sys.stderr, 'To build abrek you need', \
+    print >> sys.stderr, 'To build lava-test you need', \
                          'https://launchpad.net/python-distutils-extra'
     sys.exit(1)
 
 setup(
-name='abrek',
+name='lava-test',
 version=version,
 author='Paul Larson',
 author_email='paul.larson@linaro.org',
-url='https://launchpad.net/abrek',
-description='Abrek automated testing framework',
+url='https://launchpad.net/lava-test',
+description='Lava test execution framework',
 long_description=open("README").read() + "\n",
 )
