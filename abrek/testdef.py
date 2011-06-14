@@ -21,6 +21,7 @@ import sys
 import time
 from commands import getstatusoutput
 from datetime import datetime
+from uuid import uuid1
 
 from abrek import swprofile, hwprofile
 from abrek.api import ITest
@@ -91,7 +92,7 @@ class AbrekTest(ITest):
         if os.path.exists(path):
             shutil.rmtree(path)
 
-    def _savetestdata(self):
+    def _savetestdata(self, analyzer_assigned_uuid):
         TIMEFORMAT = '%Y-%m-%dT%H:%M:%SZ'
         bundle = {
             'format': 'Dashboard Bundle Format 1.2',
@@ -99,6 +100,7 @@ class AbrekTest(ITest):
                 {
                     'test_id': self.testname,
                     'analyzer_assigned_date': self.runner.starttime.strftime(TIMEFORMAT),
+                    'analyzer_assigned_uuid': analyzer_assigned_uuid,
                     'time_check_performed': False,
                     'hardware_context': hwprofile.get_hardware_context(),
                     'software_context': swprofile.get_software_context(),
@@ -114,6 +116,7 @@ class AbrekTest(ITest):
             raise RuntimeError("no test runner defined for '%s'" %
                                 self.testname)
         config = get_config()
+        uuid = str(uuid1())
         installdir = os.path.join(config.installdir, self.testname)
         resultname = (self.testname +
                      str(time.mktime(datetime.utcnow().timetuple())))
@@ -122,7 +125,7 @@ class AbrekTest(ITest):
         try:
             os.chdir(installdir)
             self.runner.run(self.resultsdir, quiet=quiet)
-            self._savetestdata()
+            self._savetestdata(uuid)
         finally:
             os.chdir(self.origdir)
         result_id = os.path.basename(self.resultsdir)
