@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright (c) 2010 Linaro
+# Copyright (c) 2010, 2011 Linaro
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,22 +15,35 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from setuptools import setup, find_packages
 from abrek import __version__ as version
-import sys
 
-try:
-    from DistUtilsExtra.auto import setup
-except ImportError:
-    print >> sys.stderr, 'To build lava-test you need', \
-                         'https://launchpad.net/python-distutils-extra'
-    sys.exit(1)
 
 setup(
-name='lava-test',
-version=version,
-author='Paul Larson',
-author_email='paul.larson@linaro.org',
-url='https://launchpad.net/lava-test',
-description='Lava test execution framework',
-long_description=open("README").read() + "\n",
-)
+    name='lava-test',
+    version=version,
+    author='Paul Larson',
+    author_email='paul.larson@linaro.org',
+    url='https://launchpad.net/lava-test',
+    description='Lava test execution framework',
+    long_description=open("README").read(),
+    packages=find_packages(),
+    #packages = ['lava_test', 'lava_test.test_definitions'],
+    license="AGPL",
+    test_suite='tests.test_suite',
+    scripts = ['bin/lava-test'],
+    classifiers=[
+        "Development Status :: 3 - Alpha",
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: GNU Affero General Public License v3",
+        "License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)",
+        "Operating System :: OS Independent",
+        "Programming Language :: Python :: 2.6",
+        "Topic :: Software Development :: Testing",
+    ],
+    install_requires = [
+        "linaro-dashboard-bundle",
+    ],
+    zip_safe=False,
+    include_package_data=True)
+
