@@ -1,0 +1,4 @@
+include COPYING
+include README
+include .testr.conf
+include bin/lava-test

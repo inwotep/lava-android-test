@@ -1,5 +1,7 @@
 .idea
 .testrepository
+dist
+lava_test.egg-info
 *~
 *.tmp
 *.py[co]
