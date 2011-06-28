@@ -22,8 +22,8 @@ from abrek import __version__ as version
 setup(
     name='lava-test',
     version=version,
-    author='Paul Larson',
-    author_email='paul.larson@linaro.org',
+    author='Linaro Validation Team',
+    author_email='linaro-dev@lists.linaro.org',
     url='https://launchpad.net/lava-test',
     description='Lava test execution framework',
     long_description=open("README").read(),
@@ -39,9 +39,6 @@ setup(
         "Operating System :: OS Independent",
         "Programming Language :: Python :: 2.6",
         "Topic :: Software Development :: Testing",
-    ],
-    install_requires = [
-        "linaro-dashboard-bundle",
     ],
     zip_safe=False,
     include_package_data=True)
