@@ -70,6 +70,7 @@ class cmd_install(abrek.command.AbrekCmd):
     arglist = ['*testname']
 
     def run(self):
+        self.checkroot()
         if len(self.args) != 1:
             print "please specify the name of the test to install"
             sys.exit(1)
@@ -93,6 +94,7 @@ class cmd_run(abrek.command.AbrekCmd):
                            help="Store processed test output to FILE")]
 
     def run(self):
+        self.checkroot()
         if len(self.args) != 1:
             print "please specify the name of the test to run"
             sys.exit(1)

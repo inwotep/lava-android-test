@@ -14,11 +14,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import pty
 import shutil
+import subprocess
 import sys
 import urllib2
 import urlparse
-from subprocess import Popen, PIPE
 
 _fake_files = None
 _fake_paths = None
@@ -114,12 +115,27 @@ def run_and_log(cmd, fd):
     """
     Run a command and log the output to fd
     """
-    proc = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
-    output, err = proc.communicate()
-    if output is not None:
-        fd.write(output)
-
-    return proc.returncode
+    (pid, ptyfd) = pty.fork()
+    returncode = 0
+    if pid == 0:
+        try:
+            returncode = subprocess.call(cmd, shell=True)
+        except:
+            pass
+        sys.exit(returncode)
+    else:
+        out = os.read(ptyfd, 1024)
+        while out != "":
+            fd.write(out)
+            out = ""
+            try:
+                out = os.read(ptyfd, 1024)
+            except:
+                pass
+        (ch_pid, ch_status) = os.wait()
+        ret = ch_status >> 8
+        os.close(ptyfd)
+    return ret
 
 def get_machine_type():
     """

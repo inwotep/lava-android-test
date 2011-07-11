@@ -14,6 +14,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from optparse import OptionParser
+import os
+import sys
 
 
 class _AbrekOptionParser(OptionParser):
@@ -96,6 +98,11 @@ class AbrekCmd(object):
 
     def get_subcommand(self, name):
         return None
+
+    def checkroot(self):
+        if os.getuid() != 0:
+            print >> sys.stderr, ("**** WARNING: ROOT PERMISSIONS ARE OFTEN"
+                "REQUIRED FOR THIS OPERATION ****")
 
 
 class AbrekCmdWithSubcommands(AbrekCmd):
