@@ -26,7 +26,7 @@ import abrek.testdef
 VERSION='0.2'
 URL="ftp://ftp.gmplib.org/pub/misc/gmpbench-%s.tar.bz2" %(VERSION)
 URL_gexpr="http://www.gmplib.org/gexpr.c"
-DEPS = ['gcc', 'libgmp3-dev', 'wget']
+DEPS = ['gcc', 'libgmp3-dev', 'wget', 'bzip2']
 
 INSTALLSTEPS = ['tar -xjf  gmpbench-0.2.tar.bz2',
                 'wget -c %s' %(URL_gexpr),

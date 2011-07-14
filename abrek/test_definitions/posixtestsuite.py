@@ -30,7 +30,7 @@ URL= "http://downloads.sourceforge.net/project/ltp/LTP Source/ltp-%s/"\
      "ltp-full-%s.bz2" % (VERSION, VERSION)
 MD5="6982c72429a62f3917c13b2d529ad1ce"
 INSTALLSTEPS = ['tar -xjf ltp-full-20100831.bz2']
-DEPS = ['gcc']
+DEPS = ['gcc', 'bzip2']
 RUNSTEPS = ['cd ltp-full-20100831/testcases/open_posix_testsuite/ && make']
 
 PATTERN = "((?P<test_case_id>\A(\w+[/]+)+\w+[-]*\w*[-]*\w*) .*? (?P<result>\w+))"
