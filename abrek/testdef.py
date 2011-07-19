@@ -27,7 +27,7 @@ from abrek import swprofile, hwprofile
 from abrek.api import ITest
 from abrek.bundle import DocumentIO
 from abrek.config import get_config
-from abrek.utils import Tee, geturl, run_and_log, write_file
+from abrek.utils import geturl, run_and_log, write_file
 
 
 class AbrekTest(ITest):
@@ -222,9 +222,9 @@ class AbrekTestRunner(object):
 
     def _runsteps(self, resultsdir, quiet=False):
         outputlog = os.path.join(resultsdir, 'testoutput.log')
-        with Tee(outputlog, 'a', quiet=quiet) as fd:
+        with open(outputlog, 'a') as fd:
             for cmd in self.steps:
-                run_and_log(cmd, fd)
+                run_and_log(cmd, fd, quiet)
 
     def run(self, resultsdir, quiet=False):
         self.starttime = datetime.utcnow()
@@ -245,10 +245,10 @@ class AbrekTestParser(object):
         For example: If your testoutput had lines that look like:
             "test01:  PASS", then you could use a pattern like this:
             "^(?P<testid>\w+):\W+(?P<result>\w+)"
-            This would result in identifying "test01" as testid and "PASS"
-            as result.  Once parse() has been called, self.results.test_results[]
-            contains a list of dicts of all the key,value pairs found for
-            each test result
+            This would result in identifying "test01" as testid and
+            "PASS" as result.  Once parse() has been called,
+            self.results.test_results[] contains a list of dicts of all the
+            key,value pairs found for each test result
     fixupdict - dict of strings to convert test results to standard strings
         For example: if you want to standardize on having pass/fail results
             in lower case, but your test outputs them in upper case, you could
@@ -280,7 +280,9 @@ class AbrekTestParser(object):
         try:
             pat = re.compile(self.pattern)
         except Exception as strerror:
-            raise RuntimeError("AbrekTestParser - Invalid regular expression '%s' - %s" %(self.pattern,strerror))
+            raise RuntimeError(
+                "AbrekTestParser - Invalid regular expression '%s' - %s" % (
+                    self.pattern,strerror))
 
         with open(filename, 'r') as stream:
             for lineno, line in enumerate(stream, 1):
@@ -310,7 +312,8 @@ class AbrekTestParser(object):
     def appendtoall(self, entry):
         """Append entry to each item in the test_results.
 
-        entry - dict of key,value pairs to add to each item in the test_results
+        entry - dict of key,value pairs to add to each item in the
+        test_results
         """
         for t in self.results['test_results']:
             t.update(entry)

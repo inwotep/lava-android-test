@@ -14,7 +14,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-import pty
 import shutil
 import subprocess
 import sys
@@ -24,6 +23,7 @@ import urlparse
 _fake_files = None
 _fake_paths = None
 _fake_machine = None
+
 
 class Tee(file):
     """ A file-like object that optionally mimics tee functionality.
@@ -43,25 +43,28 @@ class Tee(file):
         if self.quiet is False:
             sys.stdout.write(data)
 
+
 def geturl(url, path=""):
     urlpath = urlparse.urlsplit(url).path
     filename = os.path.basename(urlpath)
     if path:
-        filename = os.path.join(path,filename)
+        filename = os.path.join(path, filename)
     fd = open(filename, "w")
     try:
         response = urllib2.urlopen(urllib2.quote(url, safe=":/"))
         fd = open(filename, 'wb')
-        shutil.copyfileobj(response,fd,0x10000)
+        shutil.copyfileobj(response, fd, 0x10000)
         fd.close()
         response.close()
     except:
         raise RuntimeError("Could not retrieve %s" % url)
     return filename
 
+
 def write_file(data, path):
     with open(path, "w") as fd:
         fd.write(data)
+
 
 def read_file(path):
     global _fake_files
@@ -75,6 +78,7 @@ def read_file(path):
     with open(path) as fd:
         data = fd.read()
     return data
+
 
 def fake_file(path, data=None, newpath=None):
     """
@@ -94,6 +98,7 @@ def fake_file(path, data=None, newpath=None):
             _fake_paths = {}
         _fake_paths[path] = newpath
 
+
 def fake_machine(type):
     """
     Set up a fake machine type for testing
@@ -101,41 +106,33 @@ def fake_machine(type):
     global _fake_machine
     _fake_machine = type
 
+
 def clear_fakes():
     global _fake_files
     global _fake_paths
     _fake_files = {}
     _fake_paths = {}
 
+
 def clear_fake_machine():
     global _fake_machine
     _fake_machine = None
 
-def run_and_log(cmd, fd):
+
+def run_and_log(cmd, fd, quiet=False):
     """
     Run a command and log the output to fd
     """
-    (pid, ptyfd) = pty.fork()
-    returncode = 0
-    if pid == 0:
-        try:
-            returncode = subprocess.call(cmd, shell=True)
-        except:
-            pass
-        sys.exit(returncode)
-    else:
-        out = os.read(ptyfd, 1024)
-        while out != "":
-            fd.write(out)
-            out = ""
-            try:
-                out = os.read(ptyfd, 1024)
-            except:
-                pass
-        (ch_pid, ch_status) = os.wait()
-        ret = ch_status >> 8
-        os.close(ptyfd)
-    return ret
+    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT, shell=True)
+    while proc.returncode == None:
+        proc.poll()
+        data = proc.stdout.readline()
+        fd.write(data)
+        if quiet is False:
+            sys.stdout.write(data)
+    return proc.returncode
+
 
 def get_machine_type():
     """
@@ -145,4 +142,3 @@ def get_machine_type():
     if _fake_machine is None:
         return os.uname()[-1]
     return _fake_machine
-
