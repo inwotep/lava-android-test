@@ -27,7 +27,7 @@ setup(
     url='https://launchpad.net/lava-test',
     description='Lava test execution framework',
     long_description=open("README").read(),
-    packages=find_packages(),
+    packages=find_packages(exclude=['tests']),
     #packages = ['lava_test', 'lava_test.test_definitions'],
     license="GPL3",
     test_suite='tests.test_suite',
