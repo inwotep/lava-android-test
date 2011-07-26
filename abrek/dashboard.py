@@ -143,8 +143,9 @@ class cmd_dashboard(AbrekCmdWithSubcommands):
             try:
                 server = xmlrpclib.Server(hosturl)
             except IOError, e:
-                print "Error connecting to server at '%s'. Error was: %s, " \
-                    "please run 'abrek dashboard setup [host]'" % (hosturl, e)
+                print ("Error connecting to server at '%s'. Error was: %s, "
+                    "please run 'lava-test dashboard setup [host]'" % (
+                        hosturl, e))
                 sys.exit(1)
             try:
                 result = server.put(DocumentIO.dumps(bundle), result_name,
