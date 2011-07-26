@@ -60,6 +60,6 @@ def get_image(lsb_information=None):
         name = buildstamp.splitlines()[1]
     except IOError:
         if lsb_information == None:
-            lsb_information = lsb_release.get_lsb_information()
+            lsb_information = lsb_release.get_distro_information()
         name = lsb_information['DESCRIPTION']
     return {"name":name}
