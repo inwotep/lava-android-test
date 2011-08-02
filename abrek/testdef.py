@@ -104,7 +104,7 @@ class AbrekTest(ITest):
                     'time_check_performed': False,
                     'hardware_context': hwprofile.get_hardware_context(),
                     'software_context': swprofile.get_software_context(),
-                    'test_results': []
+                    'test_results': self.parser.results.get('test_results')
                 }
             ]
         }
@@ -125,6 +125,7 @@ class AbrekTest(ITest):
         try:
             os.chdir(installdir)
             self.runner.run(self.resultsdir, quiet=quiet)
+            self.parse(resultname)
             self._savetestdata(uuid)
         finally:
             os.chdir(self.origdir)
@@ -257,11 +258,12 @@ class AbrekTestParser(object):
         For example: if you would like to add units="MB/s" to each result:
             appendall={'units':'MB/s'}
     """
-    def __init__(self, pattern=None, fixupdict=None, appendall={}):
+    def __init__(self, pattern=None, fixupdict=None, appendall={}, failure_patterns=[]):
         self.pattern = pattern
         self.fixupdict = fixupdict
         self.results = {'test_results':[]}
         self.appendall = appendall
+        self.failure_patterns = failure_patterns
 
     def _find_testid(self, id):
         for x in self.results['test_results']:
@@ -283,6 +285,24 @@ class AbrekTestParser(object):
             raise RuntimeError(
                 "AbrekTestParser - Invalid regular expression '%s' - %s" % (
                     self.pattern,strerror))
+            
+        failure_pats = []
+        for failure_pattern in self.failure_patterns:
+            try:
+                failure_pat = re.compile(failure_pattern)
+            except Exception as strerror:
+                raise RuntimeError(
+                    "AbrekTestParser - Invalid regular expression '%s' - %s" % (
+                        failure_pattern, strerror))
+            failure_pats.append(failure_pat)
+        test_ok = True
+        with open(filename, 'r') as stream:
+            for lineno, line in enumerate(stream, 1):
+                if test_ok == True:
+                   for failure_pat in failure_pats:
+                        failure_match = failure_pat.search(line)
+                        if failure_match:
+                            test_ok = False
 
         with open(filename, 'r') as stream:
             for lineno, line in enumerate(stream, 1):
@@ -292,6 +312,7 @@ class AbrekTestParser(object):
                 data = match.groupdict()
                 data["log_filename"] = filename
                 data["log_lineno"] = lineno
+                data['result'] = test_ok
                 self.results['test_results'].append(data)
         if self.fixupdict:
             self.fixresults(self.fixupdict)
