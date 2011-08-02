@@ -125,6 +125,7 @@ class AbrekTest(ITest):
         try:
             os.chdir(installdir)
             self.runner.run(self.resultsdir, quiet=quiet)
+            self._copy_result()
             self.parse(resultname)
             self._savetestdata(uuid)
         finally:
@@ -143,6 +144,10 @@ class AbrekTest(ITest):
         self.parser.parse()
         os.chdir(self.origdir)
 
+    def _copy_result(self):
+        os.chdir(self.resultsdir)
+        self.runner.copy_result()
+        os.chdir(self.origdir)
 
 class AbrekTestInstaller(object):
     """Base class for defining an installer object.
@@ -217,8 +222,9 @@ class AbrekTestRunner(object):
 
     steps - list of steps to be executed in a shell
     """
-    def __init__(self, steps=[]):
+    def __init__(self, steps=[], copysteps=[]):
         self.steps = steps
+        self.copysteps = copysteps
         self.testoutput = []
 
     def _runsteps(self, resultsdir, quiet=False):
@@ -232,7 +238,14 @@ class AbrekTestRunner(object):
         self._runsteps(resultsdir, quiet=quiet)
         self.endtime = datetime.utcnow()
 
-
+    def copy_result(self):
+        """execute the copy commands in resultsdir
+        """
+        for cmd in self.copysteps:
+            rc, output = getstatusoutput(cmd)
+            if rc:
+                raise RuntimeError("Run step '%s' failed. %d : %s" %(cmd,rc,output))
+    
 class AbrekTestParser(object):
     """Base class for defining a test parser
 
