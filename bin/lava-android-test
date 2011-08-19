@@ -18,14 +18,14 @@
 import os
 import sys
 
-ABREK_BINDIR=os.path.abspath(os.path.dirname(os.path.realpath(sys.argv[0])))
-ABREK_ROOT=os.path.dirname(ABREK_BINDIR)
-ABREK_DIR=os.path.join(ABREK_ROOT,'abrek')
-if os.path.exists(ABREK_DIR) and ABREK_ROOT not in sys.path:
-    sys.path.insert(0, ABREK_ROOT)
+BINDIR=os.path.abspath(os.path.dirname(os.path.realpath(sys.argv[0])))
+ROOT=os.path.dirname(BINDIR)
+TEST_DIR=os.path.join(ROOT,'lava_android_test')
+if os.path.exists(TEST_DIR) and ROOT not in sys.path:
+    sys.path.insert(0, ROOT)
 
-import abrek.main
+import lava_android_test.main
 
 if __name__ == '__main__':
-    exit_code = abrek.main.main(sys.argv)
+    exit_code = lava_android_test.main.main(sys.argv)
     sys.exit(exit_code)
