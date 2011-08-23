@@ -16,6 +16,7 @@
 import re
 import sys
 from utils import read_file
+from lava_android_test.adb import ADB
 
 ARM_KEYMAP = {
     'Processor': 'cpu_model_name',
@@ -44,7 +45,7 @@ def _translate_cpuinfo(keymap, valmap, key, value):
     newval = valmap.get(key, lambda x: x)(value)
     return newkey, newval
 
-def get_cpu_devs(adb=None):
+def get_cpu_devs(adb=ADB()):
     """
     Return a list of CPU devices
     """
@@ -54,8 +55,7 @@ def get_cpu_devs(adb=None):
     devices = []
     cpudevs = []
     cpudevs.append({})
-    if adb is None:
-        return None
+    
     # TODO maybe there is other types
     keymap, valmap = ARM_KEYMAP, ARM_VALMAP
 
@@ -63,12 +63,14 @@ def get_cpu_devs(adb=None):
         cpuinfo = adb.read_file("/proc/cpuinfo")
         if cpuinfo is None:
             raise IOError()
-        for line in cpuinfo.splitlines():
+        for line in cpuinfo.readlines():
             match = pattern.match(line)
             if match:
                 key, value = match.groups()
-                key, value = _translate_cpuinfo(keymap, valmap,
-                    key, value)
+                try:
+                    key, value = _translate_cpuinfo(keymap, valmap, key, value)
+                except ValueError:
+                    pass
                 if cpudevs[cpunum].get(key):
                     cpunum += 1
                     cpudevs.append({})
@@ -83,26 +85,27 @@ def get_cpu_devs(adb=None):
         print >> sys.stderr, "WARNING: Could not read cpu information"
     return devices
 
-def get_board_devs(adb=None):
+def get_board_devs(adb=ADB()):
     """
     Return a list of board devices
     """
     devices = []
     attributes = {}
     device = {}
-
-    if adb is None:
-        return devices
     
     try:
-        cpuinfo = read_file("/proc/cpuinfo")
+        cpuinfo = adb.read_file("/proc/cpuinfo")
         if cpuinfo is None:
             return devices
         pattern = re.compile("^Hardware\s*:\s*(?P<description>.+)$", re.M)
-        match = pattern.search(cpuinfo)
-        if match is None:
+        found = False
+        for line in cpuinfo.readlines():
+            match = pattern.search(line)
+            if match :
+                found = True
+                device['description'] = match.group('description')
+        if not found:
             return devices
-        device['description'] = match.group('description')
     except IOError:
         print >> sys.stderr, "WARNING: Could not read board information"
         return devices
@@ -112,21 +115,23 @@ def get_board_devs(adb=None):
     devices.append(device)
     return devices
 
-def get_mem_devs(adb=None):
+def get_mem_devs(adb=ADB()):
     """ Return a list of memory devices
 
     This returns up to two items, one for physical RAM and another for swap
     """
     devices = []
-    if adb is None:
-        return devices
-    
     
     pattern = re.compile('^(?P<key>.+?)\s*:\s*(?P<value>.+) kB$', re.M)
 
     try:
         meminfo = adb.read_file("/proc/meminfo")
-        for match in pattern.finditer(meminfo):
+        if meminfo is None:
+            raise IOError()
+        for line in meminfo.readlines():
+            match = pattern.search(line)
+            if not match:
+                continue
             key, value = match.groups()
             if key not in ('MemTotal', 'SwapTotal'):
                 continue
@@ -160,3 +165,6 @@ def get_hardware_context():
     hardware_context['devices'] = devices
     return hardware_context
 
+
+if __name__ == '__main__':
+    print str(get_hardware_context())

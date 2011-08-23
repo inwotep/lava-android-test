@@ -15,7 +15,7 @@
 
 import lava_android_test.testdef
 
-RUNSTEPS = ['monkey -s 1 --pct-touch 10 --pct-motion 20 --pct-nav 20 --pct-majornav 30 --pct-appswitch 20 --throttle 500 500']
+RUNSTEPS = ['monkey -s 1 --pct-touch 10 --pct-motion 20 --pct-nav 20 --pct-majornav 30 --pct-appswitch 20 --throttle 500 100']
 #PATTERN = "^(?P<test_case_id>\w+):\W+(?P<measurement>\d+\.\d+)"
 PATTERN = "## Network stats: elapsed time=(?P<measurement>\d+)ms"
 FAILURE_PATTERNS = ['\*\* Monkey aborted due to error.',

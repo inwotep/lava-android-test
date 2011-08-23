@@ -151,9 +151,14 @@ class ADB(object):
             return (ret_code, None)
         
     def read_file(self, filepath):
-        (ret_code, output) = self.run_cmd_host('%s shell cat %s' % (self.adb, filepath), False)
-        if ret_code == 0:
-            return output
+        cmd = '%s shell cat %s' % (self.adb, filepath)
+        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT, shell=True)
+        returncode = proc.wait()
+        stdout = proc.stdout
+       
+        if returncode == 0:
+            return stdout
         else:
             return None 
     

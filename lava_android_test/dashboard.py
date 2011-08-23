@@ -27,6 +27,7 @@ from lava_android_test.bundle import DocumentIO
 from lava_android_test.command import AndroidTestCmd, AndroidTestCmdWithSubcommands
 from lava_android_test.config import get_config
 from lava_android_test.testdef import testloader
+from lava_android_test.adb import ADB
 
 
 class DashboardConfig(object):
@@ -167,34 +168,26 @@ class cmd_dashboard(AndroidTestCmdWithSubcommands):
         Print JSON output that can be imported into the dashboard
         """
         arglist = ["*result"]
+        options = [make_option("-s", "--serial", dest="serial")]
 
         def run(self):
             if len(self.args) != 1:
                 print "You must specify a result"
                 sys.exit(1)
-            bundle = generate_bundle(self.args[0])
+            bundle = generate_bundle(self.args[0], ADB(self.opts.serial))
             try:
                 print DocumentIO.dumps(bundle)
             except IOError:
                 pass
 
-
 def generate_bundle(result, adb=None):
     config = get_config()
     if adb is None:
-        resultdir = os.path.join(config.tempdir_host, result)
-        if not os.path.exists(resultdir):
-            # FIXME: UI and sys.exit mixed with internal implementation, yuck
-            print "Result directory not found"
-            sys.exit(1)
-        with open(os.path.join(resultdir, "testdata.json")) as stream:
-            bundle_text = stream.read()
-        with open(os.path.join(resultdir, "testoutput.log")) as stream:
-            output_text = stream.read()
+        return {}
     else:
         resultdir = os.path.join(config.resultsdir_andorid, result)
-        
-        
+        bundle_text = adb.read_file(os.path.join(resultdir, "testdata.json"))
+        output_text = adb.read_file(os.path.join(resultdir, "testoutput.log"))
         
     fmt, bundle = DocumentIO.loads(bundle_text)
     test = testloader(bundle['test_runs'][0]['test_id'])

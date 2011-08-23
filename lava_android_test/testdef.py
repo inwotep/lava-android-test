@@ -114,8 +114,6 @@ class AndroidTest(ITest):
         }
         config = get_config()
         filename_host = os.path.join(config.tempdir_host, 'testdata.json')
-        if os.path.exists(filename_host):
-            os.remove(filename_host)
         write_file(DocumentIO.dumps(bundle), filename_host)
         filename_target = os.path.join(self.resultsdir, 'testdata.json')
         self.adb.push(filename_host, filename_target)
@@ -149,7 +147,6 @@ class AndroidTest(ITest):
         os.chdir(self.resultsdir)
         self.runner.copy_result()
         os.chdir(self.origdir)
-
 
 class AndroidTestInstaller(object):
     
