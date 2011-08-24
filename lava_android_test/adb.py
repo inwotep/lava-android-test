@@ -135,8 +135,16 @@ class ADB(object):
         return 0
     
     def makedirs(self, dirpath):
-        ret_code = self.shell("mkdir -p %s" % dirpath)
-        return ret_code
+        dirpaths = dirpath.split('/')
+        dir_contact = '/'
+        for dir in dirpaths:
+            dir_contact = os.path.join(dir_contact, dir)
+            if self.exists(dir_contact):
+                continue
+            ret_code = self.shell("mkdir %s" % dir_contact)
+            if ret_code != 0:
+                return ret_code
+        return 0
     
     def rmtree(self, dirpath):
         ret_code = self.shell("rm -r %s" % dirpath)

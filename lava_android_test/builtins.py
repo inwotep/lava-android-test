@@ -123,7 +123,7 @@ class cmd_uninstall(AndroidTestCmd):
         if len(self.args) != 1:
             print "please specify the name of the test to uninstall"
             sys.exit(1)
-        test = testloader(self.args[0])
+        test = testloader(self.args[0], self.opts.serial)
         try:
             test.uninstall()
         except Exception as strerror:

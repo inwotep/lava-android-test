@@ -76,7 +76,9 @@ class AndroidTest(ITest):
         installdir = os.path.join(config.installdir_android, self.testname)
         if self.adb.exists(installdir):
             raise RuntimeError("%s is already installed" % self.testname)
-        self.adb.makedirs(installdir)
+        ret_code = self.adb.makedirs(installdir)
+        if ret_code != 0:
+            raise RuntimeError("Failed to create directory(%s) for test(%s)" % (installdir, self.testname))
         try:
             self.installer.install()
         except Exception :
@@ -122,6 +124,7 @@ class AndroidTest(ITest):
         if not self.runner:
             raise RuntimeError("no test runner defined for '%s'" %
                                 self.testname)
+        self.runner.setadb(self.adb)
         config = get_config()
         resultname = (self.testname +
                      str(time.mktime(datetime.utcnow().timetuple())))
@@ -141,11 +144,6 @@ class AndroidTest(ITest):
         resultsdir = os.path.join(config.resultsdir, resultname)
         os.chdir(resultsdir)
         self.parser.parse()
-        os.chdir(self.origdir)
-
-    def _copy_result(self):
-        os.chdir(self.resultsdir)
-        self.runner.copy_result()
         os.chdir(self.origdir)
 
 class AndroidTestInstaller(object):
@@ -243,8 +241,7 @@ class AndroidTestRunner(object):
             if ret_code != 0:
                 break
         
-        propoutputlog=os.path.join(resultsdir, 'propoutput.log')
-        self.adb.shell('getprop', propoutputlog)
+        self.adb.shell('getprop', os.path.join(resultsdir, 'propoutput.log'))
         self.adb.shell('cat /proc/cpuinfo', os.path.join(resultsdir, 'cpuinfo.log'))
         self.adb.shell('cat /proc/meminfo', os.path.join(resultsdir, 'meminfo.log'))
 
