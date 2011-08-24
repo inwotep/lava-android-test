@@ -150,6 +150,14 @@ class ADB(object):
         ret_code = self.shell("rm -r %s" % dirpath)
         return ret_code
     
+    def move(self, srcdir, destdir):
+        if srcdir is None:
+            return 0
+        if destdir is None:
+            return 0
+        ret_code = self.shell("mv %s %s" % (srcdir, destdir))
+        return ret_code
+    
     def listdir(self, dirpath):
         ret_code = self.shell("ls %s" % dirpath)
         if ret_code == 0:

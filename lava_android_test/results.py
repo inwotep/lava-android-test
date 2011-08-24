@@ -14,30 +14,34 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-import shutil
 import sys
 from optparse import make_option
 
 from lava_android_test.command import AndroidTestCmd, AndroidTestCmdWithSubcommands
 from lava_android_test.config import get_config
-from lava_android_test.utils import read_file
-
+from lava_android_test.adb import ADB
 
 class cmd_results(AndroidTestCmdWithSubcommands):
     """
-    Operate on results of previous test runs stored locally
+        Operate on results of previous test runs stored on android device
     """
-
     class cmd_list(AndroidTestCmd):
         """
         List results of previous runs
         """
+        options = [make_option('-s', '--serial', 
+                               help='Specify the serial number when multiple devices connected')]
+
         def run(self):
             config = get_config()
             print "Saved results:"
             try:
-                for dir in os.listdir(config.resultsdir):
-                    print dir
+                adb=ADB(self.opts.serial)
+                (ret_code, output)=adb.listdir(config.resultsdir_andorid)
+                if ret_code != 0:
+                    raise OSError()
+                for dir in output:
+                    print dir.strip()
             except OSError:
                 print "No results found"
 
@@ -47,18 +51,25 @@ class cmd_results(AndroidTestCmdWithSubcommands):
         Display the output from a previous test run
         """
         arglist = ['*result']
+        options = [make_option('-s', '--serial', 
+                               help='Specify the serial number when multiple devices connected')]
+
         def run(self):
             if len(self.args) != 1:
                 print "please specify the name of the result dir"
                 sys.exit(1)
             config = get_config()
-            resultsdir = os.path.join(config.resultsdir, self.args[0])
+            resultsdir = os.path.join(config.resultsdir_andorid, self.args[0])
             testoutput = os.path.join(resultsdir, "testoutput.log")
-            if not os.path.exists(testoutput):
+            adb = ADB(self.opts.serial)
+            if not adb.exists(testoutput):
                 print "No result found for '%s'" % self.args[0]
                 sys.exit(1)
             try:
-                print(read_file(testoutput))
+                output = adb.read_file(testoutput)
+                if output is not None:
+                    for line in output.readlines():
+                        print line.strip()
             except IOError:
                 pass
 
@@ -69,14 +80,17 @@ class cmd_results(AndroidTestCmdWithSubcommands):
         """
         arglist = ['*result']
         options = [make_option('-f', '--force', action='store_true',
-                               dest='force')]
+                               dest='force'),
+                   make_option('-s', '--serial', 
+                               help='Specify the serial number when multiple devices connected')]
         def run(self):
             if len(self.args) != 1:
                 print "please specify the name of the result dir"
                 sys.exit(1)
             config = get_config()
-            resultsdir = os.path.join(config.resultsdir, self.args[0])
-            if not os.path.exists(resultsdir):
+            resultsdir = os.path.join(config.resultsdir_andorid, self.args[0])
+            adb = ADB(self.opts.serial)
+            if not adb.exists(resultsdir):
                 print "No result found for '%s'" % self.args[0]
                 sys.exit(1)
             if not self.opts.force:
@@ -84,7 +98,7 @@ class cmd_results(AndroidTestCmdWithSubcommands):
                 response = raw_input()
                 if response[0].upper() != 'Y':
                     sys.exit(0)
-            shutil.rmtree(resultsdir)
+            adb.rmtree(resultsdir)
 
 
     class cmd_rename(AndroidTestCmd):
@@ -92,20 +106,23 @@ class cmd_results(AndroidTestCmdWithSubcommands):
         Rename the results from a previous test run
         """
         arglist = ['*source', '*destination']
+        options = [make_option('-s', '--serial', 
+                               help='Specify the serial number when multiple devices connected')]
 
         def run(self):
             if len(self.args) != 2:
                 print "please specify the name of the result, and the new name"
                 sys.exit(1)
             config = get_config()
-            srcdir = os.path.join(config.resultsdir, self.args[0])
-            destdir = os.path.join(config.resultsdir, self.args[1])
-            if not os.path.exists(srcdir):
+            srcdir = os.path.join(config.resultsdir_andorid, self.args[0])
+            destdir = os.path.join(config.resultsdir_andorid, self.args[1])
+            adb = ADB(self.opts.serial)
+            if not adb.exists(srcdir):
                 print "Result directory not found"
                 sys.exit(1)
-            if os.path.exists(destdir):
+            if adb.exists(destdir):
                 print "Destination result name already exists"
                 sys.exit(1)
-            shutil.move(srcdir, destdir)
+            adb.move(srcdir, destdir)
 
 
