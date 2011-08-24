@@ -153,18 +153,14 @@ def get_mem_devs(adb=ADB()):
         print >> sys.stderr, "WARNING: Could not read memory information"
     return devices
 
-def get_hardware_context():
+def get_hardware_context(adb=ADB()):
     """
     Return a dict with all of the hardware profile information gathered
     """
     hardware_context = {}
     devices = []
-    devices.extend(get_cpu_devs())
-    devices.extend(get_board_devs())
-    devices.extend(get_mem_devs())
+    devices.extend(get_cpu_devs(adb))
+    devices.extend(get_board_devs(adb))
+    devices.extend(get_mem_devs(adb))
     hardware_context['devices'] = devices
     return hardware_context
-
-
-if __name__ == '__main__':
-    print str(get_hardware_context())

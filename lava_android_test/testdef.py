@@ -107,8 +107,8 @@ class AndroidTest(ITest):
                     'analyzer_assigned_date': self.runner.starttime.strftime(TIMEFORMAT),
                     'analyzer_assigned_uuid': analyzer_assigned_uuid,
                     'time_check_performed': False,
-                    'hardware_context': hwprofile.get_hardware_context(),
-                    'software_context': swprofile.get_software_context(),
+                    'hardware_context': hwprofile.get_hardware_context(self.adb),
+                    'software_context': swprofile.get_software_context(self.adb),
                 }
             ]
         }
@@ -312,7 +312,7 @@ class AndroidTestParser(object):
         """
         filename = "testoutput.log"
         try:
-           pat = re.compile(self.pattern)
+            pat = re.compile(self.pattern)
         except Exception as strerror:
             raise RuntimeError(
                 "AbrekTestParser - Invalid regular expression '%s' - %s" % (
@@ -331,7 +331,7 @@ class AndroidTestParser(object):
         with open(filename, 'r') as stream:
             for lineno, line in enumerate(stream, 1):
                 if test_ok == True:
-                   for failure_pat in failure_pats:
+                    for failure_pat in failure_pats:
                         failure_match = failure_pat.search(line)
                         if failure_match:
                             test_ok = False

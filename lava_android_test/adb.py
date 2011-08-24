@@ -160,7 +160,21 @@ class ADB(object):
         if returncode == 0:
             return stdout
         else:
-            return None 
+            return None
+    
+    def get_shellcmdoutput(self, cmd=None):
+        if cmd is None:
+            return None
+        cmd = '%s shell %s' % (self.adb, cmd)
+        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT, shell=True)
+        returncode = proc.wait()
+        stdout = proc.stdout
+       
+        if returncode == 0:
+            return stdout
+        else:
+            return None
     
     def run_cmd_host(self, cmd, quiet=False):
         proc = subprocess.Popen(cmd, stdout=subprocess.PIPE,
