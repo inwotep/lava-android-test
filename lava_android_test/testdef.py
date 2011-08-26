@@ -140,11 +140,7 @@ class AndroidTest(ITest):
         if not self.parser:
             raise RuntimeError("no test parser defined for '%s'" %
                                 self.testname)
-        config = get_config()
-        resultsdir = os.path.join(config.resultsdir, resultname)
-        os.chdir(resultsdir)
-        self.parser.parse()
-        os.chdir(self.origdir)
+        self.parser.parse(resultname)
 
 class AndroidTestInstaller(object):
     
@@ -286,6 +282,9 @@ class AndroidTestParser(object):
     appendall - Append a dict to the test_results entry for each result.
         For example: if you would like to add units="MB/s" to each result:
             appendall={'units':'MB/s'}
+    failure_patterns - regexp pattern to identify whether the test is failed or success
+        If there is a string match one pattern in failure_patterns, 
+        then this test will be deal as failed. 
     """
     def __init__(self, pattern=None, fixupdict=None, appendall={}, failure_patterns=[]):
         self.pattern = pattern
@@ -299,7 +298,7 @@ class AndroidTestParser(object):
             if x['testid'] == id:
                 return self.results['test_results'].index(x)
 
-    def parse(self):
+    def parse(self,resultname):
         """Parse test output to gather results
 
         Use the pattern specified when the class was instantiated to look
@@ -307,7 +306,12 @@ class AndroidTestParser(object):
         Results are then stored in self.results.  If a fixupdict was supplied
         it is used to convert test result strings to a standard format.
         """
-        filename = "testoutput.log"
+        config = get_config()
+        filename = 'testoutput.log'
+        resultsdir_android = os.path.join(config.resultsdir_andorid, resultname)
+        result_filename_android = os.path.join(resultsdir_android, filename)
+        result_filename_host_temp = os.path.join(config.tempdir_host, filename)
+        self.adb.pull(result_filename_android, result_filename_host_temp)
         try:
             pat = re.compile(self.pattern)
         except Exception as strerror:
@@ -325,16 +329,15 @@ class AndroidTestParser(object):
                         failure_pattern, strerror))
             failure_pats.append(failure_pat)
         test_ok = True
-        with open(filename, 'r') as stream:
+
+        with open(result_filename_host_temp, 'r') as stream:
             for lineno, line in enumerate(stream, 1):
                 if test_ok == True:
                     for failure_pat in failure_pats:
                         failure_match = failure_pat.search(line)
                         if failure_match:
                             test_ok = False
-
-        with open(filename, 'r') as stream:
-            for lineno, line in enumerate(stream, 1):
+                
                 match = pat.search(line)
                 if not match:
                     continue

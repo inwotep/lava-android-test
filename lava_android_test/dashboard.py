@@ -131,6 +131,7 @@ class cmd_dashboard(AndroidTestCmdWithSubcommands):
         The stream name must include slashes (e.g. /anonymous/foo/)
         """
         arglist = ["*stream", "*result"]
+        options = [make_option("-s", "--serial", dest="serial")]
 
         def run(self):
             if len(self.args) != 2:
@@ -138,7 +139,7 @@ class cmd_dashboard(AndroidTestCmdWithSubcommands):
                 sys.exit(1)
             stream_name = self.args[0]
             result_name = self.args[1]
-            bundle = generate_bundle(result_name)
+            bundle = generate_bundle(result_name, ADB(self.opts.serial))
             db_config = DashboardConfig()
             hosturl = urllib.basejoin(db_config.host, "xml-rpc/")
             try:
@@ -186,8 +187,8 @@ def generate_bundle(result, adb=None):
         return {}
     else:
         resultdir = os.path.join(config.resultsdir_andorid, result)
-        bundle_text = adb.read_file(os.path.join(resultdir, "testdata.json"))
-        output_text = adb.read_file(os.path.join(resultdir, "testoutput.log"))
+        bundle_text = adb.read_file(os.path.join(resultdir, "testdata.json")).read()
+        output_text = adb.read_file(os.path.join(resultdir, "testoutput.log")).read()
         
     fmt, bundle = DocumentIO.loads(bundle_text)
     test = testloader(bundle['test_runs'][0]['test_id'])
