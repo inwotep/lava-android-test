@@ -15,14 +15,14 @@
 
 import lava_android_test.testdef
 
-RUNSTEPS = ['monkey -s 1 --pct-touch 10 --pct-motion 20 --pct-nav 20 --pct-majornav 30 --pct-appswitch 20 --throttle 500 100']
+ADB_SHELL_STEPS = ['monkey -s 1 --pct-touch 10 --pct-motion 20 --pct-nav 20 --pct-majornav 30 --pct-appswitch 20 --throttle 500 100']
 #PATTERN = "^(?P<test_case_id>\w+):\W+(?P<measurement>\d+\.\d+)"
 PATTERN = "## Network stats: elapsed time=(?P<measurement>\d+)ms"
 FAILURE_PATTERNS = ['\*\* Monkey aborted due to error.',
                     '\*\* System appears to have crashed']
 
 inst = lava_android_test.testdef.AndroidTestInstaller()
-run = lava_android_test.testdef.AndroidTestRunner(RUNSTEPS)
+run = lava_android_test.testdef.AndroidTestRunner(adbshell_steps=ADB_SHELL_STEPS)
 parser = lava_android_test.testdef.AndroidTestParser(PATTERN,
                appendall={'units':'ms'}, failure_patterns=FAILURE_PATTERNS)
 testobj = lava_android_test.testdef.AndroidTest(testname="android-monkey", installer=inst,

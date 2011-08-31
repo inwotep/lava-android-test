@@ -14,12 +14,16 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 import sys
 import pexpect
+import time
+serial = sys.argv[1]
+if serial is None:
+    logcat_cmd = "adb logcat"
+else:
+    logcat_cmd = "adb -s %s logcat" % (serial)
 
 pattern = "Displayed org.zeroxlab.benchmark/.Report"
-logcat_cmd = "adb logcat"
 result = True
 try:
     proc = pexpect.spawn(logcat_cmd, logfile=sys.stdout)
@@ -31,6 +35,8 @@ except pexpect.TIMEOUT:
     result = False
 finally:
     proc.sendcontrol('C')
+
+time.sleep(3)
 
 if result:
     sys.exit(0)

@@ -185,14 +185,15 @@ def generate_bundle(result, adb=None):
     config = get_config()
     if adb is None:
         return {}
-    else:
-        resultdir = os.path.join(config.resultsdir_andorid, result)
-        bundle_text = adb.read_file(os.path.join(resultdir, "testdata.json")).read()
-        output_text = adb.read_file(os.path.join(resultdir, "testoutput.log")).read()
+    resultdir = os.path.join(config.resultsdir_andorid, result)
+    bundle_text = adb.read_file(os.path.join(resultdir, "testdata.json")).read()
+
         
     fmt, bundle = DocumentIO.loads(bundle_text)
     test = testloader(bundle['test_runs'][0]['test_id'])
+    
     test.parse(result)
+    output_text = adb.read_file(os.path.join(resultdir, os.path.basename(test.org_ouput_file))).read()
     bundle['test_runs'][0]["test_results"] = test.parser.results["test_results"]
     bundle['test_runs'][0]["attachments"] = [
         {

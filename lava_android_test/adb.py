@@ -158,6 +158,14 @@ class ADB(object):
         ret_code = self.shell("mv %s %s" % (srcdir, destdir))
         return ret_code
     
+    def copy(self, source_file, target):
+        if source_file is None:
+            return 0
+        if target is None:
+            return 0
+        ret_code = self.shell("cp %s %s" % (source_file, target))
+        return ret_code
+    
     def listdir(self, dirpath):
         ret_code = self.shell("ls %s" % dirpath)
         if ret_code == 0:

@@ -20,27 +20,20 @@ import lava_android_test.testdef
 curdir = os.path.realpath(os.path.dirname(__file__))
 
 URL='https://android-build.linaro.org/jenkins/job/linaro-android_leb-panda/lastSuccessfulBuild/artifact/build/out/target/product/pandaboard/system.tar.bz2'
-INSTALLSTEPS = ['cp -rf %s/android-0xbenchmark/* .'%curdir,
-                'tar jxvf system.tar.bz2', 
-                'cp system/app/ZeroXBenchmark.apk ./']
+INSTALL_STEPS_HOST = ['tar jxvf system.tar.bz2', 
+                          'cp system/app/ZeroXBenchmark.apk ./']
+APK_FILE = 'ZeroXBenchmark.apk'
+
 #RUNSTEPS = ['adb shell am start -n org.zeroxlab.benchmark/org.zeroxlab.benchmark.Benchmark --ez math true --ez 2d true --ez 3d true --ez vm true --ez autorun true',
-RUNSTEPS = ['rm -fr ./0xBenchmark ./0xBenchmark.bundle ./0xBenchmark.xml'
-            'adb shell rm /sdcard/0xBenchmark',
-            'adb shell rm /sdcard/0xBenchmark.bundle',
-            'adb shell rm /sdcard/0xBenchmark.xml',
-            'adb uninstall org.zeroxlab.benchmark',
-            'adb install ZeroXBenchmark.apk',
-            'adb logcat -c',
-            'adb shell am start -n org.zeroxlab.benchmark/org.zeroxlab.benchmark.Benchmark --ez math true --ez vm true --ez autorun true', 
-            'python android_0xbenchmark_wait.py',
-            'sleep 3']
-COPYSTEPS =['adb pull /sdcard/0xBenchmark',
-            'adb pull /sdcard/0xBenchmark.bundle',
-            'adb pull /sdcard/0xBenchmark.xml']
+
+RUN_STEPS_HOST_PRE=[] 
+RUN_STEPS_ADB_SHELL = ['am start -n org.zeroxlab.benchmark/org.zeroxlab.benchmark.Benchmark --ez math true --ez vm true --ez autorun true']
+RUN_STEPS_HOST_POST = ['cp -rf %s/peacekeeper/* .'%curdir,
+                       'python android_0xbenchmark_wait.py \%serial\%']
 
 class ZeroXBenchmarkTestParser(lava_android_test.testdef.AndroidTestParser):
 
-    def parse(self):
+    def parse(self, resultname, output_filename='0xBenchmark.bundle'):
         """Parse test output to gather results
         Use the pattern specified when the class was instantiated to look
         through the results line-by-line and find lines that match it.
@@ -51,8 +44,8 @@ class ZeroXBenchmarkTestParser(lava_android_test.testdef.AndroidTestParser):
         #so first use the xml format
         #filename = '0xBenchmark.xml'
         #self.results['test_results']={'test':'ok'}
-        filename = "0xBenchmark.bundle"
-        with open(filename) as stream:
+#        filename = "0xBenchmark.bundle"
+        with open(output_filename) as stream:
             test_results_data =  stream.read()
             test_results_json = json.loads(test_results_data)
             self.results['test_results'] = test_results_json['test_runs'][0]['test_results']
@@ -63,8 +56,8 @@ class ZeroXBenchmarkTestParser(lava_android_test.testdef.AndroidTestParser):
         self.fixmeasurements()
         self.fixids()
 
-inst = lava_android_test.testdef.AndroidTestInstaller(INSTALLSTEPS, url=URL)
-run = lava_android_test.testdef.AndroidTestRunner(RUNSTEPS, copysteps=COPYSTEPS)
+inst = lava_android_test.testdef.AndroidTestInstaller(steps_host=INSTALL_STEPS_HOST, apks=[APK_FILE],url=URL)
+run = lava_android_test.testdef.AndroidTestRunner(RUNSTEPS, adbshell_steps=RUN_STEPS_ADB_SHELL)
 parser = ZeroXBenchmarkTestParser()
 testobj = lava_android_test.testdef.AndroidTest(testname="android-0xbenchmark", installer=inst,
-                                  runner=run, parser=parser)
+                                  runner=run, parser=parser, org_ouput_file='/sdcard/0xBenchmark.bundle')
