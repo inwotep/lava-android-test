@@ -210,6 +210,9 @@ class ADB(object):
        
         return (returncode, stdout)
 
+    def devices(self):
+        return self.run_cmd_host('%s devices' % self.adb)
+
 if __name__ == '__main__':
     adb = ADB()
     cmd = 'ls /data/lava-android-test'

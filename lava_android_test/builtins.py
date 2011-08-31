@@ -153,6 +153,24 @@ class cmd_list_installed(AndroidTestCmd):
         except OSError:
             print "No tests installed"
 
+class cmd_list_devices(AndroidTestCmd):
+    """
+    List tests that are currently installed
+    """
+    
+    def run(self):
+        self.adb = ADB()
+        
+        try:
+            (ret_code, output) = self.adb.devices()
+            if output is not None:
+                for line in output:
+                    print line.strip()
+            else:
+                print "No device attached"
+        except OSError:
+            print "No device attached"
+
 
 class cmd_list_tests(AndroidTestCmd):
     """

@@ -416,6 +416,9 @@ def _run_steps_host(steps=[], serial=None):
     for cmd in steps:
         if serial is not None:
             cmd = cmd.replace('\%serial\%', serial)
+        else:
+            cmd = cmd.replace('\%serial\%', '')
+        cmd = cmd.strip()
         rc, output = getstatusoutput(cmd)
         if rc:
            raise RuntimeError("Run step '%s' failed. %d : %s" %(cmd,rc,output))

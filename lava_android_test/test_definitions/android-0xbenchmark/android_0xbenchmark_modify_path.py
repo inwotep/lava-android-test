@@ -15,17 +15,20 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import sys
-import pexpect
-import time
-from lava_android_test.adb import ADB
-
-adb = ADB(sys.argv[1])
+from commands import getstatusoutput
+# 'lava_android_test/test_definitions/android-0xbenchmark/'
 
 source='ZeroxBench_Preference.xml'
 target = '/data/data/org.zeroxlab.benchmark/shared_prefs/ZeroxBench_Preference.xml'
-(ret, target)=adb.push(source, target)
-if ret == 0:
+
+if len(sys.argv) == 1:
+    cmd = 'adb push %s %s' % (source, target)
+else:
+    cmd = 'adb -s %s push %s %s' % (sys.argv[1], source, target)
+
+rc, output = getstatusoutput(cmd)
+if rc == 0:
     sys.exit(0)
 else:
-    print 'Failed to push file(%s) to file(%s)' % (source, target)
+    print 'Failed to push file(%s) to file(%s): %s' % (source, target, output)
     sys.exit(1)

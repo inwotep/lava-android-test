@@ -17,12 +17,12 @@
 import sys
 import pexpect
 import time
-serial = sys.argv[1]
-if serial is None:
+
+if len(sys.argv) == 1:
     logcat_cmd = "adb logcat"
 else:
-    logcat_cmd = "adb -s %s logcat" % (serial)
-
+    logcat_cmd = "adb -s %s logcat" % (sys.argv[1])
+    
 pattern = "Displayed activity org.zeroxlab.benchmark/.Report"
 result = True
 try:

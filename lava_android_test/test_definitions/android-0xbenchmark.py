@@ -16,7 +16,6 @@ import os
 import json
 
 import lava_android_test.testdef
-from lava_android_test.config import get_config
 
 curdir = os.path.realpath(os.path.dirname(__file__))
 
@@ -55,10 +54,10 @@ class ZeroXBenchmarkTestParser(lava_android_test.testdef.AndroidTestParser):
         self.fixmeasurements()
         self.fixids()
 
-config = get_config()
+save_dir='/data/data/org.zeroxlab.benchmark/shared_prefs'
 #inst = lava_android_test.testdef.AndroidTestInstaller(steps_host_pre=INSTALL_STEPS_HOST_PRE, apks=[APK_FILE], steps_host_post=INSTALL_STEPS_HOST_POST, url=URL)
 inst = lava_android_test.testdef.AndroidTestInstaller(steps_host_post=INSTALL_STEPS_HOST_POST)
 run = lava_android_test.testdef.AndroidTestRunner(adbshell_steps=RUN_STEPS_ADB_SHELL, steps_host_post=RUN_STEPS_HOST_POST)
 parser = ZeroXBenchmarkTestParser()
 testobj = lava_android_test.testdef.AndroidTest(testname="android-0xbenchmark", installer=inst,
-                                  runner=run, parser=parser, org_ouput_file=os.path.join(config.tempdir_andorid, '0xBenchmark.bundle'))
+                                  runner=run, parser=parser, org_ouput_file=os.path.join(save_dir, '0xBenchmark.bundle'))
