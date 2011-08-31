@@ -17,28 +17,15 @@
 import sys
 import pexpect
 import time
-serial = sys.argv[1]
-if serial is None:
-    logcat_cmd = "adb logcat"
-else:
-    logcat_cmd = "adb -s %s logcat" % (serial)
+from lava_android_test.adb import ADB
 
-pattern = "Displayed activity org.zeroxlab.benchmark/.Report"
-result = True
-try:
-    proc = pexpect.spawn(logcat_cmd, logfile=sys.stdout)
-    id = proc.expect([pattern, pexpect.EOF], timeout=None)
-    if id == 0:
-        proc.sendcontrol('C')
-except pexpect.TIMEOUT:
-    print "0xbench Test: TIMEOUT Fail"
-    result = False
-finally:
-    proc.sendcontrol('C')
+adb = ADB(sys.argv[1])
 
-time.sleep(3)
-
-if result:
+source='ZeroxBench_Preference.xml'
+target = '/data/data/org.zeroxlab.benchmark/shared_prefs/ZeroxBench_Preference.xml'
+(ret, target)=adb.push(source, target)
+if ret == 0:
     sys.exit(0)
 else:
+    print 'Failed to push file(%s) to file(%s)' % (source, target)
     sys.exit(1)

@@ -16,19 +16,23 @@ import os
 import json
 
 import lava_android_test.testdef
+from lava_android_test.config import get_config
 
 curdir = os.path.realpath(os.path.dirname(__file__))
 
 URL='https://android-build.linaro.org/jenkins/job/linaro-android_leb-panda/lastSuccessfulBuild/artifact/build/out/target/product/pandaboard/system.tar.bz2'
-INSTALL_STEPS_HOST = ['tar jxvf system.tar.bz2', 
+INSTALL_STEPS_HOST_PRE = ['tar jxvf system.tar.bz2', 
                           'cp system/app/ZeroXBenchmark.apk ./']
 APK_FILE = 'ZeroXBenchmark.apk'
-
+INSTALL_STEPS_HOST_POST = ['cp -rf %s/android-0xbenchmark/android_0xbenchmark_modify_path.py .'%curdir,
+                           'cp -rf %s/android-0xbenchmark/ZeroxBench_Preference.xml .'%curdir,
+                          'python android_0xbenchmark_modify_path.py \%serial\%']
 #RUNSTEPS = ['adb shell am start -n org.zeroxlab.benchmark/org.zeroxlab.benchmark.Benchmark --ez math true --ez 2d true --ez 3d true --ez vm true --ez autorun true',
 
 RUN_STEPS_HOST_PRE=[] 
-RUN_STEPS_ADB_SHELL = ['am start -n org.zeroxlab.benchmark/org.zeroxlab.benchmark.Benchmark --ez math true --ez vm true --ez autorun true']
-RUN_STEPS_HOST_POST = ['cp -rf %s/peacekeeper/* .'%curdir,
+RUN_STEPS_ADB_SHELL = ['logcat -c',
+                       'am start -n org.zeroxlab.benchmark/org.zeroxlab.benchmark.Benchmark --ez math true --ez vm true --ez autorun true']
+RUN_STEPS_HOST_POST = ['cp -rf %s/android-0xbenchmark/android_0xbenchmark_wait.py .'%curdir,
                        'python android_0xbenchmark_wait.py \%serial\%']
 
 class ZeroXBenchmarkTestParser(lava_android_test.testdef.AndroidTestParser):
@@ -40,11 +44,6 @@ class ZeroXBenchmarkTestParser(lava_android_test.testdef.AndroidTestParser):
         Results are then stored in self.results.  If a fixupdict was supplied
         it is used to convert test result strings to a standard format.
         """
-        #don't know when the bundle format will be created,
-        #so first use the xml format
-        #filename = '0xBenchmark.xml'
-        #self.results['test_results']={'test':'ok'}
-#        filename = "0xBenchmark.bundle"
         with open(output_filename) as stream:
             test_results_data =  stream.read()
             test_results_json = json.loads(test_results_data)
@@ -56,8 +55,10 @@ class ZeroXBenchmarkTestParser(lava_android_test.testdef.AndroidTestParser):
         self.fixmeasurements()
         self.fixids()
 
-inst = lava_android_test.testdef.AndroidTestInstaller(steps_host=INSTALL_STEPS_HOST, apks=[APK_FILE],url=URL)
-run = lava_android_test.testdef.AndroidTestRunner(RUNSTEPS, adbshell_steps=RUN_STEPS_ADB_SHELL)
+config = get_config()
+#inst = lava_android_test.testdef.AndroidTestInstaller(steps_host_pre=INSTALL_STEPS_HOST_PRE, apks=[APK_FILE], steps_host_post=INSTALL_STEPS_HOST_POST, url=URL)
+inst = lava_android_test.testdef.AndroidTestInstaller(steps_host_post=INSTALL_STEPS_HOST_POST)
+run = lava_android_test.testdef.AndroidTestRunner(adbshell_steps=RUN_STEPS_ADB_SHELL, steps_host_post=RUN_STEPS_HOST_POST)
 parser = ZeroXBenchmarkTestParser()
 testobj = lava_android_test.testdef.AndroidTest(testname="android-0xbenchmark", installer=inst,
-                                  runner=run, parser=parser, org_ouput_file='/sdcard/0xBenchmark.bundle')
+                                  runner=run, parser=parser, org_ouput_file=os.path.join(config.tempdir_andorid, '0xBenchmark.bundle'))

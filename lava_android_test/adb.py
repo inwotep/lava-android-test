@@ -17,7 +17,9 @@ import os
 import re 
 import subprocess
 import tempfile
+from lava_android_test.config import get_config
 
+config = get_config()
 class ADB(object):
     ERR_CHMOD = 260
     ERR_WRAPPER = 300
@@ -28,7 +30,7 @@ class ADB(object):
     adb = 'adb'
     serial = None
     
-    target_dir = '/data/lava-android-test/temp-shell/'
+    target_dir = config.tempdir_andorid
 
     def __init__(self, serial=None):
         if serial is not None:
@@ -44,8 +46,8 @@ class ADB(object):
             target = os.path.join(self.target_dir, os.path.basename(source))
         else:
             target_dir = os.path.dirname(target)
-
-
+        
+        
         subprocess.Popen('%s shell mkdir -p %s' % (self.adb, target_dir), shell=True, stdout=subprocess.PIPE)
         s = subprocess.Popen('%s push %s %s' % (self.adb, source, target), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         ret = s.wait()
@@ -66,7 +68,7 @@ class ADB(object):
         if command is None:
             return 0
         
-        tmpdir = '/tmp/lava-android-test/'
+        tmpdir = config.tempdir_host
         if not os.path.exists(tmpdir):
             os.mkdir(tmpdir)
         (tmpshell, tmpshell_name) = tempfile.mkstemp(suffix='.sh', prefix='lava-android-test', dir=tmpdir)
@@ -158,12 +160,12 @@ class ADB(object):
         ret_code = self.shell("mv %s %s" % (srcdir, destdir))
         return ret_code
     
-    def copy(self, source_file, target):
+    def copy(self, source_file, target_file):
         if source_file is None:
             return 0
-        if target is None:
+        if target_file is None:
             return 0
-        ret_code = self.shell("cp %s %s" % (source_file, target))
+        ret_code = self.shell("dd if=%s of=%s" % (source_file, target_file))
         return ret_code
     
     def listdir(self, dirpath):

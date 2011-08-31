@@ -136,26 +136,38 @@ class AndroidTest(ITest):
         self.resultsdir = os.path.join(config.resultsdir_andorid, resultname)
         self.adb.makedirs(self.resultsdir)
         self.runner.run(self.resultsdir)
-        self._copyorgoutputfile(self.resultdir)
+        self._copyorgoutputfile(self.resultsdir)
         self._savetestdata( str(uuid4()))
         result_id = os.path.basename(self.resultsdir)
         print("ANDROID TEST RUN COMPLETE: Result id is '%s'" % result_id)
         os.chdir(self.origdir)
         return result_id
 
-    def _copyorgoutputfile(self, resultdir):
+    def _copyorgoutputfile(self, resultsdir):
         if self.org_ouput_file == 'testoutput.log':
             return
-        ret_code = self.adb.copy(self.org_ouput_file, resultdir)
+        if not self.adb.exists(resultsdir):
+            self.adb.makedirs(resultsdir)
+        ret_code = self.adb.copy(self.org_ouput_file, os.path.join(resultsdir,os.path.basename(self.org_ouput_file)))
         if ret_code != 0:
             raise RuntimeError("Failed to copy file '%s' to '%s' for test(%s)" %
-                                (self.org_ouput_file, resultdir, self.testname))
+                                (self.org_ouput_file, resultsdir, self.testname))
             
     def parse(self, resultname):
         if not self.parser:
             raise RuntimeError("no test parser defined for '%s'" %
                                 self.testname)
-        self.parser.parse(resultname, output_filename=os.path.basename(self.org_ouput_file))
+        output_filename = self.org_ouput_file
+        config = get_config()
+        os.chdir(config.tempdir_host)
+        resultsdir_android = os.path.join(config.resultsdir_andorid, resultname)
+        result_filename_android = os.path.join(resultsdir_android, output_filename)
+        result_filename_host_temp = os.path.join(config.tempdir_host, os.path.basename(output_filename))
+        self.adb.pull(result_filename_android, result_filename_host_temp)
+        
+        self.parser.parse(resultname, output_filename=os.path.basename(output_filename))
+        
+        os.chdir(self.origdir)
 
 class AndroidTestInstaller(object):
     
@@ -171,11 +183,12 @@ class AndroidTestInstaller(object):
     url - location from which the test suite should be downloaded
     md5 - md5sum to check the integrety of the download
     """
-    def __init__(self, steps_host=[], apks=[], url=None, md5=None, **kwargs):
-        self.steps_host = steps_host
+    def __init__(self, steps_host_pre=[], apks=[], steps_host_post=[], url=None, md5=None, **kwargs):
+        self.steps_host_pre = steps_host_pre
+        self.apks = apks
+        self.steps_host_post = steps_host_post
         self.url = url
         self.md5 = md5
-        self.apks = apks
 
     def _download(self):
         """Download the file specified by the url and check the md5.
@@ -211,8 +224,9 @@ class AndroidTestInstaller(object):
 
     def install(self):
         self._download()
-        _run_steps_host(self.steps_host, self.adb.serial)
+        _run_steps_host(self.steps_host_pre, self.adb.serial)
         self._installapk()
+        _run_steps_host(self.steps_host_post, self.adb.serial)
 
     def setadb(self, adb=None):
         self.adb = adb
@@ -306,11 +320,7 @@ class AndroidTestParser(object):
         Results are then stored in self.results.  If a fixupdict was supplied
         it is used to convert test result strings to a standard format.
         """
-        config = get_config()
-        resultsdir_android = os.path.join(config.resultsdir_andorid, resultname)
-        result_filename_android = os.path.join(resultsdir_android, output_filename)
-        result_filename_host_temp = os.path.join(config.tempdir_host, output_filename)
-        self.adb.pull(result_filename_android, result_filename_host_temp)
+
         try:
             pat = re.compile(self.pattern)
         except Exception as strerror:
@@ -329,7 +339,7 @@ class AndroidTestParser(object):
             failure_pats.append(failure_pat)
         test_ok = True
 
-        with open(result_filename_host_temp, 'r') as stream:
+        with open(output_filename, 'r') as stream:
             for lineno, line in enumerate(stream, 1):
                 if test_ok == True:
                     for failure_pat in failure_pats:
