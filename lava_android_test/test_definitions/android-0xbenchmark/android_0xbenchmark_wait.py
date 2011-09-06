@@ -14,17 +14,17 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-import sys
 import pexpect
+import sys
 import time
 
 if len(sys.argv) == 1:
-    logcat_cmd = "adb logcat"
+    adb_cmd = "adb"
 else:
-    logcat_cmd = "adb -s %s logcat" % (sys.argv[1])
+    adb_cmd = "adb -s %s" % (sys.argv[1])
     
+logcat_cmd = '%s logcat' % (adb_cmd)
 pattern = "Displayed activity org.zeroxlab.benchmark/.Report"
-result = True
 try:
     proc = pexpect.spawn(logcat_cmd, logfile=sys.stdout)
     id = proc.expect([pattern, pexpect.EOF], timeout=None)
@@ -32,13 +32,9 @@ try:
         proc.sendcontrol('C')
 except pexpect.TIMEOUT:
     print "0xbench Test: TIMEOUT Fail"
-    result = False
+    sys.exit(1)
 finally:
     proc.sendcontrol('C')
 
 time.sleep(3)
-
-if result:
-    sys.exit(0)
-else:
-    sys.exit(1)
+sys.exit(0)

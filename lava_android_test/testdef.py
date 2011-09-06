@@ -74,6 +74,8 @@ class AndroidTest(ITest):
                                 self.testname)
         self.installer.setadb(self.adb)
         config = get_config()
+        if not os.path.exists(config.tempdir_host):
+            os.makedirs(config.tempdir_host)
         os.chdir(config.tempdir_host)
         installdir = os.path.join(config.installdir_android, self.testname)
         if self.adb.exists(installdir):
@@ -421,7 +423,7 @@ def _run_steps_host(steps=[], serial=None):
         cmd = cmd.strip()
         rc, output = getstatusoutput(cmd)
         if rc:
-           raise RuntimeError("Run step '%s' failed. %d : %s" %(cmd,rc,output))
+            raise RuntimeError("Run step '%s' failed. %d : %s" %(cmd,rc,output))
 
 def testloader(testname, serial=None):
     """

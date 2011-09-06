@@ -15,7 +15,6 @@
 
 import re
 import sys
-from utils import read_file
 from lava_android_test.adb import ADB
 
 ARM_KEYMAP = {
