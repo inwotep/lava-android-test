@@ -60,5 +60,5 @@ save_dir='/data/data/org.zeroxlab.benchmark/files'
 inst = lava_android_test.testdef.AndroidTestInstaller(steps_host_post=INSTALL_STEPS_HOST_POST)
 run = lava_android_test.testdef.AndroidTestRunner(steps_host_pre=RUN_STEPS_HOST_PRE, adbshell_steps=RUN_STEPS_ADB_SHELL, steps_host_post=RUN_STEPS_HOST_POST)
 parser = ZeroXBenchmarkTestParser()
-testobj = lava_android_test.testdef.AndroidTest(testname="android-0xbenchmark", installer=inst,
+testobj = lava_android_test.testdef.AndroidTest(testname="0xbench", installer=inst,
                                   runner=run, parser=parser, org_ouput_file=os.path.join(save_dir, '0xBenchmark.bundle'))

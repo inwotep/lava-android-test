@@ -18,7 +18,6 @@ import os
 import re
 import sys
 import time
-from commands import getstatusoutput
 from datetime import datetime
 from uuid import uuid4
 
@@ -421,7 +420,8 @@ def _run_steps_host(steps=[], serial=None):
         else:
             cmd = cmd.replace('\%serial\%', '')
         cmd = cmd.strip()
-        rc, output = getstatusoutput(cmd)
+        adb = ADB()
+        rc, output = adb.run_cmd_host(cmd);
         if rc:
             raise RuntimeError("Run step '%s' failed. %d : %s" %(cmd,rc,output))
 

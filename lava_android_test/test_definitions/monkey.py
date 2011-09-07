@@ -25,5 +25,5 @@ inst = lava_android_test.testdef.AndroidTestInstaller()
 run = lava_android_test.testdef.AndroidTestRunner(adbshell_steps=ADB_SHELL_STEPS)
 parser = lava_android_test.testdef.AndroidTestParser(PATTERN,
                appendall={'units':'ms'}, failure_patterns=FAILURE_PATTERNS)
-testobj = lava_android_test.testdef.AndroidTest(testname="android-monkey", installer=inst,
+testobj = lava_android_test.testdef.AndroidTest(testname="monkey", installer=inst,
                                   runner=run, parser=parser)
