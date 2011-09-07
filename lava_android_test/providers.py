@@ -13,4 +13,30 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-__version__ = (0, 2, 0, "dev", 0)
+
+class BuiltInProvider(object):
+    """
+    Test provider that provides tests shipped in the Abrek source tree
+    """
+
+    _builtin_tests = [
+        'monkey',
+        '0xbench'
+    ]
+
+    def __init__(self, config):
+        pass
+
+    @property
+    def description(self):
+        return "Tests built directly into LAVA Test:"
+
+    def __iter__(self):
+        return iter(self._builtin_tests)
+
+    def __getitem__(self, test_id):
+        if test_id not in self._builtin_tests:
+            raise KeyError(test_id)
+        module = __import__("lava_android_test.test_definitions.%s" % test_id,
+                            fromlist=[''])
+        return module.testobj

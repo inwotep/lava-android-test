@@ -13,21 +13,24 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import lava_android_test.command
+from lava_tool.dispatcher import LavaDispatcher, run_with_dispatcher_class
 
 
-def main(argv):
-    argv = argv[1:]
-    if not argv:
-        argv = ['help']
-    cmd = argv.pop(0)
-    cmd_func = lava_android_test.command.get_command(cmd)
-    if not cmd_func:
-        print "command '%s' not found" % cmd
-        return 1
-    return cmd_func.main(argv)
+class LAVAAndroidTestDispatcher(LavaDispatcher):
 
+    toolname = 'lava_android_test'
+    description = """
+    LAVA Android Test wrapper framework
+    """
+    epilog = """
+    Please report all bugs using the Launchpad bug tracker:
+    http://bugs.launchpad.net/lava-android-test/+filebug
+    """
+
+
+def main():
+    #logging.basicConfig(level=logging.DEBUG)
+    run_with_dispatcher_class(LAVAAndroidTestDispatcher)
+    
 if __name__ == '__main__':
-    import sys
-    exit_code = main(sys.argv)
-    sys.exit(exit_code)
+    main()

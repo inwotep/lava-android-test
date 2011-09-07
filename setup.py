@@ -16,21 +16,33 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from setuptools import setup, find_packages
-from abrek import __version__ as version
 
 
 setup(
-    name='lava-test',
-    version=version,
+    name='lava-android-test',
+    version=":versiontools:lava_android_test:",
     author='Linaro Validation Team',
     author_email='linaro-dev@lists.linaro.org',
-    url='https://launchpad.net/lava-test',
-    description='Lava test execution framework',
+    url='https://launchpad.net/lava-android-test',
+    description='LAVA android test execution framework',
     long_description=open("README").read(),
     packages=find_packages(exclude=['tests']),
     license="GNU GPLv3",
     test_suite='tests.test_suite',
-    scripts = ['bin/lava-test'],
+    entry_points="""
+    [console_scripts]
+    lava-android-test=lava_android_test.main:main
+    [lava_android_test.commands]
+    version=lava_android_test.commands:version
+    list-devices=lava_android_test.commands:list_devices
+    list-tests=lava_android_test.commands:list_tests
+    list-installed=lava_android_test.commands:list_installed
+    install=lava_android_test.commands:install
+    uninstall=lava_android_test.commands:uninstall
+    run=lava_android_test.commands:run
+    parse=lava_android_test.commands:parse
+    show=lava_android_test.commands:show
+    """,
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",
@@ -39,6 +51,13 @@ setup(
         "Programming Language :: Python :: 2.6",
         "Topic :: Software Development :: Testing",
     ],
+    install_requires=[
+        'lava-tool >= 0.2',
+        'versiontools >= 1.4',
+        'linaro_dashboard_bundle',
+    ],
+    setup_requires=[
+        'versiontools >= 1.4'
+    ],
     zip_safe=False,
     include_package_data=True)
-
