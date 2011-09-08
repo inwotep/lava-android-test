@@ -37,6 +37,7 @@ setup(
     list-devices=lava_android_test.commands:list_devices
     list-tests=lava_android_test.commands:list_tests
     list-installed=lava_android_test.commands:list_installed
+    list-results=lava_android_test.commands:list_results
     install=lava_android_test.commands:install
     uninstall=lava_android_test.commands:uninstall
     run=lava_android_test.commands:run

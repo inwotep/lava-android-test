@@ -12,6 +12,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+import os
+import base64
 import versiontools
 from lava_tool.interface import Command as LAVACommand
 from lava_tool.interface import LavaCommandError
@@ -19,6 +21,7 @@ from lava_tool.interface import LavaCommandError
 from lava_android_test.adb import ADB
 from lava_android_test.config import get_config
 from lava_android_test.testdef import testloader
+from lava_android_test.bundle import DocumentIO
 
 class Command(LAVACommand):
 
@@ -42,11 +45,20 @@ class Command(LAVACommand):
 
     def say(self, text, *args, **kwargs):
         print "LAVA:", text.format(*args, **kwargs)
+        
+    def display_subprocess_output(self, stream_name, line):
+        if self.args.quiet_subcommands:
+            return
+        if stream_name == 'stdout':
+            self.say('(stdout) {0}', line.rstrip())
+        elif stream_name == 'stderr':
+            self.say('(stderr) {0}', line.rstrip())
 
 class list_devices(Command):
     """
     List available devices
-    .. program:: lava-android-test list-devices
+
+    program::lava-android-test list-devices
     """
 
     def invoke(self):
@@ -145,6 +157,25 @@ class list_installed(AndroidCommand):
                 self.say("No tests installed")
         except OSError:
             self.say("No tests installed")
+
+class list_results(AndroidCommand):
+    """
+    List results of tests that has been run on the  specified device.
+    .. program:: lava-android-test list-results
+    .. program:: lava-android-test list-results -s device_serial
+    """ 
+    def invoke(self):
+        config = get_config()
+        self.adb = ADB(self.args.serial)
+        self.say("Saved results:")
+        try:
+            (ret_code, output)=self.adb.listdir(config.resultsdir_andorid)
+            if ret_code != 0:
+                raise OSError()
+            for dir in output:
+                self.say(" - {result_id}", result_id=dir.strip())
+        except OSError:
+            self.say("No results found")
             
 class install(AndroidTestCommand):
     """
@@ -199,14 +230,58 @@ class parse(AndroidResultCommand):
     .. program:: lava-android-test parse test-result-id -s device_serial
     """
     def invoke(self):
-        pass
+        config = get_config()
+        resultdir = os.path.join(config.resultsdir_andorid, self.args.result_id)
+        self.adb = ADB(self.args.serial)
+        bundle_text = self.adb.read_file(os.path.join(resultdir, "testdata.json")).read()
+            
+        fmt, bundle = DocumentIO.loads(bundle_text)
+        test = testloader(bundle['test_runs'][0]['test_id'])
+        
+        test.parse(self.args.result_id)
+        output_text = self.adb.read_file(os.path.join(resultdir, os.path.basename(test.org_ouput_file))).read()
+        bundle['test_runs'][0]["test_results"] = test.parser.results["test_results"]
+        bundle['test_runs'][0]["attachments"] = [
+            {
+                "pathname": "testoutput.log",
+                "mime_type": "text/plain",
+                "content":  base64.standard_b64encode(output_text)
+            }
+        ]
+        try:
+            print DocumentIO.dumps(bundle)
+        except IOError:
+            pass
 
 class show(AndroidResultCommand):
     """
     Display the output from a previous test that run on the specified device
-    .. program:: lava-android-test show test-id 
-    .. program:: lava-android-test show test-id -s device_serial
+    .. program:: lava-android-test show result-id 
+    .. program:: lava-android-test show result-id -s device_serial
     """
     def invoke(self):
-        pass
-
+            config = get_config()
+            resultsdir = os.path.join(config.resultsdir_andorid, self.args.result_id)
+            adb = ADB(self.args.serial)
+            stdout = os.path.join(resultsdir, "stdout.log")
+            if not adb.exists(stdout):
+                self.say("No result found for '%s'" % self.args.result_id)
+                return
+            try:
+                output = adb.read_file(stdout)
+                if output is not None:
+                    for line in output.readlines():
+                        self.display_subprocess_output('stdout', line)
+            except IOError:
+                pass
+            
+            stderr = os.path.join(resultsdir, "stderr.log")
+            if not adb.exists(stderr):
+                return
+            try:
+                output = adb.read_file(stderr)
+                if output is not None:
+                    for line in output.readlines():
+                        self.display_subprocess_output('stderr', line)
+            except IOError:
+                pass

@@ -64,7 +64,7 @@ class ADB(object):
 
         return s.wait()
 
-    def shell(self, command=None, output=None):
+    def shell(self, command=None, stdout=None, stderr=None):
         if command is None:
             return 0
         
@@ -76,14 +76,16 @@ class ADB(object):
         os.write(tmpshell, '#/system/bin/sh\n')
         os.write(tmpshell, 'base=/system\n')
         os.write(tmpshell, 'export PATH=/sbin:/vendor/bin:/system/sbin:/system/bin:/system/xbin\n')
-        if output is None:
-            os.write(tmpshell, command + '\n')
-        else:
-            os.write(tmpshell, '%s >>%s\n' % (command, output))
+        if stdout is not None:
+            command = '%s 1>>%s\n' % (command, stdout)
+        if stderr is not None:
+            command = '%s 2>>%s\n' % (command, stderr)
+        
+        os.write(tmpshell, command + '\n')
         os.write(tmpshell, 'RET_CODE=$?\n')    
-        if output is not None:
-            os.write(tmpshell, 'echo ANDROID_TEST_COMMAND="%s">>%s\n' % (command, output))
-            os.write(tmpshell, 'echo ANDROID_TEST_RET_CODE=${RET_CODE} >>%s\n' % (output))
+        if stdout is not None:
+            os.write(tmpshell, 'echo ANDROID_TEST_COMMAND="%s">>%s\n' % (command, stdout))
+            os.write(tmpshell, 'echo ANDROID_TEST_RET_CODE=${RET_CODE} >>%s\n' % (stdout))
             
         os.write(tmpshell, 'echo RET_CODE=${RET_CODE}\n')
         os.close(tmpshell)

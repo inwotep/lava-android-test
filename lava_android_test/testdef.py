@@ -252,9 +252,10 @@ class AndroidTestRunner(object):
         self.testoutput = []
 
     def _run_steps_adbshell(self, resultsdir):
-        outputlog = os.path.join(resultsdir, 'testoutput.log')
+        stdoutlog = os.path.join(resultsdir, 'stdout.log')
+        stderrlog = os.path.join(resultsdir, 'stderr.log')
         for cmd in self.adbshell_steps:
-            ret_code = self.adb.shell(cmd, outputlog)
+            ret_code = self.adb.shell(cmd, stdoutlog,stderrlog)
             if ret_code != 0:
                 break
         
