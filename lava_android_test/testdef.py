@@ -51,7 +51,7 @@ class AndroidTest(ITest):
         return self.adb
     
     def __init__(self, testname, version="", installer=None, runner=None,
-                 parser=None, org_ouput_file='testoutput.log'):
+                 parser=None, org_ouput_file='stdout.log'):
         self.testname = testname
         self.version = version
         self.installer = installer
@@ -355,7 +355,7 @@ class AndroidTestParser(object):
                 data = match.groupdict()
                 data["log_filename"] = output_filename
                 data["log_lineno"] = lineno
-                data['result'] = test_ok
+                data['result'] = test_ok and 'pass' or 'fail'
                 self.results['test_results'].append(data)
         if self.fixupdict:
             self.fixresults(self.fixupdict)

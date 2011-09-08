@@ -77,9 +77,9 @@ class ADB(object):
         os.write(tmpshell, 'base=/system\n')
         os.write(tmpshell, 'export PATH=/sbin:/vendor/bin:/system/sbin:/system/bin:/system/xbin\n')
         if stdout is not None:
-            command = '%s 1>>%s\n' % (command, stdout)
+            command = '%s 1>>%s' % (command, stdout)
         if stderr is not None:
-            command = '%s 2>>%s\n' % (command, stderr)
+            command = '%s 2>>%s' % (command, stderr)
         
         os.write(tmpshell, command + '\n')
         os.write(tmpshell, 'RET_CODE=$?\n')    

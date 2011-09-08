@@ -57,8 +57,7 @@ class Command(LAVACommand):
 class list_devices(Command):
     """
     List available devices
-
-    program::lava-android-test list-devices
+        program::lava-android-test list-devices
     """
 
     def invoke(self):
@@ -243,7 +242,7 @@ class parse(AndroidResultCommand):
         bundle['test_runs'][0]["test_results"] = test.parser.results["test_results"]
         bundle['test_runs'][0]["attachments"] = [
             {
-                "pathname": "testoutput.log",
+                "pathname": test.org_ouput_file,
                 "mime_type": "text/plain",
                 "content":  base64.standard_b64encode(output_text)
             }
