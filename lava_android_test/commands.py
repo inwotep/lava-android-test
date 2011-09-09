@@ -64,7 +64,7 @@ class list_devices(Command):
     def invoke(self):
         self.adb = ADB()
         try:
-            (ret_code, output) = self.adb.devices()
+            output = self.adb.devices()[1]
             if output is not None:
                 for line in output:
                     print line.strip()
@@ -155,7 +155,7 @@ class list_installed(AndroidCommand):
         
         self.say("Installed tests:")
         try:
-            (ret_code, output) = self.adb.listdir(config.installdir_android)
+            output = self.adb.listdir(config.installdir_android)[1]
             if output is not None:
                 for dir in output:
                     self.say(" - {test_id}", test_id=dir.strip())
@@ -243,7 +243,7 @@ class parse(AndroidResultCommand):
             raise  LavaCommandError("The result (%s) is not existed." % self.args.result_id)
         
         bundle_text = self.adb.read_file(os.path.join(resultdir, "testdata.json")).read()
-        fmt, bundle = DocumentIO.loads(bundle_text)
+        bundle = DocumentIO.loads(bundle_text)[1]
         test = testloader(bundle['test_runs'][0]['test_id'])
         
         test.parse(self.args.result_id)

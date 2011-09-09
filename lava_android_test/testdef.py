@@ -172,7 +172,8 @@ class AndroidTest(ITest):
         result_filename_host_temp = os.path.join(config.tempdir_host, os.path.basename(output_filename))
         self.adb.pull(result_filename_android, result_filename_host_temp)
         
-        self.parser.parse(resultname, output_filename=os.path.basename(output_filename))
+        self.parser.parse(resultname, output_filename=os.path.basename(output_filename), test_name=self.testname)
+        
         
         os.chdir(self.origdir)
 
@@ -320,7 +321,7 @@ class AndroidTestParser(object):
             if x['testid'] == id:
                 return self.results['test_results'].index(x)
 
-    def parse(self, resultname, output_filename='testoutput.log'):
+    def parse(self, resultname, output_filename='testoutput.log', test_name=''):
         """Parse test output to gather results
 
         Use the pattern specified when the class was instantiated to look
@@ -368,8 +369,8 @@ class AndroidTestParser(object):
         if self.appendall:
             self.appendtoall(self.appendall)
         self.fixmeasurements()
-        self.fixids()
-
+        self.fixids(test_name=test_name)
+        
     def append(self, testid, entry):
         """Appends a dict to the test_results entry for a specified testid
 
@@ -407,7 +408,7 @@ class AndroidTestParser(object):
             if id.has_key('measurement'):
                 id['measurement'] = float(id['measurement'])
 
-    def fixids(self):
+    def fixids(self, test_name=''):
         """
         Convert spaces to _ in test_case_id and remove illegal characters
         """
@@ -416,7 +417,9 @@ class AndroidTestParser(object):
             if id.has_key('test_case_id'):
                 id['test_case_id'] = id['test_case_id'].replace(" ", "_")
                 id['test_case_id'] = re.sub(badchars, "", id['test_case_id'])
-            
+            else:
+                id['test_case_id'] = test_name
+                
     def setadb(self, adb=None):
         self.adb = adb
 
