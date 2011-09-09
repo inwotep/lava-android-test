@@ -43,6 +43,8 @@ setup(
     run=lava_android_test.commands:run
     parse=lava_android_test.commands:parse
     show=lava_android_test.commands:show
+    rename=lava_android_test.commands:rename
+    remove=lava_android_test.commands:remove
     """,
     classifiers=[
         "Development Status :: 3 - Alpha",

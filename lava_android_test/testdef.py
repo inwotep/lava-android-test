@@ -26,7 +26,7 @@ from lava_android_test.api import ITest
 from lava_android_test.config import get_config
 from lava_android_test.utils import write_file, geturl
 from lava_android_test import hwprofile, swprofile
-from lava_android_test.bundle import DocumentIO
+from linaro_dashboard_bundle.io import DocumentIO
 
 
 class AndroidTest(ITest):
@@ -110,12 +110,16 @@ class AndroidTest(ITest):
             'format': 'Dashboard Bundle Format 1.2',
             'test_runs': [
                 {
-                    'test_id': self.testname,
-                    'analyzer_assigned_date': self.runner.starttime.strftime(TIMEFORMAT),
                     'analyzer_assigned_uuid': analyzer_assigned_uuid,
+                    'analyzer_assigned_date': self.runner.starttime.strftime(TIMEFORMAT),
                     'time_check_performed': False,
+                    'attributes':{},
+                    'test_id': self.testname,
+                    'test_results':[],
+                    'attachments':[],
                     'hardware_context': hwprofile.get_hardware_context(self.adb),
-                    'software_context': swprofile.get_software_context(self.adb),
+                    'software_context': swprofile.get_software_context(self.adb)
+                    
                 }
             ]
         }
@@ -131,6 +135,8 @@ class AndroidTest(ITest):
                                 self.testname)
         self.runner.setadb(self.adb)
         config = get_config()
+        if not os.path.exists(config.tempdir_host):
+            os.mkdir(config.tempdir_host)
         os.chdir(config.tempdir_host)
         resultname = (self.testname +
                      str(time.mktime(datetime.utcnow().timetuple())))

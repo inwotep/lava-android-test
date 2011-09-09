@@ -15,6 +15,7 @@
 
 import re
 import sys
+from datetime import datetime
 from lava_android_test.adb import ADB
 
 def get_properties(adb=ADB()):
@@ -38,6 +39,30 @@ def get_properties(adb=ADB()):
         return properties
     return properties
 
+def get_image_name_from_properties(adb=ADB()):
+    props = get_properties(adb)
+    return props.get('ro.build.display.id')
+    
+def get_source_info(adb=ADB()):
+    
+    TIMEFORMAT = '%Y-%m-%dT%H:%M:%SZ'
+    source = []
+    example = {'project_name':'',
+               'branch_vcs':'git',
+               'branch_url':'',
+               'branch_revision':'',
+               'commit_timestamp':datetime.utcnow().strftime(TIMEFORMAT)}
+    source.append(example)
+    return source
+
+def get_package_info(adb=ADB()):
+    
+    package = []
+    example = {'name':'',
+                'version':''}
+    package.append(example)
+    return package
+
 
 def get_software_context(adb=ADB()):
     """ Return dict used for storing software_context information
@@ -50,6 +75,9 @@ def get_software_context(adb=ADB()):
     """
     if adb is None:
         return {}
-    software_context = {}
-    software_context['properties'] = get_properties(adb)
+    
+    software_context = {'image': {'name':get_image_name_from_properties(adb)},
+                        'sources':get_source_info(adb),
+                        'packages':get_package_info(adb)
+                        }
     return software_context
