@@ -15,7 +15,6 @@
 import os
 import base64
 import versiontools
-import inspect
 
 from lava_tool.interface import Command as LAVACommand
 from lava_tool.interface import LavaCommandError
@@ -325,8 +324,8 @@ class rename(AndroidResultCommand):
 class remove(AndroidResultCommand):
     """
     Remove the result of a previous test that run on the specified device
-    program:: lava-android-test remove result-id
-    program:: lava-android-test remove result-id -s device_serial
+    program:: lava-android-test remove result-id
+    program:: lava-android-test remove result-id -s device_serial
     """
     
     @classmethod
