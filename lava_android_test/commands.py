@@ -56,8 +56,9 @@ class Command(LAVACommand):
 
 class list_devices(Command):
     """
-    List available devices
-        program::lava-android-test list-devices
+    List available devices
+
+    program::lava-android-test list-devices
     """
 
     def invoke(self):
@@ -74,7 +75,7 @@ class list_devices(Command):
             
 class list_tests(Command):
     """
-    List available tests
+    List available tests
     .. program:: lava-android-test list-tests
     """
 
@@ -138,7 +139,7 @@ class AndroidResultCommand(AndroidCommand):
 
 class list_installed(AndroidCommand):
     """
-    List installed tests for specified device.
+    List installed tests for specified device.
     .. program:: lava-android-test list-tests
     .. program:: lava-android-test list-tests -s device_serial
     """ 
@@ -159,7 +160,7 @@ class list_installed(AndroidCommand):
 
 class list_results(AndroidCommand):
     """
-    List results of tests that has been run on the  specified device.
+    List results of tests that has been run on the  specified device.
     .. program:: lava-android-test list-results
     .. program:: lava-android-test list-results -s device_serial
     """ 
@@ -168,7 +169,7 @@ class list_results(AndroidCommand):
         self.adb = ADB(self.args.serial)
         self.say("Saved results:")
         try:
-            (ret_code, output)=self.adb.listdir(config.resultsdir_andorid)
+            (ret_code, output)=self.adb.listdir(config.resultsdir_android)
             if ret_code != 0:
                 raise OSError()
             for dir in output:
@@ -178,7 +179,7 @@ class list_results(AndroidCommand):
             
 class install(AndroidTestCommand):
     """
-    Install test to the specified device.
+    Install test to the specified device.
     .. program:: lava-android-test install test-id 
     .. program:: lava-android-test install test-id -s device_serial
     """
@@ -191,7 +192,7 @@ class install(AndroidTestCommand):
 
 class uninstall(AndroidTestCommand):
     """
-    Unistall test of the specified device.
+    Unistall test of the specified device.
     .. program:: lava-android-test uninstall test-id 
     .. program:: lava-android-test uninstall test-id -s device_serial
     """
@@ -204,7 +205,7 @@ class uninstall(AndroidTestCommand):
 
 class run(AndroidTestCommand):
     """
-    Run a previously installed test program on the specified device
+    Run a previously installed test program on the specified device
     .. program:: lava-android-test run test-id 
     .. program:: lava-android-test run test-id -s device_serial
     """
@@ -224,13 +225,13 @@ class run(AndroidTestCommand):
     
 class parse(AndroidResultCommand):
     """
-    Parse the results of previous test that run on the specified device
+    Parse the results of previous test that run on the specified device
     .. program:: lava-android-test parse test-result-id 
     .. program:: lava-android-test parse test-result-id -s device_serial
     """
     def invoke(self):
         config = get_config()
-        resultdir = os.path.join(config.resultsdir_andorid, self.args.result_id)
+        resultdir = os.path.join(config.resultsdir_android, self.args.result_id)
         self.adb = ADB(self.args.serial)
         bundle_text = self.adb.read_file(os.path.join(resultdir, "testdata.json")).read()
             
@@ -254,13 +255,13 @@ class parse(AndroidResultCommand):
 
 class show(AndroidResultCommand):
     """
-    Display the output from a previous test that run on the specified device
+    Display the output from a previous test that run on the specified device
     .. program:: lava-android-test show result-id 
     .. program:: lava-android-test show result-id -s device_serial
     """
     def invoke(self):
             config = get_config()
-            resultsdir = os.path.join(config.resultsdir_andorid, self.args.result_id)
+            resultsdir = os.path.join(config.resultsdir_android, self.args.result_id)
             adb = ADB(self.args.serial)
             stdout = os.path.join(resultsdir, "stdout.log")
             if not adb.exists(stdout):

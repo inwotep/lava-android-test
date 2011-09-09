@@ -185,7 +185,7 @@ def generate_bundle(result, adb=None):
     config = get_config()
     if adb is None:
         return {}
-    resultdir = os.path.join(config.resultsdir_andorid, result)
+    resultdir = os.path.join(config.resultsdir_android, result)
     bundle_text = adb.read_file(os.path.join(resultdir, "testdata.json")).read()
 
         

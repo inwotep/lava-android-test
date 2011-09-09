@@ -134,7 +134,7 @@ class AndroidTest(ITest):
         os.chdir(config.tempdir_host)
         resultname = (self.testname +
                      str(time.mktime(datetime.utcnow().timetuple())))
-        self.resultsdir = os.path.join(config.resultsdir_andorid, resultname)
+        self.resultsdir = os.path.join(config.resultsdir_android, resultname)
         self.adb.makedirs(self.resultsdir)
         self.runner.run(self.resultsdir)
         self._copyorgoutputfile(self.resultsdir)
@@ -145,7 +145,7 @@ class AndroidTest(ITest):
         return result_id
 
     def _copyorgoutputfile(self, resultsdir):
-        if self.org_ouput_file == 'testoutput.log':
+        if self.org_ouput_file == 'stdout.log':
             return
         if not self.adb.exists(resultsdir):
             self.adb.makedirs(resultsdir)
@@ -161,7 +161,7 @@ class AndroidTest(ITest):
         output_filename = self.org_ouput_file
         config = get_config()
         os.chdir(config.tempdir_host)
-        resultsdir_android = os.path.join(config.resultsdir_andorid, resultname)
+        resultsdir_android = os.path.join(config.resultsdir_android, resultname)
         result_filename_android = os.path.join(resultsdir_android, output_filename)
         result_filename_host_temp = os.path.join(config.tempdir_host, os.path.basename(output_filename))
         self.adb.pull(result_filename_android, result_filename_host_temp)

@@ -37,7 +37,7 @@ class cmd_results(AndroidTestCmdWithSubcommands):
             print "Saved results:"
             try:
                 adb=ADB(self.opts.serial)
-                (ret_code, output)=adb.listdir(config.resultsdir_andorid)
+                (ret_code, output)=adb.listdir(config.resultsdir_android)
                 if ret_code != 0:
                     raise OSError()
                 for dir in output:
@@ -59,7 +59,7 @@ class cmd_results(AndroidTestCmdWithSubcommands):
                 print "please specify the name of the result dir"
                 sys.exit(1)
             config = get_config()
-            resultsdir = os.path.join(config.resultsdir_andorid, self.args[0])
+            resultsdir = os.path.join(config.resultsdir_android, self.args[0])
             testoutput = os.path.join(resultsdir, "testoutput.log")
             adb = ADB(self.opts.serial)
             if not adb.exists(testoutput):
@@ -88,7 +88,7 @@ class cmd_results(AndroidTestCmdWithSubcommands):
                 print "please specify the name of the result dir"
                 sys.exit(1)
             config = get_config()
-            resultsdir = os.path.join(config.resultsdir_andorid, self.args[0])
+            resultsdir = os.path.join(config.resultsdir_android, self.args[0])
             adb = ADB(self.opts.serial)
             if not adb.exists(resultsdir):
                 print "No result found for '%s'" % self.args[0]
@@ -114,8 +114,8 @@ class cmd_results(AndroidTestCmdWithSubcommands):
                 print "please specify the name of the result, and the new name"
                 sys.exit(1)
             config = get_config()
-            srcdir = os.path.join(config.resultsdir_andorid, self.args[0])
-            destdir = os.path.join(config.resultsdir_andorid, self.args[1])
+            srcdir = os.path.join(config.resultsdir_android, self.args[0])
+            destdir = os.path.join(config.resultsdir_android, self.args[1])
             adb = ADB(self.opts.serial)
             if not adb.exists(srcdir):
                 print "Result directory not found"

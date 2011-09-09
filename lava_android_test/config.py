@@ -25,8 +25,8 @@ class LavaAndroidTestConfig(object):
                      os.path.join(home, 'share'))
         self.configdir = config
         self.installdir_android = os.path.join(basedata, 'installed-tests')
-        self.resultsdir_andorid = os.path.join(basedata, 'results')
-        self.tempdir_andorid = os.path.join(home, 'temp')
+        self.resultsdir_android = os.path.join(basedata, 'results')
+        self.tempdir_android = os.path.join(home, 'temp')
         self.tempdir_host = os.environ.get('ANDROID_TEST_TEMP_HOST', '/tmp/lava-android-test')
 
 _config = None

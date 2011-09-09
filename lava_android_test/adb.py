@@ -30,7 +30,7 @@ class ADB(object):
     adb = 'adb'
     serial = None
     
-    target_dir = config.tempdir_andorid
+    target_dir = config.tempdir_android
 
     def __init__(self, serial=None):
         if serial is not None:
