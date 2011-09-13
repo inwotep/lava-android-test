@@ -37,7 +37,7 @@ RUN_STEPS_HOST_POST = ['cp -rf %s/android-0xbenchmark/android_0xbenchmark_wait.p
 
 class ZeroXBenchmarkTestParser(lava_android_test.testdef.AndroidTestParser):
 
-    def parse(self, resultname, output_filename='0xBenchmark.bundle'):
+    def parse(self, resultname, output_filename='0xBenchmark.bundle', test_name=''):
         """Parse test output to gather results
         Use the pattern specified when the class was instantiated to look
         through the results line-by-line and find lines that match it.

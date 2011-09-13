@@ -28,7 +28,7 @@ class Command(LAVACommand):
 
     def __init__(self, parser, args):
         super(Command, self).__init__(parser, args)
-#        self._config = get_config()
+        self.config = get_config()
 #        self._test_loader = TestLoader(self._config)
 
     @classmethod
@@ -125,8 +125,7 @@ class AndroidCommand(Command):
     def test_installed(self,test_id):
         if self.adb is None:
             self.adb = ADB()
-        config = get_config()
-        test_dir = os.path.join(config.installdir_android, test_id)
+        test_dir = os.path.join(self.config.installdir_android, test_id)
         return self.adb.exists(test_dir)
 
 class AndroidTestCommand(AndroidCommand):
@@ -150,12 +149,11 @@ class list_installed(AndroidCommand):
     program:: lava-android-test list-tests -s device_serial
     """ 
     def invoke(self):
-        config = get_config()
         self.adb = ADB(self.args.serial)
         
         self.say("Installed tests:")
         try:
-            output = self.adb.listdir(config.installdir_android)[1]
+            output = self.adb.listdir(self.config.installdir_android)[1]
             if output is not None:
                 for dir in output:
                     self.say(" - {test_id}", test_id=dir.strip())
@@ -171,11 +169,10 @@ class list_results(AndroidCommand):
     program:: lava-android-test list-results -s device_serial
     """ 
     def invoke(self):
-        config = get_config()
         self.adb = ADB(self.args.serial)
         self.say("Saved results:")
         try:
-            (ret_code, output)=self.adb.listdir(config.resultsdir_android)
+            (ret_code, output)=self.adb.listdir(self.config.resultsdir_android)
             if ret_code != 0:
                 raise OSError()
             for dir in output:
@@ -237,8 +234,7 @@ class parse(AndroidResultCommand):
     """
     def invoke(self):
         self.adb = ADB(self.args.serial)
-        config = get_config()
-        resultdir = os.path.join(config.resultsdir_android, self.args.result_id)
+        resultdir = os.path.join(self.config.resultsdir_android, self.args.result_id)
         if not self.adb.exists(resultdir):
             raise  LavaCommandError("The result (%s) is not existed." % self.args.result_id)
         
@@ -269,8 +265,7 @@ class show(AndroidResultCommand):
     """
     def invoke(self):
         self.adb = ADB(self.args.serial)
-        config = get_config()
-        resultsdir = os.path.join(config.resultsdir_android, self.args.result_id)
+        resultsdir = os.path.join(self.config.resultsdir_android, self.args.result_id)
         if not self.adb.exists(resultsdir):
             raise  LavaCommandError("The result (%s) is not existed." % self.args.result_id)
         
@@ -310,9 +305,8 @@ class rename(AndroidResultCommand):
         parser.add_argument("result_id_new",
                             help="New test result identifier")
     def invoke(self):
-        config = get_config()
-        srcdir = os.path.join(config.resultsdir_android, self.args.result_id)
-        destdir = os.path.join(config.resultsdir_android, self.args.result_id_new)
+        srcdir = os.path.join(self.config.resultsdir_android, self.args.result_id)
+        destdir = os.path.join(self.config.resultsdir_android, self.args.result_id_new)
         adb = ADB(self.args.serial)
         if not adb.exists(srcdir):
             self.say("Result (%s) not found" % self.args.result_id)
@@ -337,8 +331,7 @@ class remove(AndroidResultCommand):
                             help=("give an interactive question about remove"))
     
     def invoke(self):
-        config = get_config()
-        resultsdir = os.path.join(config.resultsdir_android, self.args.result_id)
+        resultsdir = os.path.join(self.config.resultsdir_android, self.args.result_id)
         adb = ADB(self.args.serial)
         if not adb.exists(resultsdir):
             self.say("No result found for '%s'" % self.args.result_id)
