@@ -237,6 +237,9 @@ class run(AndroidTestCommand):
         try:
             result_id = test.run(quiet=self.args.quiet)
             if self.args.output:
+                output_dir = os.path.dirname(self.args.output)
+                if not os.path.exists(output_dir):
+                    os.makedirs(output_dir)
                 bundle = generate_bundle(self.args.serial, result_id)
                 with open(self.args.output, "wt") as stream:
                     DocumentIO.dump(stream, bundle)
