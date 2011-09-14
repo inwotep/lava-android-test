@@ -215,6 +215,19 @@ class run(AndroidTestCommand):
     program:: lava-android-test run test-id 
     program:: lava-android-test run test-id -s device_serial
     """
+    
+    @classmethod
+    def register_arguments(cls, parser):
+        super(run, cls).register_arguments(parser)
+        group = parser.add_argument_group("specify the bundle output file")
+        group.add_argument("-o", "--output",
+                            default=None,
+                            metavar="FILE",
+                           help=("After running the test parse the result"
+                                 " artefacts, fuse them with the initial"
+                                 " bundle and finally save the complete bundle"
+                                 " to the  specified FILE."))
+    
     def invoke(self):
         self.adb = ADB(self.args.serial)
         if not self.test_installed(self.args.test_id):
@@ -222,7 +235,12 @@ class run(AndroidTestCommand):
         
         test = testloader(self.args.test_id, self.args.serial)
         try:
-            test.run(quiet=self.args.quiet)
+            result_id = test.run(quiet=self.args.quiet)
+            if self.args.output:
+                bundle = generate_bundle(self.args.serial, result_id)
+                with open(self.args.output, "wt") as stream:
+                    DocumentIO.dump(stream, bundle)
+                    
         except Exception as strerror:
             raise LavaCommandError("Test execution error: %s" % strerror)
     
@@ -233,29 +251,36 @@ class parse(AndroidResultCommand):
     program:: lava-android-test parse test-result-id -s device_serial
     """
     def invoke(self):
-        self.adb = ADB(self.args.serial)
-        resultdir = os.path.join(self.config.resultsdir_android, self.args.result_id)
-        if not self.adb.exists(resultdir):
-            raise  LavaCommandError("The result (%s) is not existed." % self.args.result_id)
-        
-        bundle_text = self.adb.read_file(os.path.join(resultdir, "testdata.json")).read()
-        bundle = DocumentIO.loads(bundle_text)[1]
-        test = testloader(bundle['test_runs'][0]['test_id'])
-        
-        test.parse(self.args.result_id)
-        output_text = self.adb.read_file(os.path.join(resultdir, os.path.basename(test.org_ouput_file))).read()
-        bundle['test_runs'][0]["test_results"] = test.parser.results["test_results"]
-        bundle['test_runs'][0]["attachments"] = [
-            {
-                "pathname": test.org_ouput_file,
-                "mime_type": "text/plain",
-                "content":  base64.standard_b64encode(output_text)
-            }
-        ]
+        bundle = generate_bundle(self.args.serial, self.args.result_id)
         try:
             print DocumentIO.dumps(bundle)
         except IOError:
             pass
+
+def generate_bundle(serial=None, result_id=None):
+    if result_id is None:
+        return {}
+    config = get_config()
+    adb = ADB(serial)
+    resultdir = os.path.join(config.resultsdir_android, result_id)
+    if not adb.exists(resultdir):
+        raise  LavaCommandError("The result (%s) is not existed." % result_id)
+    
+    bundle_text = adb.read_file(os.path.join(resultdir, "testdata.json")).read()
+    bundle = DocumentIO.loads(bundle_text)[1]
+    test = testloader(bundle['test_runs'][0]['test_id'])
+    
+    test.parse(result_id)
+    output_text = adb.read_file(os.path.join(resultdir, os.path.basename(test.org_ouput_file))).read()
+    bundle['test_runs'][0]["test_results"] = test.parser.results["test_results"]
+    bundle['test_runs'][0]["attachments"] = [
+        {
+            "pathname": test.org_ouput_file,
+            "mime_type": "text/plain",
+            "content":  base64.standard_b64encode(output_text)
+        }
+    ]
+    return bundle
 
 class show(AndroidResultCommand):
     """
