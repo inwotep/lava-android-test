@@ -119,7 +119,6 @@ class AndroidTest(ITest):
                     'attachments':[],
                     'hardware_context': hwprofile.get_hardware_context(self.adb),
                     'software_context': swprofile.get_software_context(self.adb)
-
                 }
             ]
         }
@@ -144,7 +143,7 @@ class AndroidTest(ITest):
         self.adb.makedirs(self.resultsdir)
         self.runner.run(self.resultsdir)
         self._copyorgoutputfile(self.resultsdir)
-        self._savetestdata( str(uuid4()))
+        self._savetestdata(str(uuid4()))
         result_id = os.path.basename(self.resultsdir)
         print("ANDROID TEST RUN COMPLETE: Result id is '%s'" % result_id)
         os.chdir(self.origdir)

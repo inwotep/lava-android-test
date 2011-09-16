@@ -274,13 +274,19 @@ def generate_bundle(serial = None, result_id = None):
     test = testloader(bundle['test_runs'][0]['test_id'])
 
     test.parse(result_id)
-    output_text = adb.read_file(os.path.join(resultdir, os.path.basename(test.org_ouput_file))).read()
+    stdout_text = adb.read_file(os.path.join(resultdir, os.path.basename(test.org_ouput_file))).read()
+    stderr_text = adb.read_file(os.path.join(resultdir, 'stderr.log')).read()
     bundle['test_runs'][0]["test_results"] = test.parser.results["test_results"]
     bundle['test_runs'][0]["attachments"] = [
         {
             "pathname": test.org_ouput_file,
             "mime_type": "text/plain",
-            "content":  base64.standard_b64encode(output_text)
+            "content":  base64.standard_b64encode(stdout_text)
+        },
+        {
+            "pathname": 'stderr.log',
+            "mime_type": "text/plain",
+            "content":  base64.standard_b64encode(stderr_text)
         }
     ]
     return bundle
