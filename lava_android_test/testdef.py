@@ -44,14 +44,14 @@ class AndroidTest(ITest):
     """
     adb = ADB()
 
-    def setadb(self, adb = None):
+    def setadb(self, adb=None):
         self.adb = adb
 
     def getadb(self):
         return self.adb
 
-    def __init__(self, testname, version = "", installer = None, runner = None,
-                 parser = None, org_ouput_file = 'stdout.log'):
+    def __init__(self, testname, version="", installer=None, runner=None,
+                 parser=None, org_ouput_file='stdout.log'):
         self.testname = testname
         self.version = version
         self.installer = installer
@@ -84,9 +84,9 @@ class AndroidTest(ITest):
             raise RuntimeError("Failed to create directory(%s) for test(%s)" % (installdir, self.testname))
         try:
             self.installer.install()
-        except Exception :
+        except Exception as e:
             self.uninstall()
-            raise RuntimeError("Failed to install test(%s)" % (self.testname))
+            raise RuntimeError("Failed to install test(%s):%s" % (self.testname, e))
         finally:
             os.chdir(self.origdir)
 
@@ -128,7 +128,7 @@ class AndroidTest(ITest):
         filename_target = os.path.join(self.resultsdir, 'testdata.json')
         self.adb.push(filename_host, filename_target)
 
-    def run(self, quiet = False):
+    def run(self, quiet=False):
         if not self.runner:
             raise RuntimeError("no test runner defined for '%s'" %
                                 self.testname)
@@ -171,7 +171,7 @@ class AndroidTest(ITest):
         result_filename_host_temp = os.path.join(config.tempdir_host, os.path.basename(output_filename))
         self.adb.pull(result_filename_android, result_filename_host_temp)
 
-        self.parser.parse(resultname, output_filename = os.path.basename(output_filename), test_name = self.testname)
+        self.parser.parse(resultname, output_filename=os.path.basename(output_filename), test_name=self.testname)
 
 
         os.chdir(self.origdir)
@@ -190,9 +190,11 @@ class AndroidTestInstaller(object):
     url - location from which the test suite should be downloaded
     md5 - md5sum to check the integrety of the download
     """
-    def __init__(self, steps_host_pre = [], apks = [], steps_host_post = [], url = None, md5 = None, **kwargs):
+    def __init__(self, steps_host_pre=[], steps_adb_pre=[], apks=[], steps_adb_post=[], steps_host_post=[], url=None, md5=None, **kwargs):
         self.steps_host_pre = steps_host_pre
+        self.steps_adb_pre = steps_adb_pre
         self.apks = apks
+        self.steps_adb_post = steps_adb_post
         self.steps_host_post = steps_host_post
         self.url = url
         self.md5 = md5
@@ -232,10 +234,12 @@ class AndroidTestInstaller(object):
     def install(self):
         self._download()
         _run_steps_host(self.steps_host_pre, self.adb.serial)
+        _run_steps_adb(self.steps_adb_pre, self.adb.serial)
         self._installapk()
+        _run_steps_adb(self.steps_adb_post, self.adb.serial)
         _run_steps_host(self.steps_host_post, self.adb.serial)
 
-    def setadb(self, adb = None):
+    def setadb(self, adb=None):
         self.adb = adb
 
 class AndroidTestRunner(object):
@@ -251,7 +255,7 @@ class AndroidTestRunner(object):
 
     steps - list of steps to be executed in a shell
     """
-    def __init__(self, steps_host_pre = [], adbshell_steps = [], steps_host_post = []):
+    def __init__(self, steps_host_pre=[], adbshell_steps=[], steps_host_post=[]):
         self.steps_host_pre = steps_host_pre
         self.adbshell_steps = adbshell_steps
         self.steps_host_post = steps_host_post
@@ -277,7 +281,7 @@ class AndroidTestRunner(object):
         _run_steps_host(self.steps_host_post, self.adb.serial)
         self.endtime = datetime.utcnow()
 
-    def setadb(self, adb = None):
+    def setadb(self, adb=None):
         self.adb = adb
 
 class AndroidTestParser(object):
@@ -309,19 +313,19 @@ class AndroidTestParser(object):
         If there is a string match one pattern in failure_patterns, 
         then this test will be deal as failed. 
     """
-    def __init__(self, pattern = None, fixupdict = None, appendall = {}, failure_patterns = []):
+    def __init__(self, pattern=None, fixupdict=None, appendall={}, failure_patterns=[]):
         self.pattern = pattern
         self.fixupdict = fixupdict
         self.results = {'test_results':[]}
         self.appendall = appendall
         self.failure_patterns = failure_patterns
 
-    def _find_testid(self, id):
+    def _find_testid(self, test_id):
         for x in self.results['test_results']:
-            if x['testid'] == id:
+            if x['testid'] == test_id:
                 return self.results['test_results'].index(x)
 
-    def parse(self, resultname, output_filename = 'testoutput.log', test_name = ''):
+    def parse(self, resultname, output_filename='testoutput.log', test_name=''):
         """Parse test output to gather results
 
         Use the pattern specified when the class was instantiated to look
@@ -369,7 +373,7 @@ class AndroidTestParser(object):
         if self.appendall:
             self.appendtoall(self.appendall)
         self.fixmeasurements()
-        self.fixids(test_name = test_name)
+        self.fixids(test_name=test_name)
 
     def append(self, testid, entry):
         """Appends a dict to the test_results entry for a specified testid
@@ -404,38 +408,45 @@ class AndroidTestParser(object):
     def fixmeasurements(self):
         """Measurements are often read as strings, but need to be float
         """
-        for id in self.results['test_results']:
-            if id.has_key('measurement'):
-                id['measurement'] = float(id['measurement'])
+        for test_case in self.results['test_results']:
+            if test_case.has_key('measurement'):
+                test_case['measurement'] = float(test_case['measurement'])
 
-    def fixids(self, test_name = ''):
+    def fixids(self, test_name=''):
         """
         Convert spaces to _ in test_case_id and remove illegal characters
         """
         badchars = "[^a-zA-Z0-9\._-]"
-        for id in self.results['test_results']:
-            if id.has_key('test_case_id'):
-                id['test_case_id'] = id['test_case_id'].replace(" ", "_")
-                id['test_case_id'] = re.sub(badchars, "", id['test_case_id'])
+        for test_case in self.results['test_results']:
+            if test_case.has_key('test_case_id'):
+                test_case['test_case_id'] = test_case['test_case_id'].replace(" ", "_")
+                test_case['test_case_id'] = re.sub(badchars, "", test_case['test_case_id'])
             else:
-                id['test_case_id'] = test_name
+                test_case['test_case_id'] = test_name
 
-    def setadb(self, adb = None):
+    def setadb(self, adb=None):
         self.adb = adb
 
-def _run_steps_host(steps = [], serial = None):
+def _run_steps_host(steps=[], serial=None):
     for cmd in steps:
         if serial is not None:
-            cmd = cmd.replace('\%serial\%', serial)
+            cmd = cmd.replace('%%serial%%', serial)
         else:
-            cmd = cmd.replace('\%serial\%', '')
+            cmd = cmd.replace('%%serial%%', '')
         cmd = cmd.strip()
         adb = ADB()
         rc, output = adb.run_cmd_host(cmd);
         if rc:
             raise RuntimeError("Run step '%s' failed. %d : %s" % (cmd, rc, output))
 
-def testloader(testname, serial = None):
+def _run_steps_adb(steps=[], serial=None):
+    adb = ADB(serial)
+    for cmd in steps:
+        rc, output = adb.run_adb_cmd(cmd);
+        if rc:
+            raise RuntimeError("Run step '%s' failed. %d : %s" % (cmd, rc, output))
+
+def testloader(testname, serial=None):
     """
     Load the test definition, which can be either an individual
     file, or a directory with an __init__.py

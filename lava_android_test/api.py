@@ -1,7 +1,7 @@
 """
 Public API for extending Abrek
 """
-from abc import abstractmethod, abstractproperty
+from abc import abstractmethod
 
 
 class ITest(object):
@@ -37,7 +37,7 @@ class ITest(object):
     def run(self, quiet=False):
         # TODO: Document me
         pass
-    
+
     @abstractmethod
     def parse(self, resultname):
         # TODO: Document me

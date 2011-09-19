@@ -35,17 +35,23 @@ class Command(LAVACommand):
     def register_arguments(cls, parser):
         parser.add_argument(
             "-q", "--quiet",
-            action = "store_true",
-            default = False,
-            help = "Be less verbose about undertaken actions")
+            action="store_true",
+            default=False,
+            help="Be less verbose about undertaken actions")
         parser.add_argument(
             "-Q", "--quiet-subcommands",
-            action = "store_true",
-            default = False,
-            help = "Hide the output of all sub-commands (including tests)")
+            action="store_true",
+            default=False,
+            help="Hide the output of all sub-commands (including tests)")
 
     def say(self, text, *args, **kwargs):
         print "LAVA:", text.format(*args, **kwargs)
+
+    def say_begin(self, text, *args, **kwargs):
+        print "LAVA: --Start ", text.format(*args, **kwargs)
+
+    def say_end(self, text, *args, **kwargs):
+        print "LAVA: --End ", text.format(*args, **kwargs),
 
     def display_subprocess_output(self, stream_name, line):
         if self.args.quiet_subcommands:
@@ -62,6 +68,7 @@ class list_devices(Command):
     """
 
     def invoke(self):
+
         self.adb = ADB()
         try:
             output = self.adb.devices()[1]
@@ -84,7 +91,7 @@ class list_tests(Command):
         from pkgutil import walk_packages
         self.say("Known tests:")
         for importer, mod, ispkg in walk_packages(test_definitions.__path__):
-            self.say(" - {test_id}", test_id = mod)
+            self.say(" - {test_id}", test_id=mod)
 
 class version(Command):
     """
@@ -95,8 +102,8 @@ class version(Command):
         self.say("version details:")
         for framework in self._get_frameworks():
             self.say(" - {framework}: {version}",
-                     framework = framework.__name__,
-                     version = versiontools.format_version(
+                     framework=framework.__name__,
+                     version=versiontools.format_version(
                          framework.__version__, framework))
 
     def _get_frameworks(self):
@@ -118,9 +125,9 @@ class AndroidCommand(Command):
         super(AndroidCommand, self).register_arguments(parser)
         group = parser.add_argument_group("specify device serial number")
         group.add_argument("-s", "--serial",
-                            default = None,
-                            metavar = "serial",
-                            help = ("specify the device with serial number"
+                            default=None,
+                            metavar="serial",
+                            help=("specify the device with serial number"
                                  "that this command will be run on"))
     def test_installed(self, test_id):
         if self.adb is None:
@@ -133,14 +140,14 @@ class AndroidTestCommand(AndroidCommand):
     def register_arguments(self, parser):
         super(AndroidTestCommand, self).register_arguments(parser)
         parser.add_argument("test_id",
-                            help = "Test identifier")
+                            help="Test identifier")
 
 class AndroidResultCommand(AndroidCommand):
     @classmethod
     def register_arguments(self, parser):
         super(AndroidResultCommand, self).register_arguments(parser)
         parser.add_argument("result_id",
-                            help = "Test result identifier")
+                            help="Test result identifier")
 
 class list_installed(AndroidCommand):
     """
@@ -155,8 +162,8 @@ class list_installed(AndroidCommand):
         try:
             output = self.adb.listdir(self.config.installdir_android)[1]
             if output is not None:
-                for dir in output:
-                    self.say(" - {test_id}", test_id = dir.strip())
+                for dir_name in output:
+                    self.say(" - {test_id}", test_id=dir_name.strip())
             else:
                 self.say("No tests installed")
         except OSError:
@@ -175,8 +182,8 @@ class list_results(AndroidCommand):
             (ret_code, output) = self.adb.listdir(self.config.resultsdir_android)
             if ret_code != 0:
                 raise OSError()
-            for dir in output:
-                self.say(" - {result_id}", result_id = dir.strip())
+            for dir_name in output:
+                self.say(" - {result_id}", result_id=dir_name.strip())
         except OSError:
             self.say("No results found")
 
@@ -222,9 +229,9 @@ class run(AndroidTestCommand):
         super(run, cls).register_arguments(parser)
         group = parser.add_argument_group("specify the bundle output file")
         group.add_argument("-o", "--output",
-                            default = None,
-                            metavar = "FILE",
-                           help = ("After running the test parse the result"
+                            default=None,
+                            metavar="FILE",
+                           help=("After running the test parse the result"
                                  " artefacts, fuse them with the initial"
                                  " bundle and finally save the complete bundle"
                                  " to the  specified FILE."))
@@ -235,7 +242,7 @@ class run(AndroidTestCommand):
 
         test = testloader(self.args.test_id, self.args.serial)
         try:
-            result_id = test.run(quiet = self.args.quiet)
+            result_id = test.run(quiet=self.args.quiet)
             if self.args.output:
                 output_dir = os.path.dirname(self.args.output)
                 if not os.path.exists(output_dir):
@@ -260,7 +267,7 @@ class parse(AndroidResultCommand):
         except IOError:
             pass
 
-def generate_bundle(serial = None, result_id = None):
+def generate_bundle(serial=None, result_id=None):
     if result_id is None:
         return {}
     config = get_config()
@@ -337,7 +344,7 @@ class rename(AndroidResultCommand):
     def register_arguments(self, parser):
         super(rename, self).register_arguments(parser)
         parser.add_argument("result_id_new",
-                            help = "New test result identifier")
+                            help="New test result identifier")
     def invoke(self):
         srcdir = os.path.join(self.config.resultsdir_android, self.args.result_id)
         destdir = os.path.join(self.config.resultsdir_android, self.args.result_id_new)
@@ -361,8 +368,8 @@ class remove(AndroidResultCommand):
         super(remove, self).register_arguments(parser)
         group = parser.add_argument_group("force to remove")
         group.add_argument("-f", "--force",
-                            default = None,
-                            help = ("give an interactive question about remove"))
+                            default=None,
+                            help=("give an interactive question about remove"))
 
     def invoke(self):
         resultsdir = os.path.join(self.config.resultsdir_android, self.args.result_id)
