@@ -1,6 +1,11 @@
 #!/usr/bin/python
 
-# Copyright (c) 2010 Linaro
+# Copyright (c) 2011 Linaro
+
+# Author: Linaro Validation Team <linaro-dev@lists.linaro.org>
+#
+# This file is part of LAVA Android Test.
+#
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,7 +27,7 @@ if len(sys.argv) == 1:
     adb_cmd = "adb"
 else:
     adb_cmd = "adb -s %s" % (sys.argv[1])
-    
+
 logcat_cmd = '%s logcat' % (adb_cmd)
 pattern = "Displayed org.zeroxlab.benchmark/.Report"
 try:

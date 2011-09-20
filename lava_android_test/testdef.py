@@ -1,5 +1,9 @@
 # Copyright (c) 2010 Linaro
 #
+# Author: Linaro Validation Team <linaro-dev@lists.linaro.org>
+#
+# This file is part of LAVA Android Test.
+
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -266,9 +270,11 @@ class AndroidTestRunner(object):
         stderrlog = os.path.join(resultsdir, 'stderr.log')
         try:
             for cmd in self.adbshell_steps:
-                ret_code = self.adb.shell(cmd, stdoutlog, stderrlog)
+                ret_code = self.adb.run_adb_shell_for_test(cmd, stdoutlog, stderrlog)
                 if ret_code != 0:
                     raise Exception("Failed to execute command(%s):ret_code=%d" % (cmd, ret_code))
+        except:
+            raise
         finally:
             self.adb.shell('getprop', os.path.join(resultsdir, 'propoutput.log'))
             self.adb.shell('cat /proc/cpuinfo', os.path.join(resultsdir, 'cpuinfo.log'))

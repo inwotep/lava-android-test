@@ -1,5 +1,9 @@
-# Copyright (c) 2010 Linaro
+# Copyright (c) 2011 Linaro
 #
+# Author: Linaro Validation Team <linaro-dev@lists.linaro.org>
+#
+# This file is part of LAVA Android Test.
+
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -13,11 +17,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import threading
 import os
 import re
 import subprocess
 import tempfile
+
+from Queue import Queue
 from lava_android_test.config import get_config
+
+try:
+    import posix
+except ImportError:
+    posix = None
 
 config = get_config()
 class ADB(object):
@@ -32,14 +44,15 @@ class ADB(object):
 
     target_dir = config.tempdir_android
 
-    def __init__(self, serial=None):
+    def __init__(self, serial=None, quiet=True):
         if serial is not None:
             self.serial = serial
             self.adb = 'adb -s %s' % serial
+        self.cmdExecutor = CommandExecutor(quiet)
 
     def push(self, source=None, target=None):
         if source is None:
-            return -1
+            return (-1, None)
 
         target_dir = self.target_dir
         if target is None:
@@ -47,10 +60,9 @@ class ADB(object):
         else:
             target_dir = os.path.dirname(target)
 
-
-        subprocess.Popen('%s shell mkdir %s' % (self.adb, target_dir), shell=True, stdout=subprocess.PIPE)
-        s = subprocess.Popen('%s push %s %s' % (self.adb, source, target), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        ret = s.wait()
+        self.cmdExecutor.run('%s shell mkdir %s' % (self.adb, target_dir))
+        s = self.cmdExecutor.run('%s push %s %s' % (self.adb, source, target))
+        ret = s.returncode
         return (ret, target)
 
     def pull(self, source=None, target=None):
@@ -58,16 +70,15 @@ class ADB(object):
             return -1
 
         if target is None:
-            s = subprocess.Popen('%s pull %s' % (self.adb, source), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            cmd = '%s pull %s' % (self.adb, source)
         else:
-            s = subprocess.Popen('%s pull %s %s' % (self.adb, source, target), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
-        return s.wait()
+            cmd = '%s pull %s %s' % (self.adb, source, target)
+        s = self.cmdExecutor.run(cmd)
+        return s.returncode
 
     def shell(self, command=None, stdout=None, stderr=None):
         if command is None:
             return 0
-
         tmpdir = config.tempdir_host
         if not os.path.exists(tmpdir):
             os.mkdir(tmpdir)
@@ -96,22 +107,23 @@ class ADB(object):
         if ret_code != 0:
             return self.ERR_PUSH
 
-        s = subprocess.Popen('%s shell chmod 777 %s' % (self.adb, target_path), shell=True, stdout=subprocess.PIPE)
-        ret_code = s.wait()
+        s = self.cmdExecutor.run('%s shell chmod 777 %s' % (self.adb, target_path))
+        ret_code = s.returncode
         if ret_code != 0:
             return self.ERR_CHMOD + ret_code
         #check the whether the output is empty
-        if len(s.stdout.readlines()) != 0:
+        if len(s.stdout) != 0:
             return self.ERR_CHMOD
 
-        s = subprocess.Popen('%s shell %s' % (self.adb, target_path), shell=True, stdout=subprocess.PIPE)
-        ret_code = s.wait()
+        self.cmdExecutor.say('Begin to execute shell command: %s' % command)
+        s = self.cmdExecutor.run('%s shell %s' % (self.adb, target_path))
+        ret_code = s.returncode
         if ret_code != 0:
             return self.ERR_SHELL + ret_code
-        subprocess.Popen('%s shell rm %s' % (self.adb, target_path), shell=True, stdout=subprocess.PIPE)
-        #check the whether the output is empty
-        output = s.stdout.readlines()
+        output = s.stdout
         ret_code_line = output[len(output) - 1]
+        self.cmdExecutor.run('%s shell rm %s' % (self.adb, target_path))
+
         ret_code_pattern = "^RET_CODE=(?P<ret_code>\d+)\s*$"
         pat = re.compile(ret_code_pattern)
         match = pat.search(ret_code_line)
@@ -126,15 +138,17 @@ class ADB(object):
         return ret_code == 0
 
     def installapk(self, apkpath):
-        s = subprocess.Popen('%s install %s' % (self.adb, apkpath), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        ret_code = s.wait()
+        cmd = '%s install %s' % (self.adb, apkpath)
+        s = self.cmdExecutor.run(cmd)
+        ret_code = s.returncode
         if ret_code != 0:
             return self.ERR_INSTALL + ret_code
         return 0
 
     def uninstallapk(self, package):
-        s = subprocess.Popen('%s uninstall %s' % (self.adb, package), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        ret_code = s.wait()
+        cmd = '%s uninstall %s' % (self.adb, package)
+        s = self.cmdExecutor.run(cmd)
+        ret_code = s.returncode
         if ret_code != 0:
             return self.ERR_UNINSTALL + ret_code
         return 0
@@ -168,55 +182,135 @@ class ADB(object):
         return ret_code
 
     def listdir(self, dirpath):
-        ret_code = self.shell("ls %s" % dirpath)
-        if ret_code == 0:
-            (ret_code, output) = self.run_cmd_host('%s shell ls %s ' % (self.adb, dirpath), False)
+        if self.exists(dirpath):
+            (ret_code, output) = self.run_cmd_host('%s shell ls %s ' % (self.adb, dirpath))
             return (ret_code, output)
         else:
             return (ret_code, None)
 
     def read_file(self, filepath):
-        cmd = '%s shell cat %s' % (self.adb, filepath)
-        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT, shell=True)
-        returncode = proc.wait()
-        stdout = proc.stdout
-
-        if returncode == 0:
-            return stdout
-        else:
+        tmpfile_name = tempfile.mkstemp(prefix='read_file_', dir=config.tempdir_host)[1]
+        ret_code = self.pull(filepath, tmpfile_name)
+        if ret_code != 0:
             return None
+        data = None
+        try:
+            with open(tmpfile_name) as fd:
+                data = fd.read()
+        finally:
+            os.remove(tmpfile_name)
+        return data
 
     def get_shellcmdoutput(self, cmd=None):
         if cmd is None:
             return None
         cmd = '%s shell %s' % (self.adb, cmd)
-        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT, shell=True)
-        returncode = proc.wait()
-        stdout = proc.stdout
+        return self.run_cmd_host(cmd)
 
-        if returncode == 0:
-            return stdout
-        else:
-            return None
+    def run_cmd_host(self, cmd):
+        result = self.cmdExecutor.run(cmd)
+        return (result.returncode, result.stdout)
 
-    def run_cmd_host(self, cmd, quiet=False):
-        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE,
-                                stderr=subprocess.STDOUT, shell=True)
-        returncode = proc.wait()
-        stdout = proc.stdout.readlines()
-
-        return (returncode, stdout)
-
-    def run_adb_cmd(self, cmd, quiet=False):
+    def run_adb_cmd(self, cmd):
         cmd = '%s %s' % (self.adb, cmd)
-        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE,
-                                stderr=subprocess.STDOUT, shell=True)
-        returncode = proc.wait()
-        stdout = proc.stdout.readlines()
-
-        return (returncode, stdout)
+        result = self.cmdExecutor.run(cmd)
+        return (result.returncode, result.stdout)
 
     def devices(self):
         return self.run_cmd_host('%s devices' % self.adb)
+
+    def run_adb_shell_for_test(self, cmd, stdoutlog=None, stderrlog=None, quiet=False):
+        cmd = '%s shell %s' % (self.adb, cmd)
+        result = self.cmdExecutor.run(cmd, quiet)
+        if result.returncode != 0:
+            return result.returncode
+        self.push_stream_to_device(result.stdout, stdoutlog)
+        self.push_stream_to_device(result.stderr, stderrlog)
+        return result.returncode
+
+    def push_stream_to_device(self, stream_lines, path):
+        basename = os.path.basename(path)
+        tmp_path = os.path.join(config.tempdir_host, basename)
+        if self.exists(path):
+            retcode = self.pull(path, tmp_path)
+            if retcode != 0:
+                raise Exception('Failed to pull file(%s)stdout to android %s' % path)
+
+        with open(tmp_path, 'w+') as tmp_fd:
+            tmp_fd.writelines(stream_lines)
+            tmp_fd.close()
+
+        if self.push(tmp_path, path)[1] is None:
+            raise Exception('Failed to push stdout to android %s' % path)
+        os.remove(tmp_path)
+
+class CommandExecutor(object):
+    def __init__(self, quiet=True):
+        self._queue = Queue()
+        self.quiet = quiet
+        self.stdout = []
+        self.stderr = []
+
+    def say(self, text, *args, **kwargs):
+        if not self.quiet:
+            print "LAVA:", text.format(*args, **kwargs)
+
+    def display_subprocess_output(self, stream_name, line):
+        if stream_name == 'stdout':
+            self.say('(stdout) {0}', line.rstrip())
+        elif stream_name == 'stderr':
+            self.say('(stderr) {0}', line.rstrip())
+
+    def _drain_queue(self):
+        while True:
+            args = self._queue.get()
+            if args is None:
+                break
+            self.display_subprocess_output(*args)
+
+    def _read_stream(self, stream, stream_name):
+        if stream is None:
+            return
+        for line in iter(stream.readline, ''):
+            output_line = (stream_name, line)
+            self._queue.put(output_line)
+            if stream_name == 'stdout':
+                self.stdout.append(line)
+            elif stream_name == 'stderr':
+                self.stderr.append(line)
+
+    def run(self, cmd, quiet=True):
+        self.quiet = quiet
+        self.stdout = []
+        self.stderr = []
+        self.say("Begin to execute command: %s" % cmd)
+        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                                    stderr=subprocess.STDOUT,
+                                    shell=True)
+
+        stdout_reader = threading.Thread(
+            target=self._read_stream, args=(proc.stdout, "stdout"))
+        stderr_reader = threading.Thread(
+            target=self._read_stream, args=(proc.stderr, "stderr"))
+        ui_printer = threading.Thread(
+            target=self._drain_queue)
+
+        ui_printer.start()
+        stdout_reader.start()
+        stderr_reader.start()
+        try:
+            proc.wait()
+        except KeyboardInterrupt:
+            proc.kill()
+        finally:
+            stdout_reader.join()
+            stderr_reader.join()
+            self._queue.put(None)
+            ui_printer.join()
+        return CommandResult(proc.returncode, self.stdout, self.stderr)
+
+class CommandResult(object):
+    def __init__(self, returncode, stdout=[], stderr=[]):
+        self.returncode = returncode
+        self.stdout = stdout
+        self.stderr = stderr

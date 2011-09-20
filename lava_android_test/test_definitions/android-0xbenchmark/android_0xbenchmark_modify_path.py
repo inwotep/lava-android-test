@@ -1,6 +1,11 @@
 #!/usr/bin/python
 
-# Copyright (c) 2010 Linaro
+# Copyright (c) 2011 Linaro
+
+# Author: Linaro Validation Team <linaro-dev@lists.linaro.org>
+#
+# This file is part of LAVA Android Test.
+#
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,7 +24,7 @@ import re
 from commands import getstatusoutput
 # 'lava_android_test/test_definitions/android-0xbenchmark/'
 
-source='ZeroxBench_Preference.xml'
+source = 'ZeroxBench_Preference.xml'
 target = '/data/data/org.zeroxlab.benchmark/shared_prefs/ZeroxBench_Preference.xml'
 
 if len(sys.argv) == 1:
@@ -58,7 +63,7 @@ rc, output = getstatusoutput(chowncmd)
 if rc != 0:
     print 'Failed to change group(%s) and owner(%s) of file(%s): %s' % (group, owner, target_dir, output)
     sys.exit(1)
-    
+
 chmodcmd = '%s shell chmod 771 %s' % (adbcmd, target_dir)
 rc, output = getstatusoutput(chmodcmd)
 if rc != 0:
@@ -76,13 +81,13 @@ rc, output = getstatusoutput(chowncmd)
 if rc != 0:
     print 'Failed to change group(%s) and owner(%s) of file(%s): %s' % (group, owner, target, output)
     sys.exit(1)
-    
+
 chmodcmd = '%s shell chmod 660 %s' % (adbcmd, target)
 rc, output = getstatusoutput(chmodcmd)
 if rc != 0:
     print 'Failed to change chmod to 771 for file(%s): %s' % (target, output)
     sys.exit(1)
-    
+
 target_dir = '/data/data/org.zeroxlab.benchmark/files'
 mkdircmd = '%s shell mkdir %s' % (adbcmd, target_dir)
 rc, output = getstatusoutput(mkdircmd)
@@ -95,7 +100,7 @@ rc, output = getstatusoutput(chowncmd)
 if rc != 0:
     print 'Failed to change group(%s) and owner(%s) of file(%s): %s' % (group, owner, target_dir, output)
     sys.exit(1)
-    
+
 chmodcmd = '%s shell chmod 771 %s' % (adbcmd, target_dir)
 rc, output = getstatusoutput(chmodcmd)
 if rc != 0:

@@ -48,21 +48,21 @@ def get_cpu_devs(adb=ADB()):
     """
     Return a list of CPU devices
     """
-    
+
     pattern = re.compile('^(?P<key>.+?)\s*:\s*(?P<value>.*)$')
     cpunum = 0
     devices = []
     cpudevs = []
     cpudevs.append({})
-    
+
     # TODO maybe there is other types
     keymap, valmap = ARM_KEYMAP, ARM_VALMAP
 
     try:
-        cpuinfo = adb.read_file("/proc/cpuinfo")
+        cpuinfo = adb.get_shellcmdoutput("cat /proc/cpuinfo")[1]
         if cpuinfo is None:
-            raise IOError()
-        for line in cpuinfo.readlines():
+            raise IOError("Faile to get content of file(%s)" % "/proc/cpuinfo")
+        for line in cpuinfo:
             match = pattern.match(line)
             if match:
                 key, value = match.groups()
@@ -91,14 +91,14 @@ def get_board_devs(adb=ADB()):
     devices = []
     attributes = {}
     device = {}
-    
+
     try:
-        cpuinfo = adb.read_file("/proc/cpuinfo")
+        cpuinfo = adb.get_shellcmdoutput("cat /proc/cpuinfo")[1]
         if cpuinfo is None:
-            return devices
+            raise IOError("Faile to get content of file(%s)" % "/proc/cpuinfo")
         pattern = re.compile("^Hardware\s*:\s*(?P<description>.+)$", re.M)
         found = False
-        for line in cpuinfo.readlines():
+        for line in cpuinfo:
             match = pattern.search(line)
             if match :
                 found = True
@@ -120,14 +120,14 @@ def get_mem_devs(adb=ADB()):
     This returns up to two items, one for physical RAM and another for swap
     """
     devices = []
-    
+
     pattern = re.compile('^(?P<key>.+?)\s*:\s*(?P<value>.+) kB$', re.M)
 
     try:
-        meminfo = adb.read_file("/proc/meminfo")
+        meminfo = adb.get_shellcmdoutput("cat /proc/meminfo")[1]
         if meminfo is None:
-            raise IOError()
-        for line in meminfo.readlines():
+            raise IOError("Faile to get content of file(%s)" % "/proc/meminfo")
+        for line in meminfo:
             match = pattern.search(line)
             if not match:
                 continue

@@ -1,4 +1,9 @@
-# Copyright (c) 2010 Linaro
+# Copyright (c) 2011 Linaro
+
+# Author: Linaro Validation Team <linaro-dev@lists.linaro.org>
+#
+# This file is part of LAVA Android Test.
+#
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by

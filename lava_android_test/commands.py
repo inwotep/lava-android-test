@@ -1,5 +1,9 @@
-# Copyright (c) 2010, 2011 Linaro
+# Copyright (c) 2011, 2011 Linaro
 #
+# Author: Linaro Validation Team <linaro-dev@lists.linaro.org>
+#
+# This file is part of LAVA Android Test.
+
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -48,10 +52,10 @@ class Command(LAVACommand):
         print "LAVA:", text.format(*args, **kwargs)
 
     def say_begin(self, text, *args, **kwargs):
-        print "LAVA: --Start ", text.format(*args, **kwargs)
+        print "LAVA: --Start Operation: ", text.format(*args, **kwargs)
 
     def say_end(self, text, *args, **kwargs):
-        print "LAVA: --End ", text.format(*args, **kwargs),
+        print "LAVA: --End Operation: ", text.format(*args, **kwargs),
 
     def display_subprocess_output(self, stream_name, line):
         if self.args.quiet_subcommands:
@@ -141,6 +145,12 @@ class AndroidTestCommand(AndroidCommand):
         super(AndroidTestCommand, self).register_arguments(parser)
         parser.add_argument("test_id",
                             help="Test identifier")
+    def get_tip_msg(self, text):
+        if self.args.serial:
+            tip_msg = "%s (%s) on device(%s)" % (text, self.args.test_id, self.args.serial)
+        else:
+            tip_msg = "%s (%s)" % (text, self.args.test_id)
+        return tip_msg
 
 class AndroidResultCommand(AndroidCommand):
     @classmethod
@@ -194,6 +204,9 @@ class install(AndroidTestCommand):
     program:: lava-android-test install test-id -s device_serial
     """
     def invoke(self):
+        tip_msg = self.get_tip_msg("Install test")
+        self.say_begin(tip_msg)
+
         self.adb = ADB(self.args.serial)
         if self.test_installed(self.args.test_id):
             raise LavaCommandError("The test (%s) has already installed." % self.args.test_id)
@@ -203,6 +216,8 @@ class install(AndroidTestCommand):
         except Exception as strerror:
             raise LavaCommandError("Test installation error: %s" % strerror)
 
+        self.say_end(tip_msg)
+
 class uninstall(AndroidTestCommand):
     """
     Unistall test of the specified device.
@@ -210,11 +225,15 @@ class uninstall(AndroidTestCommand):
     program:: lava-android-test uninstall test-id -s device_serial
     """
     def invoke(self):
+        tip_msg = self.get_tip_msg("Uninstall test")
+        self.say_begin(tip_msg)
+
         test = testloader(self.args.test_id, self.args.serial)
         try:
             test.uninstall()
         except Exception as strerror:
             raise LavaCommandError("Test uninstall error: %s" % strerror)
+        self.say_end(tip_msg)
 
 class run(AndroidTestCommand):
     """
@@ -236,6 +255,10 @@ class run(AndroidTestCommand):
                                  " bundle and finally save the complete bundle"
                                  " to the  specified FILE."))
     def invoke(self):
+
+        tip_msg = self.get_tip_msg("Run test")
+        self.say_begin(tip_msg)
+
         self.adb = ADB(self.args.serial)
         if not self.test_installed(self.args.test_id):
             raise LavaCommandError("The test (%s) has not been installed yet." % self.args.test_id)
@@ -253,6 +276,8 @@ class run(AndroidTestCommand):
 
         except Exception as strerror:
             raise LavaCommandError("Test execution error: %s" % strerror)
+
+        self.say_end(tip_msg)
 
 class parse(AndroidResultCommand):
     """
@@ -276,13 +301,13 @@ def generate_bundle(serial=None, result_id=None):
     if not adb.exists(resultdir):
         raise  LavaCommandError("The result (%s) is not existed." % result_id)
 
-    bundle_text = adb.read_file(os.path.join(resultdir, "testdata.json")).read()
+    bundle_text = adb.read_file(os.path.join(resultdir, "testdata.json"))
     bundle = DocumentIO.loads(bundle_text)[1]
     test = testloader(bundle['test_runs'][0]['test_id'])
 
     test.parse(result_id)
-    stdout_text = adb.read_file(os.path.join(resultdir, os.path.basename(test.org_ouput_file))).read()
-    stderr_text = adb.read_file(os.path.join(resultdir, 'stderr.log')).read()
+    stdout_text = adb.read_file(os.path.join(resultdir, os.path.basename(test.org_ouput_file)))
+    stderr_text = adb.read_file(os.path.join(resultdir, 'stderr.log'))
     bundle['test_runs'][0]["test_results"] = test.parser.results["test_results"]
     bundle['test_runs'][0]["attachments"] = [
         {
@@ -315,9 +340,9 @@ class show(AndroidResultCommand):
             self.say("No result found for '%s'" % self.args.result_id)
             return
         try:
-            output = self.adb.read_file(stdout)
+            output = self.adb.get_shellcmdoutput('cat %s' % stdout)[1]
             if output is not None:
-                for line in output.readlines():
+                for line in output:
                     self.display_subprocess_output('stdout', line)
         except IOError:
             pass
@@ -326,9 +351,9 @@ class show(AndroidResultCommand):
         if not self.adb.exists(stderr):
             return
         try:
-            output = self.adb.read_file(stderr)
+            output = self.adb.get_shellcmdoutput('cat %s' % stderr)[1]
             if output is not None:
-                for line in output.readlines():
+                for line in output:
                     self.display_subprocess_output('stderr', line)
         except IOError:
             pass
