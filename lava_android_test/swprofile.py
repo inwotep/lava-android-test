@@ -22,13 +22,12 @@ def get_properties(adb=ADB()):
     if adb is None:
         return {}
 
-    properties={}
+    properties = {}
     try:
-        propinfo = adb.get_shellcmdoutput("getprop")
+        propinfo = adb.get_shellcmdoutput("getprop")[1]
         if propinfo is None:
             return properties
         pattern = re.compile('^\[(?P<key>[^\]]+?)]\s*:\s*\[(?P<value>[^\]]+)\]\s*$', re.M)
-        propinfo = propinfo.readlines()
         for line in propinfo:
             match = pattern.search(line)
             if match :
@@ -42,9 +41,9 @@ def get_properties(adb=ADB()):
 def get_image_name_from_properties(adb=ADB()):
     props = get_properties(adb)
     return props.get('ro.build.display.id')
-    
+
 def get_source_info(adb=ADB()):
-    
+
     TIMEFORMAT = '%Y-%m-%dT%H:%M:%SZ'
     source = []
     example = {'project_name':'',
@@ -56,7 +55,7 @@ def get_source_info(adb=ADB()):
     return source
 
 def get_package_info(adb=ADB()):
-    
+
     package = []
     example = {'name':'',
                 'version':''}
@@ -75,7 +74,7 @@ def get_software_context(adb=ADB()):
     """
     if adb is None:
         return {}
-    
+
     software_context = {'image': {'name':get_image_name_from_properties(adb)},
                         'sources':get_source_info(adb),
                         'packages':get_package_info(adb)

@@ -1,6 +1,10 @@
 #!/usr/bin/python
 
-# Copyright (c) 2010 Linaro
+# Copyright (c) 2011 Linaro
+
+# Author: Linaro Validation Team <linaro-dev@lists.linaro.org>
+#
+# This file is part of LAVA Android Test.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -25,6 +29,16 @@ if len(sys.argv) == 1:
 else:
     adb_cmd = "adb -s %s" % (sys.argv[1])
 
+def back():
+    back_cmd = '%s shell input keyevent 4' % (adb_cmd)
+    rc, output = getstatusoutput(back_cmd)
+    if rc != 0:
+        print 'Failed to execute command %s:%s' % (back_cmd, output)
+        sys.exit(1)
+back()
+back()
+back()
+
 ##app_76    861   80    165896 28848 ffffffff afd0eb18 S org.zeroxlab.benchmark
 pattern = re.compile('^\S+\s+(?P<pid>\d+?)\s+.*org\.zeroxlab\.benchmark\s*$')
 while True:
@@ -39,11 +53,11 @@ while True:
         if match:
             pid = match.group('pid')
             break
-    
+
     if pid is None:
        sys.exit(0)
-       
-    killcmd = '%s shell kill -9 %s' % (adb_cmd, pid)
+
+    killcmd = '%s shell kill %s' % (adb_cmd, pid)
     rc, output = getstatusoutput(killcmd)
     if rc != 0:
         print 'Failed to kill process(%s):%s' % (pid, output)

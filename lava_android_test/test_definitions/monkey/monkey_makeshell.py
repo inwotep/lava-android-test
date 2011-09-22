@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 # Copyright (c) 2011 Linaro
 
 # Author: Linaro Validation Team <linaro-dev@lists.linaro.org>
@@ -19,27 +17,15 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-import pexpect
-import sys
-import time
+import os
+from lava_android_test.config import get_config
 
-if len(sys.argv) == 1:
-    adb_cmd = "adb"
-else:
-    adb_cmd = "adb -s %s" % (sys.argv[1])
-
-logcat_cmd = '%s logcat' % (adb_cmd)
-pattern = "Displayed org.zeroxlab.benchmark/.Report"
-try:
-    proc = pexpect.spawn(logcat_cmd, logfile=sys.stdout)
-    id = proc.expect([pattern, pexpect.EOF], timeout=2400)
-    if id == 0:
-        proc.sendcontrol('C')
-except pexpect.TIMEOUT:
-    print "0xbench Test: TIMEOUT Fail"
-    sys.exit(1)
-finally:
-    proc.sendcontrol('C')
-
-time.sleep(3)
-sys.exit(0)
+config = get_config()
+monkey_sh_temp_path = os.path.join(config.tempdir_host, 'monkey.sh')
+with open(monkey_sh_temp_path, 'w') as fd:
+    fd.write('#!/system/bin/sh\n')
+    fd.write('monkey_cmd="monkey -s 1 --pct-touch 10 --pct-motion 20 --pct-nav 20 --pct-majornav 30 --pct-appswitch 20 --throttle 500 100000"\n')
+    fd.write("echo execute command=${monkey_cmd}\n")
+    fd.write("${monkey_cmd}\n")
+    fd.write("echo MONKEY_RET_CODE=$?\n")
+fd.close()

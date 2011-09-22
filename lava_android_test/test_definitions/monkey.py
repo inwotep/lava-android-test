@@ -1,4 +1,9 @@
-# Copyright (c) 2010 Linaro
+# Copyright (c) 2011 Linaro
+
+# Author: Linaro Validation Team <linaro-dev@lists.linaro.org>
+#
+# This file is part of LAVA Android Test.
+#
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -12,18 +17,31 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
+import os
 import lava_android_test.testdef
+from lava_android_test.config import get_config
 
-ADB_SHELL_STEPS = ['monkey -s 1 --pct-touch 10 --pct-motion 20 --pct-nav 20 --pct-majornav 30 --pct-appswitch 20 --throttle 500 100']
+test_name = 'monkey'
+config = get_config()
+curdir = os.path.realpath(os.path.dirname(__file__))
+monkey_sh_name = 'monkey.sh'
+monkey_sh_temp_path = os.path.join(config.tempdir_host, monkey_sh_name)
+monkey_sh_android_path = os.path.join(config.installdir_android, test_name, monkey_sh_name)
+
+INSTALL_STEPS_HOST_PRE = ['cp -rf %s/monkey/monkey_makeshell.py .' % curdir,
+                          'python monkey_makeshell.py']
+INSTALL_STEPS_ADB_PRE = ['push %s %s ' % (monkey_sh_temp_path, monkey_sh_android_path),
+                          'shell chmod 777 %s' % monkey_sh_android_path]
+
+ADB_SHELL_STEPS = [monkey_sh_android_path]
 #PATTERN = "^(?P<test_case_id>\w+):\W+(?P<measurement>\d+\.\d+)"
 PATTERN = "## Network stats: elapsed time=(?P<measurement>\d+)ms"
 FAILURE_PATTERNS = ['\*\* Monkey aborted due to error.',
                     '\*\* System appears to have crashed']
 
-inst = lava_android_test.testdef.AndroidTestInstaller()
+inst = lava_android_test.testdef.AndroidTestInstaller(steps_host_pre=INSTALL_STEPS_HOST_PRE, steps_adb_pre=INSTALL_STEPS_ADB_PRE)
 run = lava_android_test.testdef.AndroidTestRunner(adbshell_steps=ADB_SHELL_STEPS)
 parser = lava_android_test.testdef.AndroidTestParser(PATTERN,
                appendall={'units':'ms'}, failure_patterns=FAILURE_PATTERNS)
-testobj = lava_android_test.testdef.AndroidTest(testname="monkey", installer=inst,
+testobj = lava_android_test.testdef.AndroidTest(testname=test_name, installer=inst,
                                   runner=run, parser=parser)
