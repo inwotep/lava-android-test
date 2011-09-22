@@ -32,7 +32,7 @@ logcat_cmd = '%s logcat' % (adb_cmd)
 pattern = "Displayed org.zeroxlab.benchmark/.Report"
 try:
     proc = pexpect.spawn(logcat_cmd, logfile=sys.stdout)
-    id = proc.expect([pattern, pexpect.EOF], timeout=None)
+    id = proc.expect([pattern, pexpect.EOF], timeout=2400)
     if id == 0:
         proc.sendcontrol('C')
 except pexpect.TIMEOUT:

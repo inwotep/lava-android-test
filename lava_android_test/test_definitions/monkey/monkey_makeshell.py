@@ -24,7 +24,7 @@ config = get_config()
 monkey_sh_temp_path = os.path.join(config.tempdir_host, 'monkey.sh')
 with open(monkey_sh_temp_path, 'w') as fd:
     fd.write('#!/system/bin/sh\n')
-    fd.write('monkey_cmd="monkey -s 1 --pct-touch 10 --pct-motion 20 --pct-nav 20 --pct-majornav 30 --pct-appswitch 20 --throttle 500 100"\n')
+    fd.write('monkey_cmd="monkey -s 1 --pct-touch 10 --pct-motion 20 --pct-nav 20 --pct-majornav 30 --pct-appswitch 20 --throttle 500 100000"\n')
     fd.write("echo execute command=${monkey_cmd}\n")
     fd.write("${monkey_cmd}\n")
     fd.write("echo MONKEY_RET_CODE=$?\n")
