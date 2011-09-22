@@ -441,14 +441,14 @@ def _run_steps_host(steps=[], serial=None):
             cmd = cmd.replace('%%serial%%', '')
         cmd = cmd.strip()
         adb = ADB()
-        rc, output = adb.run_cmd_host(cmd);
+        rc, output = adb.run_cmd_host(cmd, quiet=False);
         if rc:
             raise RuntimeError("Run step '%s' failed. %d : %s" % (cmd, rc, output))
 
 def _run_steps_adb(steps=[], serial=None):
     adb = ADB(serial)
     for cmd in steps:
-        rc, output = adb.run_adb_cmd(cmd);
+        rc, output = adb.run_adb_cmd(cmd, quiet=False);
         if rc:
             raise RuntimeError("Run step '%s' failed. %d : %s" % (cmd, rc, output))
 

@@ -31,12 +31,11 @@ APK_FILE = 'ZeroXBenchmark.apk'
 INSTALL_STEPS_HOST_POST = ['cp -rf %s/android-0xbenchmark/android_0xbenchmark_modify_path.py .' % curdir,
                            'cp -rf %s/android-0xbenchmark/ZeroxBench_Preference.xml .' % curdir,
                           'python android_0xbenchmark_modify_path.py %%serial%%']
-#RUNSTEPS = ['adb shell am start -n org.zeroxlab.benchmark/org.zeroxlab.benchmark.Benchmark --ez math true --ez 2d true --ez 3d true --ez vm true --ez autorun true',
 
 RUN_STEPS_HOST_PRE = ['cp -rf %s/android-0xbenchmark/android_0xbenchmark_kill.py .' % curdir,
                        'python android_0xbenchmark_kill.py %%serial%%']
 RUN_STEPS_ADB_SHELL = ['logcat -c',
-                       'am start -n org.zeroxlab.benchmark/org.zeroxlab.benchmark.Benchmark --ez math true --ez vm true --ez autorun true']
+                       'am start -n org.zeroxlab.benchmark/org.zeroxlab.benchmark.Benchmark --ez math true --ez 2d true --ez 3d true --ez vm true --ez autorun true']
 RUN_STEPS_HOST_POST = ['cp -rf %s/android-0xbenchmark/android_0xbenchmark_wait.py .' % curdir,
                        'python android_0xbenchmark_wait.py %%serial%%']
 

@@ -207,13 +207,13 @@ class ADB(object):
         cmd = '%s shell %s' % (self.adb, cmd)
         return self.run_cmd_host(cmd)
 
-    def run_cmd_host(self, cmd):
-        result = self.cmdExecutor.run(cmd)
+    def run_cmd_host(self, cmd, quiet=True):
+        result = self.cmdExecutor.run(cmd, quiet)
         return (result.returncode, result.stdout)
 
-    def run_adb_cmd(self, cmd):
+    def run_adb_cmd(self, cmd, quiet=True):
         cmd = '%s %s' % (self.adb, cmd)
-        result = self.cmdExecutor.run(cmd)
+        result = self.cmdExecutor.run(cmd, quiet)
         return (result.returncode, result.stdout)
 
     def devices(self):
