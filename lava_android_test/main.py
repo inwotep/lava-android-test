@@ -28,15 +28,14 @@ class LAVAAndroidTestDispatcher(LavaDispatcher):
     Please report all bugs using the Launchpad bug tracker:
     http://bugs.launchpad.net/lava-android-test/+filebug
     """
-def check_adb_installed(self):
-        rc = pexpect.run('adb', timeout=None, logfile=sys.stdout, withexitstatus=True)[1]
+def check_adb_installed():
+        rc = pexpect.run('which adb', timeout=None, logfile=sys.stdout, withexitstatus=True)[1]
         return rc == 0
-
 
 def main():
     if not check_adb_installed():
         print >> sys.stderr, "Can't find the command adb."
-        print >> sys.stderr, "Please add the to PATH environment."
+        print >> sys.stderr, "Please add the path of adb command to PATH environment."
         sys.exit(1)
 
     run_with_dispatcher_class(LAVAAndroidTestDispatcher)
