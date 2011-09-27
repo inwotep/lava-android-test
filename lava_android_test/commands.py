@@ -303,11 +303,15 @@ def generate_bundle(serial=None, result_id=None):
 
     bundle_text = adb.read_file(os.path.join(resultdir, "testdata.json"))
     bundle = DocumentIO.loads(bundle_text)[1]
-    test = testloader(bundle['test_runs'][0]['test_id'])
+    test = testloader(bundle['test_runs'][0]['test_id'], serial)
 
     test.parse(result_id)
     stdout_text = adb.read_file(os.path.join(resultdir, os.path.basename(test.org_ouput_file)))
+    if stdout_text is None:
+        stdout_text = ''
     stderr_text = adb.read_file(os.path.join(resultdir, 'stderr.log'))
+    if stderr_text is None:
+        stderr_text = ''
     bundle['test_runs'][0]["test_results"] = test.parser.results["test_results"]
     bundle['test_runs'][0]["attachments"] = [
         {

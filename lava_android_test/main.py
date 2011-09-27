@@ -29,7 +29,7 @@ class LAVAAndroidTestDispatcher(LavaDispatcher):
     http://bugs.launchpad.net/lava-android-test/+filebug
     """
 def check_adb_installed():
-        rc = pexpect.run('which adb', timeout=None, logfile=sys.stdout, withexitstatus=True)[1]
+        rc = pexpect.run('which adb', timeout=None, logfile=None, withexitstatus=True)[1]
         return rc == 0
 
 def main():

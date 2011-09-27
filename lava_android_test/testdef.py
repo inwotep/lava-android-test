@@ -22,6 +22,7 @@ import os
 import re
 import sys
 import time
+import tempfile
 from datetime import datetime
 from uuid import uuid4
 
@@ -167,17 +168,15 @@ class AndroidTest(ITest):
         if not self.parser:
             raise RuntimeError("no test parser defined for '%s'" %
                                 self.testname)
-        output_filename = self.org_ouput_file
+        output_filename = os.path.basename(self.org_ouput_file)
         config = get_config()
         os.chdir(config.tempdir_host)
         resultsdir_android = os.path.join(config.resultsdir_android, resultname)
         result_filename_android = os.path.join(resultsdir_android, output_filename)
-        result_filename_host_temp = os.path.join(config.tempdir_host, os.path.basename(output_filename))
+        result_filename_host_temp = tempfile.mkstemp(prefix=output_filename, dir=config.tempdir_host)[1]
         self.adb.pull(result_filename_android, result_filename_host_temp)
-
-        self.parser.parse(resultname, output_filename=os.path.basename(output_filename), test_name=self.testname)
-
-
+        self.parser.parse(output_filename, output_filename=result_filename_host_temp, test_name=self.testname)
+        os.remove(result_filename_host_temp)
         os.chdir(self.origdir)
 
 class AndroidTestInstaller(object):
@@ -331,7 +330,7 @@ class AndroidTestParser(object):
             if x['testid'] == test_id:
                 return self.results['test_results'].index(x)
 
-    def parse(self, resultname, output_filename='testoutput.log', test_name=''):
+    def parse(self, result_filename='stdout.log', output_filename='stdout.log', test_name=''):
         """Parse test output to gather results
 
         Use the pattern specified when the class was instantiated to look
@@ -344,7 +343,7 @@ class AndroidTestParser(object):
             pat = re.compile(self.pattern)
         except Exception as strerror:
             raise RuntimeError(
-                "AbrekTestParser - Invalid regular expression '%s' - %s" % (
+                "AndroidTestParser - Invalid regular expression '%s' - %s" % (
                     self.pattern, strerror))
 
         failure_pats = []
@@ -353,7 +352,7 @@ class AndroidTestParser(object):
                 failure_pat = re.compile(failure_pattern)
             except Exception as strerror:
                 raise RuntimeError(
-                    "AbrekTestParser - Invalid regular expression '%s' - %s" % (
+                    "AndroidTestParser - Invalid regular expression '%s' - %s" % (
                         failure_pattern, strerror))
             failure_pats.append(failure_pat)
         test_ok = True
@@ -370,9 +369,10 @@ class AndroidTestParser(object):
                 if not match:
                     continue
                 data = match.groupdict()
-                data["log_filename"] = output_filename
+                data["log_filename"] = result_filename
                 data["log_lineno"] = lineno
-                data['result'] = test_ok and 'pass' or 'fail'
+                if data.get('result') is None:
+                    data['result'] = test_ok and 'pass' or 'fail'
                 self.results['test_results'].append(data)
         if self.fixupdict:
             self.fixresults(self.fixupdict)
