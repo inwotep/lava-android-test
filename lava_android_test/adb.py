@@ -186,7 +186,7 @@ class ADB(object):
             (ret_code, output) = self.run_cmd_host('%s shell ls %s ' % (self.adb, dirpath))
             return (ret_code, output)
         else:
-            return (ret_code, None)
+            return (1, None)
 
     def read_file(self, filepath):
         tmpfile_name = tempfile.mkstemp(prefix='read_file_', dir=config.tempdir_host)[1]

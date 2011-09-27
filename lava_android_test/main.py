@@ -13,6 +13,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import sys
+import pexpect
 from lava_tool.dispatcher import LavaDispatcher, run_with_dispatcher_class
 
 
@@ -26,11 +28,17 @@ class LAVAAndroidTestDispatcher(LavaDispatcher):
     Please report all bugs using the Launchpad bug tracker:
     http://bugs.launchpad.net/lava-android-test/+filebug
     """
-
+def check_adb_installed():
+        rc = pexpect.run('which adb', timeout=None, logfile=None, withexitstatus=True)[1]
+        return rc == 0
 
 def main():
-    #logging.basicConfig(level=logging.DEBUG)
+    if not check_adb_installed():
+        print >> sys.stderr, "Can't find the command adb."
+        print >> sys.stderr, "Please add the path of adb command to PATH environment."
+        sys.exit(1)
+
     run_with_dispatcher_class(LAVAAndroidTestDispatcher)
-    
+
 if __name__ == '__main__':
     main()
