@@ -2,3 +2,5 @@ include COPYING
 include README
 include .testr.conf
 include bin/lava-test
+include lava_android_test/test_definitions/monkey/*
+include lava_android_test/test_definitions/android-0xbenchmark/*
