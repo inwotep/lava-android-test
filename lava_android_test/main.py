@@ -12,14 +12,15 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
+import os
 import sys
 import pexpect
+import shutil
+from tempfile import mkdtemp
+from lava_android_test.config import get_config, set_config
 from lava_tool.dispatcher import LavaDispatcher, run_with_dispatcher_class
 
-
 class LAVAAndroidTestDispatcher(LavaDispatcher):
-
     toolname = 'lava_android_test'
     description = """
     LAVA Android Test wrapper framework
@@ -38,7 +39,16 @@ def main():
         print >> sys.stderr, "Please add the path of adb command to PATH environment."
         sys.exit(1)
 
-    run_with_dispatcher_class(LAVAAndroidTestDispatcher)
+    try:
+        config = get_config()
+        if not os.path.exists(config.tempdir_host):
+            os.makedirs(config.tempdir_host)
+        config.tempdir_host = mkdtemp(dir=config.tempdir_host)
+        set_config(config)
+        os.chmod(config.tempdir_host, 0755)
+        run_with_dispatcher_class(LAVAAndroidTestDispatcher)
+    finally:
+        shutil.rmtree(config.tempdir_host)
 
 if __name__ == '__main__':
     main()
