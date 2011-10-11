@@ -28,8 +28,7 @@ monkey_sh_name = 'monkey.sh'
 monkey_sh_temp_path = os.path.join(config.tempdir_host, monkey_sh_name)
 monkey_sh_android_path = os.path.join(config.installdir_android, test_name, monkey_sh_name)
 
-INSTALL_STEPS_HOST_PRE = ['cp -rf %s/monkey/monkey_makeshell.py .' % curdir,
-                          'python monkey_makeshell.py']
+INSTALL_STEPS_HOST_PRE = ['cp -rf %s/monkey/monkey.sh .' % curdir]
 INSTALL_STEPS_ADB_PRE = ['push %s %s ' % (monkey_sh_temp_path, monkey_sh_android_path),
                           'shell chmod 777 %s' % monkey_sh_android_path]
 
