@@ -325,6 +325,18 @@ def generate_bundle(serial=None, result_id=None):
             "content":  base64.standard_b64encode(stderr_text)
         }
     ]
+    screencap_path = os.path.join(resultdir, 'screencap.png')
+    if adb.exists(screencap_path):
+        tmp_path = os.path.join(config.tempdir_host, 'screencap.png')
+        adb.pull(screencap_path, tmp_path)
+        with open(tmp_path, 'rb') as stream:
+            data = stream.read()
+        if data:
+            bundle['test_runs'][0]["attachments"].append({
+            "pathname": 'screencap.png',
+            "mime_type": 'image/png',
+            "content": base64.standard_b64encode(data)})
+
     return bundle
 
 class show(AndroidResultCommand):
