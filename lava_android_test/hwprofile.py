@@ -66,6 +66,8 @@ def get_cpu_devs(adb=ADB()):
             match = pattern.match(line)
             if match:
                 key, value = match.groups()
+                key = key.strip()
+                value = value.strip()
                 try:
                     key, value = _translate_cpuinfo(keymap, valmap, key, value)
                 except ValueError:
@@ -102,7 +104,7 @@ def get_board_devs(adb=ADB()):
             match = pattern.search(line)
             if match :
                 found = True
-                device['description'] = match.group('description')
+                device['description'] = match.group('description').strip()
         if not found:
             return devices
     except IOError:
@@ -132,6 +134,8 @@ def get_mem_devs(adb=ADB()):
             if not match:
                 continue
             key, value = match.groups()
+            key = key.strip()
+            value = value.strip()
             if key not in ('MemTotal', 'SwapTotal'):
                 continue
             capacity = int(value) << 10 #Kernel reports in 2^10 units

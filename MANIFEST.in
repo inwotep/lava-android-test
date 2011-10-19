@@ -1,6 +1,7 @@
 include COPYING
 include README
 include .testr.conf
+include external/lavatools/*
 include lava_android_test/test_definitions/monkey/*
 include lava_android_test/test_definitions/android-0xbenchmark/*
 include lava_android_test/test_definitions/busybox/*
