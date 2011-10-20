@@ -12,11 +12,12 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
+import os
 import re
 import sys
 from datetime import datetime
 from lava_android_test.adb import ADB
+from lava_android_test.config import get_config
 
 def get_properties(adb=ADB()):
     if adb is None:
@@ -56,12 +57,25 @@ def get_source_info(adb=ADB()):
 
 def get_package_info(adb=ADB()):
 
-    package = []
-    example = {'name':'',
-                'version':''}
-    package.append(example)
-    return package
-
+    packages_info = []
+    config = get_config()
+    curdir = os.path.realpath(os.path.dirname(__file__))
+    lavatool_path = os.path.join(os.path.dirname(curdir), 'external', 'lavatools')
+    lavatool_jar = 'lavatools.jar'
+    target_path = os.path.join(config.tempdir_android, lavatool_jar)
+    adb.push(os.path.join(lavatool_path, lavatool_jar), target_path)
+    pkginfo = adb.get_shellcmdoutput('CLASSPATH=%s exec app_process /system/bin org.linaro.lavatools.LavaTools list-packages' % target_path)[1]
+    if pkginfo is None:
+        return packages_info
+    pattern = re.compile('^\s*(?P<package_name>[^:]+?)\s*:\s*(?P<version>[^\s].+)\s*$', re.M)
+    for line in pkginfo:
+        match = pattern.search(line)
+        if match :
+            package_name, version = match.groups()
+            package = {'name':package_name.strip(),
+                'version':version.strip()}
+            packages_info.append(package)
+    return packages_info
 
 def get_software_context(adb=ADB()):
     """ Return dict used for storing software_context information

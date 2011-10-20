@@ -148,11 +148,21 @@ class AndroidTest(ITest):
         self.adb.makedirs(self.resultsdir)
         self.runner.run(self.resultsdir)
         self._copyorgoutputfile(self.resultsdir)
+        self._screencap(self.resultsdir)
         self._savetestdata(str(uuid4()))
         result_id = os.path.basename(self.resultsdir)
         print("ANDROID TEST RUN COMPLETE: Result id is '%s'" % result_id)
         os.chdir(self.origdir)
         return result_id
+
+    def _screencap(self, resultsdir):
+        config = get_config()
+        curdir = os.path.realpath(os.path.dirname(__file__))
+        screencap_path = os.path.join(os.path.dirname(curdir), 'external', 'screencap', 'screencap')
+        target_path = os.path.join(config.tempdir_android, 'screencap')
+        self.adb.push(screencap_path, target_path)
+        self.adb.shell('chmod 777 %s' % target_path)
+        self.adb.shell('%s %s' % (target_path, os.path.join(resultsdir, 'screencap.png')))
 
     def _copyorgoutputfile(self, resultsdir):
         if self.org_ouput_file == 'stdout.log':
