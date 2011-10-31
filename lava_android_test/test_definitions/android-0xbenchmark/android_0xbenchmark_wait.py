@@ -29,7 +29,7 @@ else:
     adb_cmd = "adb -s %s" % (sys.argv[1])
 
 logcat_cmd = '%s logcat' % (adb_cmd)
-pattern = "Displayed org.zeroxlab.benchmark/.Report"
+pattern = "Displayed org.zeroxlab.zeroxbenchmark/.Report"
 try:
     proc = pexpect.spawn(logcat_cmd, logfile=sys.stdout)
     id = proc.expect([pattern, pexpect.EOF], timeout=2400)
