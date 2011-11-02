@@ -25,7 +25,7 @@ from commands import getstatusoutput
 # 'lava_android_test/test_definitions/android-0xbenchmark/'
 
 source = 'ZeroxBench_Preference.xml'
-target = '/data/data/org.zeroxlab.benchmark/shared_prefs/ZeroxBench_Preference.xml'
+target = '/data/data/org.zeroxlab.zeroxbenchmark/shared_prefs/ZeroxBench_Preference.xml'
 
 if len(sys.argv) == 1:
     adbcmd = 'adb'
@@ -40,8 +40,8 @@ if rc != 0:
     sys.exit(1)
 group = None
 owner = None
-##drwxr-x--x app_76   app_76            2011-10-21 14:40 org.zeroxlab.benchmark
-pattern = re.compile('^d\S+\s+(?P<group>\S+?)\s+(?P<owner>\S+?)\s+\S+\s+\S+\s+org\.zeroxlab\.benchmark\s*$')
+##drwxr-x--x app_76   app_76            2011-10-21 14:40 org.zeroxlab.zeroxbenchmark
+pattern = re.compile('^d\S+\s+(?P<group>\S+?)\s+(?P<owner>\S+?)\s+\S+\s+\S+\s+org\.zeroxlab\.zeroxbenchmark\s*$')
 for line in output.splitlines():
     match = pattern.match(line)
     if match:
@@ -51,7 +51,7 @@ if (group is None) or (owner is None):
     print 'Failed to get group and owner of directory(%s): %s' % (target_dir, output)
     sys.exit(1)
 
-target_dir = '/data/data/org.zeroxlab.benchmark/shared_prefs'
+target_dir = '/data/data/org.zeroxlab.zeroxbenchmark/shared_prefs'
 mkdircmd = '%s shell mkdir %s' % (adbcmd, target_dir)
 rc, output = getstatusoutput(mkdircmd)
 if rc != 0:
@@ -88,7 +88,7 @@ if rc != 0:
     print 'Failed to change chmod to 771 for file(%s): %s' % (target, output)
     sys.exit(1)
 
-target_dir = '/data/data/org.zeroxlab.benchmark/files'
+target_dir = '/data/data/org.zeroxlab.zeroxbenchmark/files'
 mkdircmd = '%s shell mkdir %s' % (adbcmd, target_dir)
 rc, output = getstatusoutput(mkdircmd)
 if rc != 0:

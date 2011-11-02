@@ -35,7 +35,7 @@ INSTALL_STEPS_HOST_POST = ['cp -rf %s/android-0xbenchmark/android_0xbenchmark_mo
 RUN_STEPS_HOST_PRE = ['cp -rf %s/android-0xbenchmark/android_0xbenchmark_kill.py .' % curdir,
                        'python android_0xbenchmark_kill.py %%serial%%']
 RUN_STEPS_ADB_SHELL = ['logcat -c',
-                       'am start -n org.zeroxlab.benchmark/org.zeroxlab.benchmark.Benchmark --ez math true --ez 2d true --ez 3d true --ez vm true --ez autorun true']
+                       'am start -n org.zeroxlab.zeroxbenchmark/org.zeroxlab.zeroxbenchmark.Benchmark --ez math true --ez 2d true --ez 3d true --ez vm true --ez autorun true']
 RUN_STEPS_HOST_POST = ['cp -rf %s/android-0xbenchmark/android_0xbenchmark_wait.py .' % curdir,
                        'python android_0xbenchmark_wait.py %%serial%%']
 
@@ -59,7 +59,7 @@ class ZeroXBenchmarkTestParser(lava_android_test.testdef.AndroidTestParser):
         self.fixmeasurements()
         self.fixids()
 
-save_dir = '/data/data/org.zeroxlab.benchmark/files'
+save_dir = '/data/data/org.zeroxlab.zeroxbenchmark/files'
 #inst = lava_android_test.testdef.AndroidTestInstaller(steps_host_pre=INSTALL_STEPS_HOST_PRE, apks=[APK_FILE], steps_host_post=INSTALL_STEPS_HOST_POST, url=URL)
 inst = lava_android_test.testdef.AndroidTestInstaller(steps_host_post=INSTALL_STEPS_HOST_POST)
 run = lava_android_test.testdef.AndroidTestRunner(steps_host_pre=RUN_STEPS_HOST_PRE, adbshell_steps=RUN_STEPS_ADB_SHELL, steps_host_post=RUN_STEPS_HOST_POST)

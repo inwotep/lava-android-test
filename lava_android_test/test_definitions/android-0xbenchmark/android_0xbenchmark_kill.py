@@ -39,13 +39,13 @@ back()
 back()
 back()
 
-##app_76    861   80    165896 28848 ffffffff afd0eb18 S org.zeroxlab.benchmark
-pattern = re.compile('^\S+\s+(?P<pid>\d+?)\s+.*org\.zeroxlab\.benchmark\s*$')
+##app_76    861   80    165896 28848 ffffffff afd0eb18 S org.zeroxlab.zeroxbenchmark
+pattern = re.compile('^\S+\s+(?P<pid>\d+?)\s+.*org\.zeroxlab\.zeroxbenchmark\s*$')
 while True:
     pscmd = '%s shell ps' % (adb_cmd)
     rc, output = getstatusoutput(pscmd)
     if rc != 0:
-        print 'Failed to get process information about org.zeroxlab.benchmark:%s' % output
+        print 'Failed to get process information about org.zeroxlab.zeroxbenchmark:%s' % output
         sys.exit(1)
     pid = None
     for line in output.splitlines():
