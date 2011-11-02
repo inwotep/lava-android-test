@@ -244,7 +244,7 @@ class AndroidTestInstaller(object):
             if rc:
                 raise RuntimeError("Failed to install apk '%s' failed. %d" % (apk, rc))
 
-    def install(self):
+    def install(self, install_options=None):
         self._download()
         _run_steps_host(self.steps_host_pre, self.adb.serial)
         _run_steps_adb(self.steps_adb_pre, self.adb.serial)
