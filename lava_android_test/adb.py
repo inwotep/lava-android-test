@@ -236,7 +236,7 @@ class ADB(object):
             if retcode != 0:
                 raise Exception('Failed to pull file(%s)stdout to android %s' % path)
 
-        with open(tmp_path, 'w+') as tmp_fd:
+        with open(tmp_path, 'a') as tmp_fd:
             tmp_fd.writelines(stream_lines)
             tmp_fd.close()
 
