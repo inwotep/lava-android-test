@@ -84,7 +84,7 @@ class TjbenchTestParser(lava_android_test.testdef.AndroidTestParser):
                                  }
                     comp_perf.update(common_data)
                     comp_ratio = {'test_case_id': '%s_%s' % (test_case_preffix, 'comp_ratio'),
-                                 'units':'%s',
+                                 'units':'%',
                                  'measurement': tmpdata['comp_ratio']
                                  }
                     comp_ratio.update(common_data)
