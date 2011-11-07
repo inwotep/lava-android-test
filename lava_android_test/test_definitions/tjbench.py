@@ -31,7 +31,7 @@ ppm_android_path = os.path.join(config.tempdir_android, test_name,
                                 ppm_file_name)
 ppm_tmpfs_path = os.path.join('/mnt/mytmpfs', ppm_file_name)
 
-INSTALL_STEPS_HOST_PRE = ['cp -rf %s/tjbench/nightshot_iso_100.ppm .' % curdir, ]
+INSTALL_STEPS_HOST_PRE = ['wget --no-check-certificate "https://wiki.linaro.org/TestDataLinkPage?action=AttachFile&do=get&target=nightshot_iso_100.ppm" -O ./nightshot_iso_100.ppm']
 INSTALL_STEPS_ADB_PRE = ['push %s %s' % (ppm_temp_path, ppm_android_path)]
 
 RUN_STEPS_ADB_SHELL = ['mkdir /mnt/mytmpfs',
