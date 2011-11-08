@@ -446,9 +446,9 @@ class AndroidTestParser(object):
 def _run_steps_host(steps=[], serial=None, option=None):
     for cmd in steps:
         if serial is not None:
-            cmd = cmd.replace('%%serial%%', serial)
+            cmd = cmd.replace('$(SERIAL)', serial)
         else:
-            cmd = cmd.replace('%%serial%%', '')
+            cmd = cmd.replace('$(SERIAL)', '')
         if option is not None:
             cmd = cmd.replace('$(OPTIONS)', option)
         cmd = cmd.strip()

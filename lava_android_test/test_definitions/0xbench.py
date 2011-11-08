@@ -24,12 +24,12 @@ import lava_android_test.testdef
 
 curdir = os.path.realpath(os.path.dirname(__file__))
 
-INSTALL_STEPS_HOST_POST = ['python %s/android-0xbenchmark/android_0xbenchmark_modify_path.py %%serial%%' % curdir]
+INSTALL_STEPS_HOST_POST = ['python %s/android-0xbenchmark/android_0xbenchmark_modify_path.py $(SERIAL)' % curdir]
 
-RUN_STEPS_HOST_PRE = ['python %s/android-0xbenchmark/android_0xbenchmark_kill.py %%serial%%' % curdir]
+RUN_STEPS_HOST_PRE = ['python %s/android-0xbenchmark/android_0xbenchmark_kill.py $(SERIAL)' % curdir]
 RUN_STEPS_ADB_SHELL = ['logcat -c',
                        'am start -n org.zeroxlab.zeroxbenchmark/org.zeroxlab.zeroxbenchmark.Benchmark --ez math true --ez 2d true --ez 3d true --ez vm true --ez autorun true']
-RUN_STEPS_HOST_POST = ['python %s/android-0xbenchmark/android_0xbenchmark_wait.py %%serial%%' % curdir]
+RUN_STEPS_HOST_POST = ['python %s/android-0xbenchmark/android_0xbenchmark_wait.py $(SERIAL)' % curdir]
 
 class ZeroXBenchmarkTestParser(lava_android_test.testdef.AndroidTestParser):
 
