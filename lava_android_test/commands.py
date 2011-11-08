@@ -216,9 +216,9 @@ class install(AndroidTestCommand):
         self.adb = ADB(self.args.serial)
         if self.test_installed(self.args.test_id):
             raise LavaCommandError("The test (%s) has already installed." % self.args.test_id)
-        test = testloader(self.args.test_id, self.args.serial, self.args.install_option)
+        test = testloader(self.args.test_id, self.args.serial)
         try:
-            test.install()
+            test.install(self.args.install_option)
         except Exception as strerror:
             raise LavaCommandError("Test installation error: %s" % strerror)
 
