@@ -65,7 +65,7 @@ class AndroidTest(ITest):
         self.org_ouput_file = org_ouput_file
         self.origdir = os.path.abspath(os.curdir)
 
-    def install(self):
+    def install(self, install_options=None):
         """Install the test suite.
 
         This creates an install directory under the user's XDG_DATA_HOME
@@ -88,7 +88,7 @@ class AndroidTest(ITest):
         if ret_code != 0:
             raise RuntimeError("Failed to create directory(%s) for test(%s)" % (installdir, self.testname))
         try:
-            self.installer.install()
+            self.installer.install(install_options)
         except Exception as e:
             self.uninstall()
             raise RuntimeError("Failed to install test(%s):%s" % (self.testname, e))
