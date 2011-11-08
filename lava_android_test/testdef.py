@@ -244,13 +244,13 @@ class AndroidTestInstaller(object):
             if rc:
                 raise RuntimeError("Failed to install apk '%s' failed. %d" % (apk, rc))
 
-    def install(self):
+    def install(self, install_options=None):
         self._download()
-        _run_steps_host(self.steps_host_pre, self.adb.serial)
-        _run_steps_adb(self.steps_adb_pre, self.adb.serial)
+        _run_steps_host(self.steps_host_pre, self.adb.serial, install_options)
+        _run_steps_adb(self.steps_adb_pre, self.adb.serial, install_options)
         self._installapk()
-        _run_steps_adb(self.steps_adb_post, self.adb.serial)
-        _run_steps_host(self.steps_host_post, self.adb.serial)
+        _run_steps_adb(self.steps_adb_post, self.adb.serial, install_options)
+        _run_steps_host(self.steps_host_post, self.adb.serial, install_options)
 
     def setadb(self, adb=None):
         self.adb = adb
@@ -443,21 +443,25 @@ class AndroidTestParser(object):
     def setadb(self, adb=None):
         self.adb = adb
 
-def _run_steps_host(steps=[], serial=None):
+def _run_steps_host(steps=[], serial=None, option=None):
     for cmd in steps:
         if serial is not None:
             cmd = cmd.replace('%%serial%%', serial)
         else:
             cmd = cmd.replace('%%serial%%', '')
+        if option is not None:
+            cmd = cmd.replace('$(OPTIONS)', option)
         cmd = cmd.strip()
         adb = ADB()
         rc, output = adb.run_cmd_host(cmd, quiet=False);
         if rc:
             raise RuntimeError("Run step '%s' failed. %d : %s" % (cmd, rc, output))
 
-def _run_steps_adb(steps=[], serial=None):
+def _run_steps_adb(steps=[], serial=None, option=None):
     adb = ADB(serial)
     for cmd in steps:
+        if option is not None:
+            cmd = cmd.replace('$(OPTIONS)', option)
         rc, output = adb.run_adb_cmd(cmd, quiet=False);
         if rc:
             raise RuntimeError("Run step '%s' failed. %d : %s" % (cmd, rc, output))

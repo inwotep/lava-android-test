@@ -203,6 +203,12 @@ class install(AndroidTestCommand):
     program:: lava-android-test install test-id 
     program:: lava-android-test install test-id -s device_serial
     """
+
+    @classmethod
+    def register_arguments(cls, parser):
+        super(cls, install).register_arguments(parser)
+        parser.add_argument('-o', '--install-option')
+
     def invoke(self):
         tip_msg = self.get_tip_msg("Install test")
         self.say_begin(tip_msg)
@@ -210,7 +216,7 @@ class install(AndroidTestCommand):
         self.adb = ADB(self.args.serial)
         if self.test_installed(self.args.test_id):
             raise LavaCommandError("The test (%s) has already installed." % self.args.test_id)
-        test = testloader(self.args.test_id, self.args.serial)
+        test = testloader(self.args.test_id, self.args.serial, self.args.install_option)
         try:
             test.install()
         except Exception as strerror:
