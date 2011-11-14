@@ -155,11 +155,9 @@ class ADB(object):
 
     def makedirs(self, path):
         parent_path = os.path.dirname(path)
-        if not self.exists(parent_path):
-            ret_code = self.makedirs(parent_path)
-            if ret_code != 0:
-                return ret_code
-        return self.shell("mkdir %s" % path)
+        if parent_path == '/' or self.exists(parent_path):
+            return self.shell("mkdir %s" % path)
+        return self.makedirs(parent_path)
 
     def rmtree(self, dirpath):
         ret_code = self.shell("rm -r %s" % dirpath)
@@ -283,7 +281,7 @@ class CommandExecutor(object):
         self.quiet = quiet
         self.stdout = []
         self.stderr = []
-        self.say("Begin to execute command: %s" % cmd)
+        self.say("Begin to execute command: %s" % cmd.replace('{', '{{').replace('}', '}}'))
         proc = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                                     stderr=subprocess.STDOUT,
                                     shell=True)

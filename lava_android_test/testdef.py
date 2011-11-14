@@ -268,9 +268,11 @@ class AndroidTestRunner(object):
 
     steps - list of steps to be executed in a shell
     """
-    def __init__(self, steps_host_pre=[], adbshell_steps=[], steps_host_post=[]):
+    def __init__(self, steps_host_pre=[], steps_adb_pre=[], adbshell_steps=[], steps_adb_post=[], steps_host_post=[]):
         self.steps_host_pre = steps_host_pre
+        self.steps_adb_pre = steps_adb_pre
         self.adbshell_steps = adbshell_steps
+        self.steps_adb_post = steps_adb_post
         self.steps_host_post = steps_host_post
         self.testoutput = []
 
@@ -292,7 +294,9 @@ class AndroidTestRunner(object):
     def run(self, resultsdir):
         self.starttime = datetime.utcnow()
         _run_steps_host(self.steps_host_pre, self.adb.serial)
+        _run_steps_adb(self.steps_adb_pre, self.adb.serial)
         self._run_steps_adbshell(resultsdir)
+        _run_steps_adb(self.steps_adb_post, self.adb.serial)
         _run_steps_host(self.steps_host_post, self.adb.serial)
         self.endtime = datetime.utcnow()
 
