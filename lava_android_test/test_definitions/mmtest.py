@@ -81,7 +81,8 @@ class MMTestTestParser(lava_android_test.testdef.AndroidTestParser):
         self.fixmeasurements()
         self.fixids()
 
-inst = lava_android_test.testdef.AndroidTestInstaller(apks=apks)
+#inst = lava_android_test.testdef.AndroidTestInstaller(apks=apks)
+inst = lava_android_test.testdef.AndroidTestInstaller()
 run = lava_android_test.testdef.AndroidTestRunner(
                                 steps_host_pre=RUN_STEPS_HOST_PRE,
                                 steps_adb_pre=RUN_STEPS_ADB_PRE,
