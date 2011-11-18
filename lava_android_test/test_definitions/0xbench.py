@@ -24,20 +24,12 @@ import lava_android_test.testdef
 
 curdir = os.path.realpath(os.path.dirname(__file__))
 
-URL = 'https://android-build.linaro.org/jenkins/job/linaro-android_leb-panda/lastSuccessfulBuild/artifact/build/out/target/product/pandaboard/system.tar.bz2'
-INSTALL_STEPS_HOST_PRE = ['tar jxvf system.tar.bz2 system/app/ZeroXBenchmark.apk',
-                          'cp system/app/ZeroXBenchmark.apk ./']
-APK_FILE = 'ZeroXBenchmark.apk'
-INSTALL_STEPS_HOST_POST = ['cp -rf %s/android-0xbenchmark/android_0xbenchmark_modify_path.py .' % curdir,
-                           'cp -rf %s/android-0xbenchmark/ZeroxBench_Preference.xml .' % curdir,
-                          'python android_0xbenchmark_modify_path.py %%serial%%']
+INSTALL_STEPS_HOST_POST = ['python %s/android-0xbenchmark/android_0xbenchmark_modify_path.py $(SERIAL)' % curdir]
 
-RUN_STEPS_HOST_PRE = ['cp -rf %s/android-0xbenchmark/android_0xbenchmark_kill.py .' % curdir,
-                       'python android_0xbenchmark_kill.py %%serial%%']
+RUN_STEPS_HOST_PRE = ['python %s/android-0xbenchmark/android_0xbenchmark_kill.py $(SERIAL)' % curdir]
 RUN_STEPS_ADB_SHELL = ['logcat -c',
                        'am start -n org.zeroxlab.zeroxbenchmark/org.zeroxlab.zeroxbenchmark.Benchmark --ez math true --ez 2d true --ez 3d true --ez vm true --ez autorun true']
-RUN_STEPS_HOST_POST = ['cp -rf %s/android-0xbenchmark/android_0xbenchmark_wait.py .' % curdir,
-                       'python android_0xbenchmark_wait.py %%serial%%']
+RUN_STEPS_HOST_POST = ['python %s/android-0xbenchmark/android_0xbenchmark_wait.py $(SERIAL)' % curdir]
 
 class ZeroXBenchmarkTestParser(lava_android_test.testdef.AndroidTestParser):
 
@@ -60,7 +52,6 @@ class ZeroXBenchmarkTestParser(lava_android_test.testdef.AndroidTestParser):
         self.fixids()
 
 save_dir = '/data/data/org.zeroxlab.zeroxbenchmark/files'
-#inst = lava_android_test.testdef.AndroidTestInstaller(steps_host_pre=INSTALL_STEPS_HOST_PRE, apks=[APK_FILE], steps_host_post=INSTALL_STEPS_HOST_POST, url=URL)
 inst = lava_android_test.testdef.AndroidTestInstaller(steps_host_post=INSTALL_STEPS_HOST_POST)
 run = lava_android_test.testdef.AndroidTestRunner(steps_host_pre=RUN_STEPS_HOST_PRE, adbshell_steps=RUN_STEPS_ADB_SHELL, steps_host_post=RUN_STEPS_HOST_POST)
 parser = ZeroXBenchmarkTestParser()

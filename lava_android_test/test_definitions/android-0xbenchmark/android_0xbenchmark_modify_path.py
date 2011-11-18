@@ -21,10 +21,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import sys
 import re
+import os
 from commands import getstatusoutput
-# 'lava_android_test/test_definitions/android-0xbenchmark/'
 
-source = 'ZeroxBench_Preference.xml'
+curdir = os.path.realpath(os.path.dirname(__file__))
+source = '%s/ZeroxBench_Preference.xml' % curdir
 target = '/data/data/org.zeroxlab.zeroxbenchmark/shared_prefs/ZeroxBench_Preference.xml'
 
 if len(sys.argv) == 1:
