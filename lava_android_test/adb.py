@@ -157,7 +157,12 @@ class ADB(object):
         parent_path = os.path.dirname(path)
         if parent_path == '/' or self.exists(parent_path):
             return self.shell("mkdir %s" % path)
-        return self.makedirs(parent_path)
+        else:
+            ret = self.makedirs(parent_path)
+            if ret == 0:
+                return self.shell("mkdir %s" % path)
+            else:
+                return ret
 
     def rmtree(self, dirpath):
         ret_code = self.shell("rm -r %s" % dirpath)
