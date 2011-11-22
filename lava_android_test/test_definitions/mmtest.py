@@ -19,31 +19,34 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import os
 import re
+import urllib
 import lava_android_test.testdef
-from lava_android_test.config import get_config
-
 
 test_name = 'mmtest'
-config = get_config()
-curdir = os.path.realpath(os.path.dirname(__file__))
-apk_name = 'mediaframeworktest.apk'
-apK_path = os.path.join(curdir, 'mmtest', apk_name)
-apks = [apK_path]
 
-site_name = 'samplemedia.linaro.org'
-RUN_STEPS_HOST_PRE = ['wget -r -np -l 2 -R csv,txt,css,html,gif http://%s/MPEG4/' % site_name,
-                      r'find  samplemedia.linaro.org -type f -name "index*" -exec rm -f \{\} \;',
-                      'rm -f %s/BigBuckBunnyAttribution.txt' % site_name,
-                      'rm -f %s/sampleinfo.csv' % site_name]
-test_files_target_path = os.path.join('/sdcard', site_name)
-RUN_STEPS_ADB_PRE = ['push %s %s' % (site_name, test_files_target_path)]
+def getLocalName(url):
+    url = url.strip()
+    url = re.sub('[\/]+$', '', url)
+    proto, rest = urllib.splittype(url)  
+    host, rest = urllib.splithost(rest)
+    if rest is None or  rest == '': 
+        return host
+    return os.path.basename(rest) 
+
+site = 'http://samplemedia.linaro.org/'
+local_name = getLocalName(site)
+RUN_STEPS_HOST_PRE = ['wget -r -np -l 2 -R csv,txt,css,html,gif %s' % site,
+                      r'find  %s -type f -name "index*" -exec rm -f \{\} \;' % local_name,
+                      r'find  %s -type f -name "README" -exec rm -f \{\} \;' % local_name]
+test_files_target_path = os.path.join('/sdcard', local_name)
+RUN_STEPS_ADB_PRE = ['push %s %s' % (local_name, test_files_target_path)]
 RUN_ADB_SHELL_STEPS = ['am instrument -r -e targetDir %s \
     -w com.android.mediaframeworktest/.MediaFrameworkTestRunner'
      % test_files_target_path]
 
 class MMTestTestParser(lava_android_test.testdef.AndroidTestParser):
 
-    def parse(self, result_filename='stdout.log', output_filename='stdout.log', test_name=''):
+    def parse(self, result_filename='stdout.log', output_filename='stdout.log', test_name=test_name):
         """Parse test output to gather results
         Use the pattern specified when the class was instantiated to look
         through the results line-by-line and find lines that match it.
@@ -81,7 +84,6 @@ class MMTestTestParser(lava_android_test.testdef.AndroidTestParser):
         self.fixmeasurements()
         self.fixids()
 
-#inst = lava_android_test.testdef.AndroidTestInstaller(apks=apks)
 inst = lava_android_test.testdef.AndroidTestInstaller()
 run = lava_android_test.testdef.AndroidTestRunner(
                                 steps_host_pre=RUN_STEPS_HOST_PRE,
