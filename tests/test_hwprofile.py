@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2010, 2011 Linaro
+# Copyright (c) 2011 Linaro
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -85,8 +85,9 @@ VmallocChunk:      36868 kB
 '''
 
 class HwprofileTests(unittest.TestCase):
+    maxDiff = None
+
     def test_get_cpu_devs(self):
-        self.maxDiff = None
         fake_adb(output_str=panda_cpu_info)
         devs = lava_android_test.hwprofile.get_cpu_devs()
         clear_fake()
@@ -149,19 +150,25 @@ class MissingFiles(TestCaseWithFixtures):
 
     def test_bad_cpuinfo(self):
         errmsg = 'WARNING: Could not read cpu information\n'
+        fake_adb(output_str='', ret_code=255)
         devs = lava_android_test.hwprofile.get_cpu_devs()
+        clear_fake();
         self.assertEqual([], devs)
         self.assertEqual(errmsg, self.out.getvalue())
 
     def test_bad_boardinfo(self):
         errmsg = 'WARNING: Could not read board information\n'
+        fake_adb(output_str='', ret_code=255)
         devs = lava_android_test.hwprofile.get_board_devs()
+        clear_fake();
         self.assertEqual([], devs)
         self.assertEqual(errmsg, self.out.getvalue())
 
     def test_bad_meminfo(self):
         errmsg = 'WARNING: Could not read memory information\n'
+        fake_adb(output_str='', ret_code=255)
         devs = lava_android_test.hwprofile.get_mem_devs()
+        clear_fake();
         self.assertEqual([], devs)
         self.assertEqual(errmsg, self.out.getvalue())
 
