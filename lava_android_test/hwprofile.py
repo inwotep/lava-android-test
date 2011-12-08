@@ -59,8 +59,8 @@ def get_cpu_devs(adb=ADB()):
     keymap, valmap = ARM_KEYMAP, ARM_VALMAP
 
     try:
-        cpuinfo = adb.get_shellcmdoutput("cat /proc/cpuinfo")[1]
-        if cpuinfo is None:
+        (retcode, cpuinfo) = adb.get_shellcmdoutput("cat /proc/cpuinfo")
+        if retcode != 0 or cpuinfo is None :
             raise IOError("Faile to get content of file(%s)" % "/proc/cpuinfo")
         for line in cpuinfo:
             match = pattern.match(line)
@@ -95,8 +95,8 @@ def get_board_devs(adb=ADB()):
     device = {}
 
     try:
-        cpuinfo = adb.get_shellcmdoutput("cat /proc/cpuinfo")[1]
-        if cpuinfo is None:
+        (retcode, cpuinfo) = adb.get_shellcmdoutput("cat /proc/cpuinfo")
+        if retcode != 0 or cpuinfo is None :
             raise IOError("Faile to get content of file(%s)" % "/proc/cpuinfo")
         pattern = re.compile("^Hardware\s*:\s*(?P<description>.+)$", re.M)
         found = False
@@ -126,8 +126,8 @@ def get_mem_devs(adb=ADB()):
     pattern = re.compile('^(?P<key>.+?)\s*:\s*(?P<value>.+) kB$', re.M)
 
     try:
-        meminfo = adb.get_shellcmdoutput("cat /proc/meminfo")[1]
-        if meminfo is None:
+        (retcode, meminfo) = adb.get_shellcmdoutput("cat /proc/meminfo")
+        if retcode != 0 or meminfo is None:
             raise IOError("Faile to get content of file(%s)" % "/proc/meminfo")
         for line in meminfo:
             match = pattern.search(line)
