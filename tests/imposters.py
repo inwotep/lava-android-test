@@ -19,9 +19,6 @@ import sys
 import tempfile
 import StringIO
 
-from lava_test.core.config import set_config
-
-
 class OutputImposter(object):
     def setUp(self):
         self.origstdout = sys.stdout
@@ -42,7 +39,7 @@ class ConfigImposter(object):
                 self.configdir = os.path.join(basedir, "config")
                 self.installdir = os.path.join(basedir, "install")
                 self.resultsdir = os.path.join(basedir, "results")
-                self.registry =  {
+                self.registry = {
                       "format": "LAVA Test Test Registry 1.0",
                       "providers": [
                           {
@@ -63,7 +60,6 @@ class ConfigImposter(object):
 
         self.tmpdir = tempfile.mkdtemp()
         self.config = fakeconfig(self.tmpdir)
-        set_config(self.config)
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)

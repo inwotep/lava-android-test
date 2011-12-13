@@ -25,6 +25,9 @@ def fake_adb(output_str='', target_path=test_tmp, ret_code=0):
     fake_adb_path = os.path.join(target_path, 'adb')
     adb_file = open(fake_adb_path, 'w')
     adb_file.write('#/bin/bash\n')
+    adb_file.write('if [ "$2" == "chmod" ]; then\n')
+    adb_file.write('\texit 0\n')
+    adb_file.write('fi\n')
     if output_str is None  or output_str == '':
         pass
     else:
