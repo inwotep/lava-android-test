@@ -14,7 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import os
 import sys
-import pexpect
+import subprocess
 import shutil
 from tempfile import mkdtemp
 from lava_android_test.config import get_config, set_config
@@ -30,7 +30,7 @@ class LAVAAndroidTestDispatcher(LavaDispatcher):
     http://bugs.launchpad.net/lava-android-test/+filebug
     """
 def check_adb_installed():
-        rc = pexpect.run('which adb', timeout=None, logfile=None, withexitstatus=True)[1]
+        rc = subprocess.call(["which", "adb"], stdout=open('/dev/null', 'w'))
         return rc == 0
 
 def main():
