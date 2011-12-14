@@ -1,4 +1,4 @@
-# Copyright (c) 2010, 2011 Linaro
+# Copyright (c) 2011 Linaro
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,6 +24,10 @@ class LavaTestCommandTestCase(TestCaseWithFixtures):
     def setUp(self):
         self.config = self.add_fixture(ConfigImposter())
         self.out = self.add_fixture(OutputImposter())
+        clear_fake()
+
+    def tearDown(self):
+        clear_fake()
 
     def _runLavaTest(self, cmds):
         LAVAAndroidTestDispatcher().dispatch(cmds)
@@ -60,7 +64,7 @@ devices_list_info = '''List of devices attached
 '''
 
 class ListDevices(LavaTestCommandTestCase):
-    def test_list_installed(self):
+    def test_list_devices(self):
         # test_name must be in the BuiltInProvider._builtin_tests
         fake_adb(output_str=devices_list_info)
         self._runLavaTest(['list-devices'])
@@ -68,11 +72,21 @@ class ListDevices(LavaTestCommandTestCase):
         clear_fake()
 
 class RunTest(LavaTestCommandTestCase):
-    def test_run_command_test_not_exist(self):
+    def test_run_command_test_not_install(self):
         errmsg = 'ERROR: The test (abc) has not been installed yet.'
+        fake_adb(output_str='RET_CODE=1')
         ret_code = LAVAAndroidTestDispatcher().dispatch(['run', 'abc'])
         self.assertEqual(1, ret_code)
         self.assertTrue(errmsg in self.out.getvalue())
+        clear_fake()
+
+    def test_run_command_test_not_exist(self):
+        errmsg = "unknown test 'abc'"
+        fake_adb(output_str='RET_CODE=0')
+        self.assertRaises(SystemExit, LAVAAndroidTestDispatcher().dispatch, ['run', 'abc'])
+        self.assertNotEqual(None, re.search(errmsg, self.out.getvalue()), re.MULTILINE)
+        self.assertTrue(errmsg in self.out.getvalue())
+
 
 class TestHelp(LavaTestCommandTestCase):
     def test_command_help(self):

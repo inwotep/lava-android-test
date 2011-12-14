@@ -17,6 +17,21 @@
 import os
 import stat
 import subprocess
+from lava_android_test.testdef import AndroidTest, AndroidTestInstaller, AndroidTestRunner, AndroidTestParser
+
+def maketest(name="foo", version="", installer=None, runner=None, parser=None):
+    if installer is None:
+        installer = makeinstaller()
+    return AndroidTest(name, version, installer, runner, parser)
+
+def makerunner(**kwargs):
+    return AndroidTestRunner(**kwargs)
+
+def makeinstaller(**kwargs):
+    return AndroidTestInstaller(**kwargs)
+
+def makeparser(*args, **kwargs):
+        return AndroidTestParser(*args, **kwargs)
 
 test_tmp = '/tmp/lava-android-test-tmp'
 def fake_adb(output_str='', target_path=test_tmp, ret_code=0):
