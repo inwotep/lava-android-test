@@ -39,7 +39,7 @@ def fake_adb(output_str='', target_path=test_tmp, ret_code=0):
         os.makedirs(target_path)
     fake_adb_path = os.path.join(target_path, 'adb')
     adb_file = open(fake_adb_path, 'w')
-    adb_file.write('#/bin/bash\n')
+    adb_file.write('#!/bin/bash\n')
     adb_file.write('if [ "$2" == "chmod" ]; then\n')
     adb_file.write('\texit 0\n')
     adb_file.write('fi\n')
