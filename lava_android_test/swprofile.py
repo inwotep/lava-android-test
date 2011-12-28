@@ -58,16 +58,10 @@ def get_source_info(adb=ADB()):
 def get_package_info(adb=ADB()):
 
     packages_info = []
-    config = get_config()
-    curdir = os.path.realpath(os.path.dirname(__file__))
-    lavatool_path = os.path.join(os.path.dirname(curdir), 'external', 'lavatools')
-    lavatool_jar = 'lavatools.jar'
-    target_path = os.path.join(config.tempdir_android, lavatool_jar)
-    adb.push(os.path.join(lavatool_path, lavatool_jar), target_path)
-    pkginfo = adb.get_shellcmdoutput('CLASSPATH=%s exec app_process /system/bin org.linaro.lavatools.LavaTools list-packages' % target_path)[1]
+    pkginfo = adb.get_shellcmdoutput('/system/bin/pm list packages -v')[1]
     if pkginfo is None:
         return packages_info
-    pattern = re.compile('^\s*(?P<package_name>[^:]+?)\s*:\s*(?P<version>[^\s].+)\s*$', re.M)
+    pattern = re.compile('^\s*package:\s*(?P<package_name>[^:]+?)\s*:\s*(?P<version>[^\s].+)\s*$', re.M)
     for line in pkginfo:
         match = pattern.search(line)
         if match :

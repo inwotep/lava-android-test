@@ -18,13 +18,13 @@ import unittest
 import lava_android_test.swprofile
 from tests.tests_util import fake_adb, clear_fake
 
-package_list_info = '''android:4.0.1.2.3.4.5.6.7.8.9-3 (#14)
-com.android.musicvis:4.0.1.2.3.4.5.6.7.8.9-3 (#14)
-com.android.videoeditor:1.1 (#11)
-com.android.vpndialogs:4.0.1.2.3.4.5.6.7.8.9-3 (#14)
-com.android.wallpaper:4.0.1.2.3.4.5.6.7.8.9-3 (#14)
-com.android.wallpaper.livepicker:4.0.1.2.3.4.5.6.7.8.9-3 (#14)
-com.svox.pico:1.0 (#1)'''
+package_list_info = '''package:android:4.0.1.2.3.4.5.6.7.8.9-3 (#14)
+package:com.android.musicvis:4.0.1.2.3.4.5.6.7.8.9-3 (#14)
+package:com.android.videoeditor:1.1 (#11)
+package:com.android.vpndialogs:4.0.1.2.3.4.5.6.7.8.9-3 (#14)
+package:com.android.wallpaper:4.0.1.2.3.4.5.6.7.8.9-3 (#14)
+package:com.android.wallpaper.livepicker:4.0.1.2.3.4.5.6.7.8.9-3 (#14)
+package:com.svox.pico:1.0 (#1)'''
 
 getprop_info = '''[dalvik.vm.heapsize]: [24m]
 [dalvik.vm.stack-trace-file]: [/data/anr/traces.txt]
