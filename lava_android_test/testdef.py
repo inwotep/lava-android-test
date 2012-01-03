@@ -483,6 +483,7 @@ def testloader(testname, serial=None):
     except AttributeError:
         base = mod.testobj
 
+    base.parser.results = {'test_results':[]}
     base.setadb(ADB(serial))
     return base
 
