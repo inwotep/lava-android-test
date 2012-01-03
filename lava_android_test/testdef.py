@@ -156,12 +156,7 @@ class AndroidTest(ITest):
         return result_id
 
     def _screencap(self, resultsdir):
-        config = get_config()
-        curdir = os.path.realpath(os.path.dirname(__file__))
-        screencap_path = os.path.join(os.path.dirname(curdir), 'external', 'screencap', 'screencap')
-        target_path = os.path.join(config.tempdir_android, 'screencap')
-        self.adb.push(screencap_path, target_path)
-        self.adb.shell('chmod 777 %s' % target_path)
+        target_path = '/system/bin/screenshot'
         self.adb.shell('%s %s' % (target_path, os.path.join(resultsdir, 'screencap.png')))
 
     def _copyorgoutputfile(self, resultsdir):
