@@ -88,8 +88,9 @@ class AndroidTest(ITest):
         if ret_code != 0:
             raise RuntimeError("Failed to create directory(%s) for test(%s)" % (installdir, self.testname))
 
-        self.adb.shell('echo "%s" > %s/install_options' %
-                        (install_options, installdir))
+        if install_options is not None:
+            self.adb.shell('echo "%s" > %s/install_options' %
+                           (install_options, installdir))
         try:
             self.installer.install(install_options)
         except Exception as e:
