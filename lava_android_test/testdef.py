@@ -87,6 +87,10 @@ class AndroidTest(ITest):
         ret_code = self.adb.makedirs(installdir)
         if ret_code != 0:
             raise RuntimeError("Failed to create directory(%s) for test(%s)" % (installdir, self.testname))
+
+        if install_options is not None:
+            self.adb.shell('echo "%s" > %s/install_options' %
+                           (install_options, installdir))
         try:
             self.installer.install(install_options)
         except Exception as e:
@@ -109,6 +113,12 @@ class AndroidTest(ITest):
         if self.adb.exists(path):
             self.adb.rmtree(path)
 
+    def _add_install_options(self, bundle, config):
+        optionfile = "%s/%s/install_options" % (config.installdir_android, self.testname)
+        if self.adb.exists(optionfile):
+            (rc, output) = self.adb.run_adb_cmd('shell cat %s' % optionfile)
+            bundle['test_runs'][0]['attributes']['install_options'] = output[0]
+
     def _savetestdata(self, analyzer_assigned_uuid):
         TIMEFORMAT = '%Y-%m-%dT%H:%M:%SZ'
         bundle = {
@@ -128,6 +138,7 @@ class AndroidTest(ITest):
             ]
         }
         config = get_config()
+        self._add_install_options(bundle, config)
         filename_host = os.path.join(config.tempdir_host, 'testdata.json')
         write_file(DocumentIO.dumps(bundle), filename_host)
         filename_target = os.path.join(self.resultsdir, 'testdata.json')
