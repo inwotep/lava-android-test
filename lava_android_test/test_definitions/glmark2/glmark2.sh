@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright (c) 2012 Linaro
+# Copyright (C) 2010-2012 Linaro Limited
 
 # Author: Linaro Validation Team <linaro-dev@lists.linaro.org>
 #
@@ -19,33 +19,18 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ADB_CMD="adb"
-
-function waitFinish(){
-    if [ "x${1}" == "x" ]; then
-        return 1
-    fi
-    count=0
-    while [ 1 ]; do
-        ${ADB_CMD} shell ps |grep $1
-        if [ $? -ne 0 ];then
-            return 0
-        fi
-        sleep 20
-        ((count++))
-		if [ ${count} -gt 50 ];then
-			return 1
-    	fi
-    done
-}
+prog_dir=`dirname $0`
 
 function main(){
     if [ "x${1}" != "x" ]; then
         ADB_CMD="${ADB_CMD} -s ${1}"
     fi
+    ${ADB_CMD} shell sqlite3 /data/data/com.android.providers.settings/databases/settings.db "delete from system where name='stay_on_while_plugged_in';insert into system (name, value) values ('stay_on_while_plugged_in','3');"
+    ${ADB_CMD} shell input keyevent 82
     ${ADB_CMD} logcat -c
     ${ADB_CMD} shell am start -W org.linaro.glmark2/.Glmark2Activity
-    waitFinish "glmark2"
-    #${ADB_CMD} logcat glmark2:I *:S
+    python ${prog_dir}/glmark2_wait.py ${1}
+    #${ADB_CMD} logcat -d glmark2:I *:S
     ${ADB_CMD} logcat -d
 }
 
