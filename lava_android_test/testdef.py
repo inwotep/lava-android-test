@@ -1,4 +1,4 @@
-# Copyright (c) 2010 Linaro
+# Copyright (c) 2010-2012 Linaro
 #
 # Author: Linaro Validation Team <linaro-dev@lists.linaro.org>
 #
@@ -299,11 +299,11 @@ class AndroidTestRunner(object):
 
     def run(self, resultsdir):
         self.starttime = datetime.utcnow()
-        _run_steps_host(self.steps_host_pre, self.adb.serial)
-        _run_steps_adb(self.steps_adb_pre, self.adb.serial)
+        _run_steps_host(self.steps_host_pre, self.adb.serial, resultsdir=resultsdir)
+        _run_steps_adb(self.steps_adb_pre, self.adb.serial, resultsdir=resultsdir)
         self._run_steps_adbshell(resultsdir)
-        _run_steps_adb(self.steps_adb_post, self.adb.serial)
-        _run_steps_host(self.steps_host_post, self.adb.serial)
+        _run_steps_adb(self.steps_adb_post, self.adb.serial, resultsdir=resultsdir)
+        _run_steps_host(self.steps_host_post, self.adb.serial, resultsdir=resultsdir)
         self.endtime = datetime.utcnow()
 
     def setadb(self, adb=None):
@@ -453,7 +453,7 @@ class AndroidTestParser(object):
     def setadb(self, adb=None):
         self.adb = adb
 
-def _run_steps_host(steps=[], serial=None, option=None):
+def _run_steps_host(steps=[], serial=None, option=None, resultsdir=None):
     for cmd in steps:
         if serial is not None:
             cmd = cmd.replace('$(SERIAL)', serial)
@@ -466,8 +466,11 @@ def _run_steps_host(steps=[], serial=None, option=None):
         rc, output = adb.run_cmd_host(cmd, quiet=False);
         if rc:
             raise RuntimeError("Run step '%s' failed. %d : %s" % (cmd, rc, output))
+        if resultsdir is not None:
+            stdoutlog = os.path.join(resultsdir, 'stdout.log')
+            adb.push_stream_to_device(output, stdoutlog)
 
-def _run_steps_adb(steps=[], serial=None, option=None):
+def _run_steps_adb(steps=[], serial=None, option=None, resultsdir=None):
     adb = ADB(serial)
     for cmd in steps:
         if option is not None:
@@ -475,6 +478,9 @@ def _run_steps_adb(steps=[], serial=None, option=None):
         rc, output = adb.run_adb_cmd(cmd, quiet=False);
         if rc:
             raise RuntimeError("Run step '%s' failed. %d : %s" % (cmd, rc, output))
+        if resultsdir is not None:
+            stdoutlog = os.path.join(resultsdir, 'stdout.log')
+            adb.push_stream_to_device(output, stdoutlog)
 
 def testloader(testname, serial=None):
     """
