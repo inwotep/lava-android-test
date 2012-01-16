@@ -75,7 +75,7 @@ class list_devices(Command):
 
         self.adb = ADB()
         try:
-            output = self.adb.devices()[1]
+            output = self.adb.devices()
             if output is not None:
                 for line in output:
                     print line.strip()
@@ -139,6 +139,13 @@ class AndroidCommand(Command):
         test_dir = os.path.join(self.config.installdir_android, test_id)
         return self.adb.exists(test_dir)
 
+    def assertDeviceIsConnected(self):
+        if not self.adb.isDeviceConnected():
+            if self.adb.serial:
+                raise LavaCommandError("Device '%s' is not connected" % self.adb.serial)
+            else:
+                raise LavaCommandError("No device found")
+
 class AndroidTestCommand(AndroidCommand):
     @classmethod
     def register_arguments(self, parser):
@@ -174,6 +181,7 @@ class list_installed(AndroidCommand):
     """
     def invoke(self):
         self.adb = ADB(self.args.serial)
+        self.assertDeviceIsConnected()
 
         self.say("Installed tests:")
         try:
@@ -194,6 +202,8 @@ class list_results(AndroidCommand):
     """
     def invoke(self):
         self.adb = ADB(self.args.serial)
+        self.assertDeviceIsConnected()
+
         self.say("Saved results:")
         try:
             (ret_code, output) = self.adb.listdir(self.config.resultsdir_android)
@@ -217,10 +227,12 @@ class install(AndroidTestCommand):
         parser.add_argument('-o', '--install-option')
 
     def invoke(self):
+        self.adb = ADB(self.args.serial)
+        self.assertDeviceIsConnected()
+
         tip_msg = self.get_tip_msg("Install test")
         self.say_begin(tip_msg)
 
-        self.adb = ADB(self.args.serial)
         if self.test_installed(self.args.test_id):
             raise LavaCommandError("The test (%s) has already installed." % self.args.test_id)
         test = testloader(self.args.test_id, self.args.serial)
@@ -238,6 +250,9 @@ class uninstall(AndroidTestCommand):
     program:: lava-android-test uninstall test-id -s device_serial
     """
     def invoke(self):
+        self.adb = ADB(self.args.serial)
+        self.assertDeviceIsConnected()
+
         tip_msg = self.get_tip_msg("Uninstall test")
         self.say_begin(tip_msg)
 
@@ -268,11 +283,12 @@ class run(AndroidTestCommand):
                                  " bundle and finally save the complete bundle"
                                  " to the  specified FILE."))
     def invoke(self):
+        self.adb = ADB(self.args.serial)
+        self.assertDeviceIsConnected()
 
         tip_msg = self.get_tip_msg("Run test")
         self.say_begin(tip_msg)
 
-        self.adb = ADB(self.args.serial)
         if not self.test_installed(self.args.test_id):
             raise LavaCommandError("The test (%s) has not been installed yet." % self.args.test_id)
 
@@ -300,6 +316,9 @@ class parse(AndroidResultsCommand):
     program:: lava-android-test parse test-result-id -s device_serial
     """
     def invoke(self):
+        self.adb = ADB(self.args.serial)
+        self.assertDeviceIsConnected()
+
         bundle = generate_combined_bundle(self.args.serial, self.args.result_id)
         try:
             print DocumentIO.dumps(bundle)
@@ -376,6 +395,8 @@ class show(AndroidResultCommand):
     """
     def invoke(self):
         self.adb = ADB(self.args.serial)
+        self.assertDeviceIsConnected()
+
         resultsdir = os.path.join(self.config.resultsdir_android, self.args.result_id)
         if not self.adb.exists(resultsdir):
             raise  LavaCommandError("The result (%s) is not existed." % self.args.result_id)
@@ -416,15 +437,18 @@ class rename(AndroidResultCommand):
         parser.add_argument("result_id_new",
                             help="New test result identifier")
     def invoke(self):
+        self.adb = ADB(self.args.serial)
+        self.assertDeviceIsConnected()
+
         srcdir = os.path.join(self.config.resultsdir_android, self.args.result_id)
         destdir = os.path.join(self.config.resultsdir_android, self.args.result_id_new)
         adb = ADB(self.args.serial)
-        if not adb.exists(srcdir):
+        if not self.adb.exists(srcdir):
             self.say("Result (%s) not found" % self.args.result_id)
             return
-        if adb.exists(destdir):
+        if self.adb.exists(destdir):
             self.say("Destination result name already exists")
-        adb.move(srcdir, destdir)
+        self.adb.move(srcdir, destdir)
 
 class remove(AndroidResultsCommand):
     """
@@ -442,9 +466,9 @@ class remove(AndroidResultsCommand):
                             action="store_true",
                             help=("give an interactive question about remove"))
 
-    def remove(self, adb, rid):
+    def remove(self, rid):
         resultsdir = os.path.join(self.config.resultsdir_android, rid)
-        if not adb.exists(resultsdir):
+        if not self.adb.exists(resultsdir):
             self.say("No result found for '%s'" % rid)
             return
         if not self.args.force:
@@ -452,9 +476,11 @@ class remove(AndroidResultsCommand):
             response = raw_input()
             if response[0].upper() != 'Y':
                 return
-        adb.rmtree(resultsdir)
+        self.adb.rmtree(resultsdir)
 
     def invoke(self):
-        adb = ADB(self.args.serial)
+        self.adb = ADB(self.args.serial)
+        self.assertDeviceIsConnected()
+
         for rid in self.args.result_id:
-            self.remove(adb, rid)
+            self.remove(rid)

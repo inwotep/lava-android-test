@@ -220,7 +220,18 @@ class ADB(object):
         return (result.returncode, result.stdout)
 
     def devices(self):
-        return self.run_cmd_host('%s devices' % self.adb)
+        status, lines = self.run_cmd_host('%s devices' % self.adb)
+        devices = []
+        for line in lines:
+            if('List' in line):
+                pass
+            elif('device' in line):
+                devices.append(line.split()[0])
+
+        if(devices == []):
+            return None
+        else:
+            return devices
 
     def run_adb_shell_for_test(self, cmd, stdoutlog=None, stderrlog=None, quiet=False):
         cmd = '%s shell %s' % (self.adb, cmd)
@@ -247,6 +258,22 @@ class ADB(object):
             raise Exception('Failed to push stdout to android %s' % path)
         os.remove(tmp_path)
 
+    def isDeviceConnected(self):
+        devices = self.devices()
+        result  = 0
+
+        if(devices == None):
+            return 0
+
+        if not self.serial:
+            return len(devices) > 0
+        
+        if self.serial in devices:
+            result = 1
+
+        return result
+
+        
 class CommandExecutor(object):
     def __init__(self, quiet=True):
         self._queue = Queue()
