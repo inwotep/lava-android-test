@@ -17,24 +17,23 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
+import os
 import lava_android_test.testdef
-from lava_android_test.utils import get_local_name
 
-test_name = 'CTSTest'
+test_name = 'cts'
 
-#http://source.android.com/compatibility/downloads.html
-cts_url = 'http://dl.google.com/dl/android/cts/android-cts-4.0.3_r1-linux_x86-arm.zip'
-zip_name = get_local_name(cts_url)
-RUN_STEPS_HOST_PRE = ['wget %s' % cts_url,
-                      'unzip %s' % zip_name,
-                      'sed s/name=\"maxTestCount\"\ value=\"200\"/name=\"maxTestCount\"\ value=\"0\"/ android-cts/repository/host_config.xml',
-                      '/bin/bash android-cts/tools/startcts --device $(SERIAL) --plan CTS']
+curdir = os.path.realpath(os.path.dirname(__file__))
+
+RUN_STEPS_HOST_PRE = ['/bin/bash %s/cts/cts_wrapper.sh' % curdir]
 
 inst = lava_android_test.testdef.AndroidTestInstaller()
 run = lava_android_test.testdef.AndroidTestRunner(
                                 steps_host_pre=RUN_STEPS_HOST_PRE)
-parser = lava_android_test.testdef.AndroidTestParser()
+
+#01-16 14:24:16 I/0123456789ABCDEF: android.telephony.cts.TelephonyManagerTest#testGetNetworkCountryIso PASS
+pattern = '^\s*[\d-]+\s+[\d:]+\s+I\/\S+\:\s+(?P<test_case_id>\S+#\S+)\s+(?P<result>\S+)\s*$'
+parser = lava_android_test.testdef.AndroidTestParser(pattern=pattern,
+                                                    fixupdict={'PASS':'pass', 'FAIL':'fail'})
 testobj = lava_android_test.testdef.AndroidTest(testname=test_name,
                                                 installer=inst,
                                                 runner=run,

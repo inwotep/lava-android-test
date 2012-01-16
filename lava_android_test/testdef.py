@@ -1,4 +1,4 @@
-# Copyright (c) 2010 Linaro
+# Copyright (c) 2010-2012 Linaro
 #
 # Author: Linaro Validation Team <linaro-dev@lists.linaro.org>
 #
@@ -87,6 +87,10 @@ class AndroidTest(ITest):
         ret_code = self.adb.makedirs(installdir)
         if ret_code != 0:
             raise RuntimeError("Failed to create directory(%s) for test(%s)" % (installdir, self.testname))
+
+        if install_options is not None:
+            self.adb.shell('echo "%s" > %s/install_options' %
+                           (install_options, installdir))
         try:
             self.installer.install(install_options)
         except Exception as e:
@@ -109,6 +113,12 @@ class AndroidTest(ITest):
         if self.adb.exists(path):
             self.adb.rmtree(path)
 
+    def _add_install_options(self, bundle, config):
+        optionfile = "%s/%s/install_options" % (config.installdir_android, self.testname)
+        if self.adb.exists(optionfile):
+            (rc, output) = self.adb.run_adb_cmd('shell cat %s' % optionfile)
+            bundle['test_runs'][0]['attributes']['install_options'] = output[0]
+
     def _savetestdata(self, analyzer_assigned_uuid):
         TIMEFORMAT = '%Y-%m-%dT%H:%M:%SZ'
         bundle = {
@@ -128,6 +138,7 @@ class AndroidTest(ITest):
             ]
         }
         config = get_config()
+        self._add_install_options(bundle, config)
         filename_host = os.path.join(config.tempdir_host, 'testdata.json')
         write_file(DocumentIO.dumps(bundle), filename_host)
         filename_target = os.path.join(self.resultsdir, 'testdata.json')
@@ -156,12 +167,7 @@ class AndroidTest(ITest):
         return result_id
 
     def _screencap(self, resultsdir):
-        config = get_config()
-        curdir = os.path.realpath(os.path.dirname(__file__))
-        screencap_path = os.path.join(os.path.dirname(curdir), 'external', 'screencap', 'screencap')
-        target_path = os.path.join(config.tempdir_android, 'screencap')
-        self.adb.push(screencap_path, target_path)
-        self.adb.shell('chmod 777 %s' % target_path)
+        target_path = '/system/bin/screenshot'
         self.adb.shell('%s %s' % (target_path, os.path.join(resultsdir, 'screencap.png')))
 
     def _copyorgoutputfile(self, resultsdir):
@@ -293,11 +299,11 @@ class AndroidTestRunner(object):
 
     def run(self, resultsdir):
         self.starttime = datetime.utcnow()
-        _run_steps_host(self.steps_host_pre, self.adb.serial)
-        _run_steps_adb(self.steps_adb_pre, self.adb.serial)
+        _run_steps_host(self.steps_host_pre, self.adb.serial, resultsdir=resultsdir)
+        _run_steps_adb(self.steps_adb_pre, self.adb.serial, resultsdir=resultsdir)
         self._run_steps_adbshell(resultsdir)
-        _run_steps_adb(self.steps_adb_post, self.adb.serial)
-        _run_steps_host(self.steps_host_post, self.adb.serial)
+        _run_steps_adb(self.steps_adb_post, self.adb.serial, resultsdir=resultsdir)
+        _run_steps_host(self.steps_host_post, self.adb.serial, resultsdir=resultsdir)
         self.endtime = datetime.utcnow()
 
     def setadb(self, adb=None):
@@ -447,7 +453,7 @@ class AndroidTestParser(object):
     def setadb(self, adb=None):
         self.adb = adb
 
-def _run_steps_host(steps=[], serial=None, option=None):
+def _run_steps_host(steps=[], serial=None, option=None, resultsdir=None):
     for cmd in steps:
         if serial is not None:
             cmd = cmd.replace('$(SERIAL)', serial)
@@ -460,8 +466,11 @@ def _run_steps_host(steps=[], serial=None, option=None):
         rc, output = adb.run_cmd_host(cmd, quiet=False);
         if rc:
             raise RuntimeError("Run step '%s' failed. %d : %s" % (cmd, rc, output))
+        if resultsdir is not None:
+            stdoutlog = os.path.join(resultsdir, 'stdout.log')
+            adb.push_stream_to_device(output, stdoutlog)
 
-def _run_steps_adb(steps=[], serial=None, option=None):
+def _run_steps_adb(steps=[], serial=None, option=None, resultsdir=None):
     adb = ADB(serial)
     for cmd in steps:
         if option is not None:
@@ -469,6 +478,9 @@ def _run_steps_adb(steps=[], serial=None, option=None):
         rc, output = adb.run_adb_cmd(cmd, quiet=False);
         if rc:
             raise RuntimeError("Run step '%s' failed. %d : %s" % (cmd, rc, output))
+        if resultsdir is not None:
+            stdoutlog = os.path.join(resultsdir, 'stdout.log')
+            adb.push_stream_to_device(output, stdoutlog)
 
 def testloader(testname, serial=None):
     """
@@ -488,6 +500,7 @@ def testloader(testname, serial=None):
     except AttributeError:
         base = mod.testobj
 
+    base.parser.results = {'test_results':[]}
     base.setadb(ADB(serial))
     return base
 
