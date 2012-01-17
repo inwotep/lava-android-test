@@ -60,7 +60,7 @@ fi
 
 RET_CODE=0
 if [ "x${1}" != "x" ]; then
-    echo "./android-cts/tools/cts-tradefed run cts --serial $(1) --plan AppSecurity|tee cts_output.log"
+    echo "./android-cts/tools/cts-tradefed run cts --serial $(1) --plan CTS|tee cts_output.log"
     ./android-cts/tools/cts-tradefed run cts --serial $(1) --plan AppSecurity|tee cts_output.log
     RET_CODE=$?
 else
