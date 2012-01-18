@@ -1,4 +1,4 @@
-# Copyright (c) 2011 Linaro
+# Copyright (C) 2012 Linaro Limited
 
 # Author: Linaro Validation Team <linaro-dev@lists.linaro.org>
 #
