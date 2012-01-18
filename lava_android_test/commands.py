@@ -159,6 +159,13 @@ class AndroidResultCommand(AndroidCommand):
         parser.add_argument("result_id",
                             help="Test result identifier")
 
+class AndroidResultsCommand(AndroidCommand):
+    @classmethod
+    def register_arguments(self, parser):
+        super(AndroidResultsCommand, self).register_arguments(parser)
+        parser.add_argument("result_id", nargs="+",
+                            help="One or more result identifiers")
+
 class list_installed(AndroidCommand):
     """
     List installed tests for specified device.
@@ -286,18 +293,34 @@ class run(AndroidTestCommand):
 
         self.say_end(tip_msg)
 
-class parse(AndroidResultCommand):
+class parse(AndroidResultsCommand):
     """
     Parse the results of previous test that run on the specified device
     program:: lava-android-test parse test-result-id 
+    program:: lava-android-test parse test-result-id0 result_result-id1
     program:: lava-android-test parse test-result-id -s device_serial
     """
     def invoke(self):
-        bundle = generate_bundle(self.args.serial, self.args.result_id)
+        bundle = generate_combined_bundle(self.args.serial, self.args.result_id)
         try:
             print DocumentIO.dumps(bundle)
         except IOError:
             pass
+
+def generate_combined_bundle(serial=None, result_ids=None):
+    if result_ids is None:
+        return {}
+
+    bundle = None
+
+    for rid in result_ids:
+        b = generate_bundle(serial, rid)
+        if rid == result_ids[0]:
+            bundle = b
+        else:
+            bundle['test_runs'].append(b['test_runs'][0])
+
+    return bundle
 
 def generate_bundle(serial=None, result_id=None):
     if result_id is None:
@@ -404,10 +427,11 @@ class rename(AndroidResultCommand):
             self.say("Destination result name already exists")
         adb.move(srcdir, destdir)
 
-class remove(AndroidResultCommand):
+class remove(AndroidResultsCommand):
     """
     Remove the result of a previous test that run on the specified device
     program:: lava-android-test remove result-id
+    program:: lava-android-test remove result-id0 result-id1
     program:: lava-android-test remove result-id -s device_serial
     """
 
@@ -416,18 +440,22 @@ class remove(AndroidResultCommand):
         super(remove, self).register_arguments(parser)
         group = parser.add_argument_group("force to remove")
         group.add_argument("-f", "--force",
-                            default=None,
+                            action="store_true",
                             help=("give an interactive question about remove"))
 
-    def invoke(self):
-        resultsdir = os.path.join(self.config.resultsdir_android, self.args.result_id)
-        adb = ADB(self.args.serial)
+    def remove(self, adb, rid):
+        resultsdir = os.path.join(self.config.resultsdir_android, rid)
         if not adb.exists(resultsdir):
-            self.say("No result found for '%s'" % self.args.result_id)
+            self.say("No result found for '%s'" % rid)
             return
         if not self.args.force:
-            self.say("Remove result '%s' for good? [Y/N]" % self.args.result_id)
+            self.say("Remove result '%s' for good? [Y/N]" % rid)
             response = raw_input()
             if response[0].upper() != 'Y':
                 return
         adb.rmtree(resultsdir)
+
+    def invoke(self):
+        adb = ADB(self.args.serial)
+        for rid in self.args.result_id:
+            self.remove(adb, rid)
