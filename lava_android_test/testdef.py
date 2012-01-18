@@ -454,6 +454,7 @@ class AndroidTestParser(object):
         self.adb = adb
 
 def _run_steps_host(steps=[], serial=None, option=None, resultsdir=None):
+    adb = ADB(serial)
     for cmd in steps:
         if serial is not None:
             cmd = cmd.replace('$(SERIAL)', serial)
@@ -462,7 +463,6 @@ def _run_steps_host(steps=[], serial=None, option=None, resultsdir=None):
         if option is not None:
             cmd = cmd.replace('$(OPTIONS)', option)
         cmd = cmd.strip()
-        adb = ADB()
         rc, output = adb.run_cmd_host(cmd, quiet=False);
         if rc:
             raise RuntimeError("Run step '%s' failed. %d : %s" % (cmd, rc, output))

@@ -59,19 +59,20 @@ if [ $? -ne 0 ]; then
 fi
 
 RET_CODE=0
-#test_plan='AppSecurity'
-test_plan='CTS'
+#test_str='--package android.admin'
+test_str='--plan AppSecurity'
+test_str='--plan CTS'
 if [ "x${1}" != "x" ]; then
-    echo "./android-cts/tools/cts-tradefed run cts --serial $(1) --plan ${test_Plan}|tee cts_output.log"
-    ./android-cts/tools/cts-tradefed run cts --serial $(1) --plan ${test_Plan}|tee cts_output.log
+    echo "./android-cts/tools/cts-tradefed run cts --serial ${1} ${test_str}|tee cts_output.log"
+    ./android-cts/tools/cts-tradefed run cts --serial ${1} ${test_str}|tee cts_output.log
     RET_CODE=$?
 else
-    echo "./android-cts/tools/cts-tradefed run cts --plan ${test_Plan}|tee cts_output.log"
-    ./android-cts/tools/cts-tradefed run cts --plan ${test_Plan}|tee cts_output.log
+    echo "./android-cts/tools/cts-tradefed run cts ${test_str}|tee cts_output.log"
+    ./android-cts/tools/cts-tradefed run cts ${test_str}|tee cts_output.log
     RET_CODE=$?
 fi
 rm -f tee cts_output.log
 if [ ${RET_CODE} -ne 0 ]; then
-    echo "Faild to run cts for test plan(${test_Plan})"
+    echo "Faild to run cts for test (${test_str})"
     exit 1
 fi

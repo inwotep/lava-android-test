@@ -24,7 +24,7 @@ test_name = 'cts'
 
 curdir = os.path.realpath(os.path.dirname(__file__))
 
-RUN_STEPS_HOST_PRE = ['/bin/bash %s/cts/cts_wrapper.sh' % curdir]
+RUN_STEPS_HOST_PRE = ['/bin/bash %s/cts/cts_wrapper.sh $(SERIAL)' % curdir]
 
 inst = lava_android_test.testdef.AndroidTestInstaller()
 run = lava_android_test.testdef.AndroidTestRunner(
