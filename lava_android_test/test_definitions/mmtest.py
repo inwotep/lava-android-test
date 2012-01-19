@@ -19,23 +19,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import os
 import re
-import urllib
 import lava_android_test.testdef
+from lava_android_test.utils import get_local_name
 
 test_name = 'mmtest'
 
-def getLocalName(url):
-    url = url.strip()
-    url = re.sub('[\/]+$', '', url)
-    proto, rest = urllib.splittype(url)  
-    host, rest = urllib.splithost(rest)
-    if rest is None or  rest == '': 
-        return host
-    return os.path.basename(rest) 
-
 site = 'http://samplemedia.linaro.org/'
-local_name = getLocalName(site)
-RUN_STEPS_HOST_PRE = ['wget -r -np -l 2 -R csv,txt,css,html,gif %s' % site,
+local_name = get_local_name(site)
+RUN_STEPS_HOST_PRE = ['wget -r -np -l 2 -R csv,txt,css,html,gif %s -P %s' % (site, local_name),
                       r'find  %s -type f -name "index*" -exec rm -f \{\} \;' % local_name,
                       r'find  %s -type f -name "README" -exec rm -f \{\} \;' % local_name]
 test_files_target_path = os.path.join('/sdcard', local_name)

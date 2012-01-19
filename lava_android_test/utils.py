@@ -12,7 +12,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
+import re
 import os
 import shutil
 import subprocess
@@ -142,3 +142,12 @@ def get_machine_type():
     if _fake_machine is None:
         return os.uname()[-1]
     return _fake_machine
+
+def get_local_name(url):
+    url = url.strip()
+    url = re.sub('[\/]+$', '', url)
+    rest = urllib2.splittype(url)[1]
+    host, rest = urllib2.splithost(rest)
+    if rest is None or  rest == '':
+        return host
+    return os.path.basename(rest)

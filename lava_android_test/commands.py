@@ -273,10 +273,11 @@ class run(AndroidTestCommand):
         self.say_begin(tip_msg)
 
         self.adb = ADB(self.args.serial)
-        if not self.test_installed(self.args.test_id):
+        test = testloader(self.args.test_id, self.args.serial)
+
+        if not self.test_installed(test.testname):
             raise LavaCommandError("The test (%s) has not been installed yet." % self.args.test_id)
 
-        test = testloader(self.args.test_id, self.args.serial)
         try:
             result_id = test.run(quiet=self.args.quiet)
             if self.args.output:
