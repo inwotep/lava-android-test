@@ -1,5 +1,5 @@
-# Copyright (c) 2011 Linaro
-
+# Copyright (C) 2011-2012 Linaro Limited
+#
 # Author: Linaro Validation Team <linaro-dev@lists.linaro.org>
 #
 # This file is part of LAVA Android Test.
@@ -21,19 +21,24 @@ import os
 import re
 import lava_android_test.testdef
 from lava_android_test.utils import get_local_name
+from lava_android_test.config import get_config
 
 test_name = 'mmtest'
+config = get_config()
 
 site = 'http://samplemedia.linaro.org/'
 local_name = get_local_name(site)
-RUN_STEPS_HOST_PRE = ['wget -r -np -l 2 -R csv,txt,css,html,gif %s -P %s' % (site, local_name),
+RUN_STEPS_HOST_PRE = ['wget -r -np -l 10 -R csv,txt,css,html,gif,pdf %s -P %s' % (site, local_name),
                       r'find  %s -type f -name "index*" -exec rm -f \{\} \;' % local_name,
                       r'find  %s -type f -name "README" -exec rm -f \{\} \;' % local_name]
-test_files_target_path = os.path.join('/sdcard', local_name)
+
+test_files_target_path = os.path.join(config.installdir_android,
+                                    test_name, local_name)
 RUN_STEPS_ADB_PRE = ['push %s %s' % (local_name, test_files_target_path)]
 RUN_ADB_SHELL_STEPS = ['am instrument -r -e targetDir %s \
     -w com.android.mediaframeworktest/.MediaFrameworkTestRunner'
-     % test_files_target_path]
+     % test_files_target_path,
+    'rm -r %s' % (test_files_target_path) ]
 
 class MMTestTestParser(lava_android_test.testdef.AndroidTestParser):
 
