@@ -297,8 +297,6 @@ class parse(AndroidResultsCommand):
     """
     Parse the results of previous test that run on the specified device
     program:: lava-android-test parse test-result-id 
-    program:: lava-android-test parse test-result-id0 result_result-id1
-    program:: lava-android-test parse test-result-id -s device_serial
     """
     def invoke(self):
         bundle = generate_combined_bundle(self.args.serial, self.args.result_id)
