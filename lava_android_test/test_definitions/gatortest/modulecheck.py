@@ -1,6 +1,4 @@
 import sys
-import re
-import os
 from commands import getstatusoutput
 
 if len(sys.argv) == 1:

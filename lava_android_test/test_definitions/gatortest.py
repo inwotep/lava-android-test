@@ -1,4 +1,4 @@
-# Copyright (c) 2011 Linaro
+# Copyright (c) 2012 Linaro
 
 # Author: Linaro Validation Team <linaro-dev@lists.linaro.org>
 #
@@ -18,7 +18,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import os
-import json
 
 import lava_android_test.testdef
 

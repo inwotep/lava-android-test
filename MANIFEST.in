@@ -6,3 +6,4 @@ include lava_android_test/test_definitions/android-0xbenchmark/*
 include lava_android_test/test_definitions/busybox/*
 include lava_android_test/test_definitions/cts/*
 include lava_android_test/test_definitions/glmark2/*
+include lava_android_test/test_definitions/gatortest/*
