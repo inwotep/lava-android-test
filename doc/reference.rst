@@ -9,7 +9,7 @@ Reference
 Command Reference
 =================
 
-.. automodule:: lava_test.commands
+.. automodule:: lava_android_test.commands
     :members:
 
 .. todo::
@@ -20,12 +20,9 @@ Command Reference
 Pathnames and files
 ===================
 
-LAVA Test uses the following files:
+LAVA Android Test uses the following files:
 
-* ``$XDG_CONFIG_HOME/lava_test/`` -- configuration files
-* ``$XDG_DATA_HOME/lava_test/installed-tests`` -- installed test programs
-* ``$XDG_DATA_HOME/lava_test/results`` -- artifacts of running tests
-* ``$XDG_CACHE_HOME/lava_test/`` -- download cache
+* ``/tmp/lava-android-test/`` -- temporary directory to put temporary files of each lava-android-test instance.
 
 .. _code_reference:
 
@@ -41,61 +38,39 @@ Code reference
 Abstract Interfaces
 ^^^^^^^^^^^^^^^^^^^
 
-.. automodule:: lava_test.api.core
-    :members:
-
-.. automodule:: lava_test.api.delegates
-    :members:
-
-.. automodule:: lava_test.api.observers
+.. automodule:: lava_android_test.api
     :members:
 
 Test definitions and test providers
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. automodule:: lava_test.core.providers
-    :members:
-
-.. automodule:: lava_test.core.tests
+.. automodule:: lava_android_test.test_definitions
     :members:
 
 Test components (installers, runners and parsers)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. automodule:: lava_test.core.installers
-    :members:
-
-.. automodule:: lava_test.core.runners
-    :members:
-
-.. automodule:: lava_test.core.parsers
+.. automodule:: lava_android_test.testdef
     :members:
 
 Core Modules
 ^^^^^^^^^^^^
 
-.. automodule:: lava_test.core.artifacts
-    :members:
-
-.. automodule:: lava_test.core.config
+.. automodule:: lava_android_test.config
     :members:
 
 Environment Scanners
 ^^^^^^^^^^^^^^^^^^^^
 
-.. automodule:: lava_test.core.hwprofile
+.. automodule:: lava_android_test.hwprofile
     :members:
 
-.. automodule:: lava_test.core.swprofile
+.. automodule:: lava_android_test.swprofile
     :members:
 
 Utilities
 ^^^^^^^^^
 
-.. automodule:: lava_test.utils
+.. automodule:: lava_android_test.utils
     :members:
-
-.. automodule:: lava_test.extcmd
-    :members:
-
 

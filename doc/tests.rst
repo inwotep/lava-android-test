@@ -4,86 +4,50 @@
 Supported Tests
 ===============
 
-The following tests are currently supported in LAVA Test:
+The following tests are currently supported in LAVA Android Test:
 
- * `bootchart`_
- * `firefox`_
- * `glmemperf`_
- * `gmpbench`_
- * `gtkperf`_
- * `insanity`_
- * `ltp`_
- * `peacekeeper`_
- * `perf`_
- * `posixtestsuite`_
- * `pwrmgmt`_
- * `pybench`_
- * `smem`_
- * `stream`_
- * `tiobench`_
- * `x11perf`_
- * `xrestop`_
+ * `busybox`_
+ * `monkey`_
+ * `0xbench`_
+ * `cts`_
+ * `glmark2`_
+ * `skia`_
+ * `v8`_
+ * `mmtest``_
+ * `gatortest`_
 
-bootchart
+busybox
 +++++++++
-.. automodule:: lava_test.test_definitions.bootchart
+.. automodule:: lava_test.test_definitions.busybox
 
-firefox
+monkey
 +++++++
-.. automodule:: lava_test.test_definitions.firefox
+.. automodule:: lava_test.test_definitions.monkey
 
-glmemperf
+0xbench
 +++++++++
-.. automodule:: lava_test.test_definitions.glmemperf
+.. automodule:: lava_android_test.test_definitions.0xbench
 
-gmpbench
-++++++++
-.. automodule:: lava_test.test_definitions.gmpbench
+cts
+++++++++:
+.. automodule:: lava_android_test.test_definitions.cts
 
-gtkperf
+glmark2
 +++++++
-.. automodule:: lava_test.test_definitions.gtkperf
+.. automodule:: lava_android_test.test_definitions.glmark2
 
-insanity
+skia
 ++++++++
-.. automodule:: lava_test.test_definitions.insanity
+.. automodule:: lava_android_test.test_definitions.skia
 
-ltp
+v8
 +++
-.. automodule:: lava_test.test_definitions.ltp
+.. automodule:: lava_android_test.test_definitions.v8
 
-peacekeeper
+mmtest
 +++++++++++
-.. automodule:: lava_test.test_definitions.peacekeeper
+.. automodule:: lava_android_test.test_definitions.mmtest
 
-posixtestsuite
-++++++++++++++
-.. automodule:: lava_test.test_definitions.posixtestsuite
-
-pwrmgmt
-+++++++
-.. automodule:: lava_test.test_definitions.pwrmgmt
-
-pybench
-+++++++
-.. automodule:: lava_test.test_definitions.pybench
-
-smem
-++++
-.. automodule:: lava_test.test_definitions.smem
-
-stream
-++++++
-.. automodule:: lava_test.test_definitions.stream
-
-tiobench
-++++++++
-.. automodule:: lava_test.test_definitions.tiobench
-
-x11perf
-+++++++
-.. automodule:: lava_test.test_definitions.x11perf
-
-xrestop
-+++++++
-.. automodule:: lava_test.test_definitions.xrestop
+gatortest
++++++++++++
+.. automodule:: lava_android_test.test_definitions.gatortest
