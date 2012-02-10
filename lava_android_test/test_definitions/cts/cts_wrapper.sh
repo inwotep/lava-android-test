@@ -74,5 +74,8 @@ fi
 rm -f tee cts_output.log
 if [ ${RET_CODE} -ne 0 ]; then
     echo "Faild to run cts for test (${test_str})"
-    exit 1
+### comment it so that we can get the test result that has been executed
+### otherwise we won't get any test result about cts
+#    exit 1
 fi
+exit 0
