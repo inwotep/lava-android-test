@@ -1,41 +1,76 @@
 Version History
 ***************
 
-.. _version_0_3.3:
+.. _version_0_0.11:
 
-Version 0.3.3
+Version 0.0.11
 =============
-* New perf test
-* Fix dependencies for pwrmgmt and ltp tests
-* Fix bug 898092 - More detail error messages when parsing the out of tree json file
-* Added some documentation for many of the testsuites
+* new gator test
+* update mmtest script
 
-.. _version_0_3.2:
+.. _version_0_0.10:
 
-Version 0.3.2
+Version 0.0.10
 =============
-* Update parse function using in LTP test suite to fix 900694
-* fix a bug with tiobench
+* new CTS test
+* new v8 test
+* new skia test
+* new glmark2 test
+* add support for install option
+* add support for multiple ids for delete and parse commands
+* remove external tools
 
-.. _version_0_2:
+.. _version_0_0.9:
 
-Version 0.2
+Version 0.0.9
+=============
+* add unit test
+* fix LP: #902161 by removing dependency on pexpect.
+
+.. _version_0_0.8:
+
+Version 0.0.8
+===========
+* fix the logical of makedirs Bug LP:#891326
+* modify mmtest to use the built-in MediaFramework
+
+.. _version_0_0.7:
+
+Version 0.0.7
+===========
+* add new mmtest for Multimedia Test
+
+.. _version_0_0.6:
+
+Version 0.0.6
+===========
+* fix install options to go through install method rather than test loader
+
+.. _version_0_0.5:
+
+Version 0.0.5
+===========
+* add support for install option of install subcommand 
+* change monkey to always return 0
+
+.. _version_0_0.4:
+
+Version 0.0.4
+===========
+* update for 0xbench's package name modification
+
+.. _version_0_0.3:
+
+Version 0.0.3
+===========
+* add function to collect package information and screen shot after test
+* add support for two more instances to be executed simultaneously
+* add check for the existence of adb conmmand 
+* modify MANIFEST.in to make files in test_definitions be installed successfully
+
+.. _version_0_0.1:
+
+Version 0.0.1
 ===========
 
-* Rewrite most of the code and deprecate old Abrek interfaces. This allowed us
-  to clean up the API, rethink some of the design and integrate the code better
-  with other parts of LAVA.
-
-* Improved documentation and code reference. LAVA Test should now have
-  sufficient documentation to help new users and contributors alike.
-
-* Support for installing and running out-of-tree tests.
-
-* Ability to define parsers that add new attachments.
-
-* Unified command line interface with other lava tools thanks to lava-tool.
-
-Version 0.1
-===========
-
-* Initial release (as Abrek)
+* Initial release
