@@ -134,4 +134,4 @@ merged. Depending on your situation this may be undesired.
     Describe how tests are discovered, loaded and used. It would be
     nice to have a tutorial that walks the user through wrapping a
     simple pass/fail test. 
-'
+
