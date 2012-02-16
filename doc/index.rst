@@ -40,24 +40,23 @@ Features
 Quickstart
 ==========
 
-This example will run on Ubuntu Lucid and beyond::
-# we'd better to install it in an virtual environment, 
-# so that it will not mess the system environment.
- 
+This example will run on Ubuntu Lucid and beyond.  we should better to install it 
+in an virtual environment, so that it will not mess up with the system environment::
+
  $ virtualenv ${workspace}                 ### create the virtual environment
  $ source ${workspace}/bin/activate        ### enter the virtual environment
  $ pip install --upgrade lava-android-test ### install the latest package to the the virtual environment
  $ lava-android-test install monkey        ### install the test named monkey
  $ lava-android-test run monkey            ### run the monkey test
  $ virtualenv ${workspace}                 ### exit the virtual environment
- 
+
 .. seealso:: For a more thorough description see :ref:`usage`
 .. seealso:: For detailed installation istructions see :ref:`installation`
 
 Latest documentation
 ====================
 
-This documentation my be out of date, we try to make sure that all the latest
+This documentation may be out of date, we try to make sure that all the latest
 and greatest releases are always documented on http://lava-android-test.readthedocs.org/
 
 

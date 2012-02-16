@@ -13,23 +13,23 @@ The following tests are currently supported in LAVA Android Test:
  * `glmark2`_
  * `skia`_
  * `v8`_
- * `mmtest``_
+ * `mmtest`_
  * `gatortest`_
 
 busybox
 +++++++++
-.. automodule:: lava_test.test_definitions.busybox
+.. automodule:: lava_android_test.test_definitions.busybox
 
 monkey
 +++++++
-.. automodule:: lava_test.test_definitions.monkey
+.. automodule:: lava_android_test.test_definitions.monkey
 
 0xbench
 +++++++++
 .. automodule:: lava_android_test.test_definitions.0xbench
 
 cts
-++++++++:
++++++++++
 .. automodule:: lava_android_test.test_definitions.cts
 
 glmark2
