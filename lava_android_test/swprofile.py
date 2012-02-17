@@ -74,11 +74,9 @@ def get_package_info(adb=ADB()):
 def get_software_context(adb=ADB()):
     """ Return dict used for storing software_context information
 
-    test_id - Unique identifier for this test
-    time_check - whether or not a check was performed to see if
-            the time on the system was synced with a time server
-    apt_cache - if not provided, this will be read from the system
-    lsb_information - if not provided, this will be read from the system
+        image - the image information of the android system
+        sources - the source information about the android system
+        packages - the apk packages information in the android system
     """
     if adb is None:
         return {}
