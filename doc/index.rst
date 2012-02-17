@@ -1,6 +1,6 @@
-=======================
+===============================
 LAVA Android Test Documentation
-=======================
+===============================
 
 LAVA Android Test is a wrapper framework exposing unified API and command line
 interface for running arbitrary tests and storing the results in a structured
