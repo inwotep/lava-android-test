@@ -26,7 +26,8 @@ from linaro_dashboard_bundle.io import DocumentIO
 
 from lava_android_test.adb import ADB
 from lava_android_test.config import get_config
-from lava_android_test.testdef import testloader
+from lava_android_test.testdef import testloader, AndroidTest
+from lava_android_test.testdef import AndroidTestRunner, AndroidTestInstaller, AndroidTestParser
 
 class Command(LAVACommand):
 
@@ -259,6 +260,8 @@ class run(AndroidTestCommand):
     @classmethod
     def register_arguments(cls, parser):
         super(run, cls).register_arguments(parser)
+        parser.add_argument('-O', '--run-option', help=("Specified in the job file for using in the real test action,"
+                                                        " so that we can customize some test when need"))
         group = parser.add_argument_group("specify the bundle output file")
         group.add_argument("-o", "--output",
                             default=None,
@@ -279,12 +282,78 @@ class run(AndroidTestCommand):
             raise LavaCommandError("The test (%s) has not been installed yet." % self.args.test_id)
 
         try:
-            result_id = test.run(quiet=self.args.quiet)
+            result_id = test.run(quiet=self.args.quiet, run_options=self.args.run_option)
             if self.args.output:
                 output_dir = os.path.dirname(self.args.output)
                 if not os.path.exists(output_dir):
                     os.makedirs(output_dir)
                 bundle = generate_bundle(self.args.serial, result_id)
+                with open(self.args.output, "wt") as stream:
+                    DocumentIO.dump(stream, bundle)
+
+        except Exception as strerror:
+            raise LavaCommandError("Test execution error: %s" % strerror)
+
+        self.say_end(tip_msg)
+
+class run_custom(AndroidCommand):
+    """
+    Run the command(s) that specified by the -c option in the command line
+    program:: lava-android-test run-custom -c 'command1' -c 'command2' -p 'parse-regex1' 
+    program:: lava-android-test run test-id -s device_serial
+    program:: lava-android-test run test-id -s device_serial -o outputfile
+    """
+
+    @classmethod
+    def register_arguments(cls, parser):
+        super(run_custom, cls).register_arguments(parser)
+        parser.add_argument('-c', '--android-command', action='append', help=("Specified in the job file for using in the real test action,"
+                                                        " so that we can customize some test when need"))
+        parser.add_argument('-p', '--parse-regex', help=("Specified the regular expression used for analyzing command output"))
+        group = parser.add_argument_group("specify the bundle output file")
+        group.add_argument("-o", "--output",
+                            default=None,
+                            metavar="FILE",
+                           help=("After running the test parse the result"
+                                 " artefacts, fuse them with the initial"
+                                 " bundle and finally save the complete bundle"
+                                 " to the  specified FILE."))
+
+    def invoke(self):
+        self.adb = ADB(self.args.serial)
+        test_name = 'custom'
+        ADB_SHELL_STEPS = []
+        if self.args.android_command:
+            ADB_SHELL_STEPS = self.args.android_command
+        PATTERN = None
+        if self.args.parse_regex:
+            PATTERN = self.args.parse_regex
+
+        tip_msg = ''
+        if self.args.serial:
+            tip_msg = "Run following custom test(s) on device(%s):\n\t\t%s" % (self.args.serial, '\n\t\t'.join(ADB_SHELL_STEPS))
+        else:
+            tip_msg = "Run following custom test(s):\n\t\t%s" % ('\n\t\t'.join(ADB_SHELL_STEPS))
+        self.say_begin(tip_msg)
+
+        inst = AndroidTestInstaller()
+        run = AndroidTestRunner(adbshell_steps=ADB_SHELL_STEPS)
+        parser = AndroidTestParser(pattern=PATTERN)
+        test = AndroidTest(testname=test_name, installer=inst,
+                                runner=run, parser=parser)
+        test.parser.results = {'test_results':[]}
+        test.setadb(self.adb)
+
+        if not self.test_installed(test.testname):
+            test.install()
+
+        try:
+            result_id = test.run(quiet=self.args.quiet)
+            if self.args.output:
+                output_dir = os.path.dirname(self.args.output)
+                if not os.path.exists(output_dir):
+                    os.makedirs(output_dir)
+                bundle = generate_bundle(self.args.serial, result_id, test=test)
                 with open(self.args.output, "wt") as stream:
                     DocumentIO.dump(stream, bundle)
 
@@ -305,14 +374,44 @@ class parse(AndroidResultsCommand):
         except IOError:
             pass
 
-def generate_combined_bundle(serial=None, result_ids=None):
+class parse_custom(AndroidResultsCommand):
+    """
+    Parse the results of previous test that run with run-custom command on the specified device
+    program:: lava-android-test parse-custom test-result-id -P 
+    """
+    @classmethod
+    def register_arguments(cls, parser):
+        super(parse_custom, cls).register_arguments(parser)
+        parser.add_argument('-p', '--parse-regex',
+                            help=("Specified the regular expression used for analyzing command output"))
+
+    def invoke(self):
+        PATTERN = None
+        if self.args.parse_regex:
+            PATTERN = self.args.parse_regex
+        test_name = 'custom'
+        inst = AndroidTestInstaller()
+        run = AndroidTestRunner()
+        parser = AndroidTestParser(pattern=PATTERN)
+        test = AndroidTest(testname=test_name, installer=inst,
+                                runner=run, parser=parser)
+        test.parser.results = {'test_results':[]}
+        test.setadb(ADB(self.args.serial))
+
+        bundle = generate_combined_bundle(self.args.serial, self.args.result_id, test=test)
+        try:
+            print DocumentIO.dumps(bundle)
+        except IOError:
+            pass
+
+def generate_combined_bundle(serial=None, result_ids=None, test=None):
     if result_ids is None:
         return {}
 
     bundle = None
 
     for rid in result_ids:
-        b = generate_bundle(serial, rid)
+        b = generate_bundle(serial, rid, test=None)
         if rid == result_ids[0]:
             bundle = b
         else:
@@ -320,7 +419,7 @@ def generate_combined_bundle(serial=None, result_ids=None):
 
     return bundle
 
-def generate_bundle(serial=None, result_id=None):
+def generate_bundle(serial=None, result_id=None, test=None):
     if result_id is None:
         return {}
     config = get_config()
@@ -331,9 +430,13 @@ def generate_bundle(serial=None, result_id=None):
 
     bundle_text = adb.read_file(os.path.join(resultdir, "testdata.json"))
     bundle = DocumentIO.loads(bundle_text)[1]
-    test = testloader(bundle['test_runs'][0]['test_id'], serial)
+    test_tmp = None
+    if bundle['test_runs'][0]['test_id'] == 'custom':
+        test_tmp = test
+    else:
+        test_tmp = testloader(bundle['test_runs'][0]['test_id'], serial)
 
-    test.parse(result_id)
+    test_tmp.parse(result_id)
     stdout_text = adb.read_file(os.path.join(resultdir, os.path.basename(test.org_ouput_file)))
     if stdout_text is None:
         stdout_text = ''
