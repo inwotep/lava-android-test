@@ -82,9 +82,9 @@ class ListDevices(LavaTestCommandTestCase):
 
 class RunTest(LavaTestCommandTestCase):
     def test_run_command_test_not_install(self):
-        errmsg = 'ERROR: The test (abc) has not been installed yet.'
+        errmsg = 'ERROR: The test (monkey) has not been installed yet.'
         fake_adb(output_str='RET_CODE=1')
-        ret_code = LAVAAndroidTestDispatcher().dispatch(['run', 'abc'])
+        ret_code = LAVAAndroidTestDispatcher().dispatch(['run', 'monkey'])
         self.assertEqual(1, ret_code)
         self.assertTrue(errmsg in self.out.getvalue())
         clear_fake()

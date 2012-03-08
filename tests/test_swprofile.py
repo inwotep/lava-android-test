@@ -75,7 +75,7 @@ class SwprofileTests(unittest.TestCase):
         clear_fake()
         packages = {'android': '4.0.1.2.3.4.5.6.7.8.9-3 (#14)',
            'com.android.musicvis': '4.0.1.2.3.4.5.6.7.8.9-3 (#14)',
-           'com.android.videoeditor': ' 1.1 (#11)',
+           'com.android.videoeditor': '1.1 (#11)',
            'com.android.vpndialogs': '4.0.1.2.3.4.5.6.7.8.9-3 (#14)',
            'com.android.wallpaper': '4.0.1.2.3.4.5.6.7.8.9-3 (#14)',
            'com.android.wallpaper.livepicker': '4.0.1.2.3.4.5.6.7.8.9-3 (#14)',
