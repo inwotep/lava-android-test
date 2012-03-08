@@ -33,7 +33,7 @@ BogoMIPS    : 1576.53
 processor    : 1
 BogoMIPS    : 1539.77
 
-Features    : swp half thumb fastmult vfp edsp thumbee neon vfpv3 tls 
+Features    : swp half thumb fastmult vfp edsp thumbee neon vfpv3 tls
 CPU implementer    : 0x41
 CPU architecture: 7
 CPU variant    : 0x1
@@ -84,6 +84,7 @@ VmallocUsed:       75536 kB
 VmallocChunk:      36868 kB
 '''
 
+
 class HwprofileTests(unittest.TestCase):
     maxDiff = None
 
@@ -94,7 +95,8 @@ class HwprofileTests(unittest.TestCase):
         cpuinfo = {
             'attributes': {
                 'processor': '1',
-                'cpu_features': 'swp half thumb fastmult vfp edsp thumbee neon vfpv3 tls',
+                'cpu_features':
+                    'swp half thumb fastmult vfp edsp thumbee neon vfpv3 tls',
                 'cpu_variant': 1,
                 'cpu_architecture': 7,
                 'BogoMIPS': '1539.77',
@@ -138,6 +140,7 @@ class HwprofileTests(unittest.TestCase):
             'device_type': 'device.mem'}
         self.assertEqual(meminfo, devs[0])
 
+
 class MissingFiles(TestCaseWithFixtures):
     """
     These are tests for situations where certain files used for gathering
@@ -152,7 +155,7 @@ class MissingFiles(TestCaseWithFixtures):
         errmsg = 'WARNING: Could not read cpu information\n'
         fake_adb(output_str='', ret_code=255)
         devs = lava_android_test.hwprofile.get_cpu_devs()
-        clear_fake();
+        clear_fake()
         self.assertEqual([], devs)
         self.assertEqual(errmsg, self.out.getvalue())
 
@@ -160,7 +163,7 @@ class MissingFiles(TestCaseWithFixtures):
         errmsg = 'WARNING: Could not read board information\n'
         fake_adb(output_str='', ret_code=255)
         devs = lava_android_test.hwprofile.get_board_devs()
-        clear_fake();
+        clear_fake()
         self.assertEqual([], devs)
         self.assertEqual(errmsg, self.out.getvalue())
 
@@ -168,9 +171,10 @@ class MissingFiles(TestCaseWithFixtures):
         errmsg = 'WARNING: Could not read memory information\n'
         fake_adb(output_str='', ret_code=255)
         devs = lava_android_test.hwprofile.get_mem_devs()
-        clear_fake();
+        clear_fake()
         self.assertEqual([], devs)
         self.assertEqual(errmsg, self.out.getvalue())
+
 
 if __name__ == '__main__':
     unittest.main()

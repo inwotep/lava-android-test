@@ -29,13 +29,14 @@ test_sh_path = os.path.join(curdir, test_name, test_sh_name)
 RUN_STEPS_HOST_PRE = ['/bin/bash %s $(SERIAL)' % test_sh_path]
 
 #I/glmark2 ( 1818): [texture] texture-filter=nearest: FPS: 8
-PATTERN = "^\s*I/glmark2\s*\(.+\):\s+\[\w+\]\s+(?P<test_case_id>\S+):\s+FPS:\s+(?P<measurement>\d+)\s*$"
+PATTERN = ("^\s*I/glmark2\s*\(.+\):\s+\[\w+\]\s+(?P<test_case_id>\S+):"
+           "\s+FPS:\s+(?P<measurement>\d+)\s*$")
 
 inst = lava_android_test.testdef.AndroidTestInstaller()
 run = lava_android_test.testdef.AndroidTestRunner(
                                     steps_host_pre=RUN_STEPS_HOST_PRE)
 parser = lava_android_test.testdef.AndroidTestParser(PATTERN,
-                                        appendall={'units':'FPS'})
+                                        appendall={'units': 'FPS'})
 testobj = lava_android_test.testdef.AndroidTest(testname=test_name,
                                     installer=inst,
                                     runner=run,

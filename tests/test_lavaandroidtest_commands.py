@@ -20,6 +20,7 @@ from tests.imposters import ConfigImposter, OutputImposter
 from tests.fixtures import TestCaseWithFixtures
 from lava_android_test.main import LAVAAndroidTestDispatcher
 
+
 class LavaTestCommandTestCase(TestCaseWithFixtures):
     def setUp(self):
         self.config = self.add_fixture(ConfigImposter())
@@ -32,15 +33,19 @@ class LavaTestCommandTestCase(TestCaseWithFixtures):
     def _runLavaTest(self, cmds):
         LAVAAndroidTestDispatcher().dispatch(cmds)
 
+
 class BadCommand(LavaTestCommandTestCase):
     def test_bad_cmd(self):
         # Running an unknown command that does not exist of a command that does
         # gives a nice error message.
         errmsg = "invalid choice: 'results'"
 
-        self.assertRaises(SystemExit, LAVAAndroidTestDispatcher().dispatch, ['results', 'foo'])
-        self.assertNotEqual(None, re.search(errmsg, self.out.getvalue()), re.MULTILINE)
+        self.assertRaises(SystemExit, LAVAAndroidTestDispatcher().dispatch,
+                          ['results', 'foo'])
+        self.assertNotEqual(None, re.search(errmsg, self.out.getvalue()),
+                             re.MULTILINE)
         self.assertTrue(errmsg in self.out.getvalue())
+
 
 class ListKnown(LavaTestCommandTestCase):
     def test_list_tests(self):
@@ -50,6 +55,8 @@ class ListKnown(LavaTestCommandTestCase):
 dir_list_info = '''monkey
 0xbench
 RET_CODE=0'''
+
+
 class ListInstalled(LavaTestCommandTestCase):
     def test_list_installed(self):
         # test_name must be in the BuiltInProvider._builtin_tests
@@ -59,9 +66,10 @@ class ListInstalled(LavaTestCommandTestCase):
         self.assertTrue(test_name in self.out.getvalue())
         clear_fake()
 
-devices_list_info = '''List of devices attached 
+devices_list_info = '''List of devices attached
 192.168.1.109:5555    device
 '''
+
 
 class ListDevices(LavaTestCommandTestCase):
     def test_list_devices(self):
@@ -70,6 +78,7 @@ class ListDevices(LavaTestCommandTestCase):
         self._runLavaTest(['list-devices'])
         self.assertTrue('192.168.1.109:5555    device' in self.out.getvalue())
         clear_fake()
+
 
 class RunTest(LavaTestCommandTestCase):
     def test_run_command_test_not_install(self):
@@ -83,13 +92,15 @@ class RunTest(LavaTestCommandTestCase):
     def test_run_command_test_not_exist(self):
         errmsg = "unknown test 'abc'"
         fake_adb(output_str='RET_CODE=0')
-        self.assertRaises(SystemExit, LAVAAndroidTestDispatcher().dispatch, ['run', 'abc'])
-        self.assertNotEqual(None, re.search(errmsg, self.out.getvalue()), re.MULTILINE)
+        self.assertRaises(SystemExit, LAVAAndroidTestDispatcher().dispatch,
+                           ['run', 'abc'])
+        self.assertNotEqual(None, re.search(errmsg, self.out.getvalue()),
+                             re.MULTILINE)
         self.assertTrue(errmsg in self.out.getvalue())
 
 
 class TestHelp(LavaTestCommandTestCase):
     def test_command_help(self):
-        self.assertRaises(SystemExit, LAVAAndroidTestDispatcher().dispatch, ['--help'])
+        self.assertRaises(SystemExit, LAVAAndroidTestDispatcher().dispatch,
+                           ['--help'])
         self.assertTrue("--help" in self.out.getvalue())
-

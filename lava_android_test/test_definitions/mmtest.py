@@ -28,9 +28,11 @@ config = get_config()
 
 site = 'http://samplemedia.linaro.org/'
 local_name = get_local_name(site)
-RUN_STEPS_HOST_PRE = ['wget -r -np -l 10 -R csv,txt,css,html,gif,pdf %s -P %s' % (site, local_name),
-                      r'find  %s -type f -name "index*" -exec rm -f \{\} \;' % local_name,
-                      r'find  %s -type f -name "README" -exec rm -f \{\} \;' % local_name]
+RUN_STEPS_HOST_PRE = [
+        'wget -r -np -l 10 -R csv,txt,css,html,gif,pdf %s -P %s' % (site,
+                                                           local_name),
+        r'find  %s -type f -name "index*" -exec rm -f \{\} \;' % local_name,
+        r'find  %s -type f -name "README" -exec rm -f \{\} \;' % local_name]
 
 test_files_target_path = os.path.join(config.installdir_android,
                                     test_name, local_name)
@@ -38,19 +40,23 @@ RUN_STEPS_ADB_PRE = ['push %s %s' % (local_name, test_files_target_path)]
 RUN_ADB_SHELL_STEPS = ['am instrument -r -e targetDir %s \
     -w com.android.mediaframeworktest/.MediaFrameworkTestRunner'
      % test_files_target_path,
-    'rm -r %s' % (test_files_target_path) ]
+    'rm -r %s' % (test_files_target_path)]
+
 
 class MMTestTestParser(lava_android_test.testdef.AndroidTestParser):
 
-    def parse(self, result_filename='stdout.log', output_filename='stdout.log', test_name=test_name):
+    def parse(self, result_filename='stdout.log', output_filename='stdout.log',
+               test_name=test_name):
         """Parse test output to gather results
         Use the pattern specified when the class was instantiated to look
         through the results line-by-line and find lines that match it.
         Results are then stored in self.results.  If a fixupdict was supplied
         it is used to convert test result strings to a standard format.
         """
-        pat_test = re.compile(r'^\s*INSTRUMENTATION_STATUS:\s*test=(?P<test_case_id>.+)\s*$')
-        pat_status_code = re.compile(r'^\s*INSTRUMENTATION_STATUS_CODE:\s*(?P<status_code>[\d-]+)\s*$')
+        pat_test = re.compile(
+            r'^\s*INSTRUMENTATION_STATUS:\s*test=(?P<test_case_id>.+)\s*$')
+        pat_status_code = re.compile(
+            r'^\s*INSTRUMENTATION_STATUS_CODE:\s*(?P<status_code>[\d-]+)\s*$')
         data = {}
         with open(output_filename, 'r') as stream:
             for lineno, line in enumerate(stream, 1):
@@ -66,7 +72,10 @@ class MMTestTestParser(lava_android_test.testdef.AndroidTestParser):
                         # test case started
                         data = {}
                     elif data['test_case_id']:
-                        data['result'] = status_code == '0' and 'pass' or 'fail'
+                        if status_code == '0':
+                            data['result'] = 'pass'
+                        else:
+                            data['result'] = 'fail'
                         data["log_filename"] = result_filename
                         data["log_lineno"] = lineno
                         self.results['test_results'].append(data)

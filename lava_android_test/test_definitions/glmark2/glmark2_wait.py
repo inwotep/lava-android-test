@@ -28,13 +28,16 @@ else:
 
 logcat_cmd = '%s logcat -v time' % (adb_cmd)
 pattern1 = "glmark2 Score:"
-#pattern1 = "\[loop\] fragment-steps=5:fragment-uniform=true:vertex-steps=5: FPS:"
+#pattern1 = "\[loop\] fragment-steps=5:fragment-uniform=true:
+#vertex-steps=5: FPS:"
 pattern2 = "Process org.linaro.glmark2.+has died"
-pattern3 = "No suitable EGLConfig for GLES2.0 found. Please check that proper GLES2.0 drivers are installed."
+pattern3 = ("No suitable EGLConfig for GLES2.0 found."
+            " Please check that proper GLES2.0 drivers are installed.")
 
 try:
     proc = pexpect.spawn(logcat_cmd, logfile=sys.stdout)
-    match_id = proc.expect([pattern1, pattern2, pattern3, pexpect.EOF], timeout=1000)
+    match_id = proc.expect([pattern1, pattern2, pattern3, pexpect.EOF],
+                            timeout=1000)
     print "in glmark2_wait.py match_id = %s\n" % match_id
     if (match_id == 0) or (match_id == 1) or (match_id == 2):
         proc.sendcontrol('C')

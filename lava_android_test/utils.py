@@ -143,6 +143,7 @@ def get_machine_type():
         return os.uname()[-1]
     return _fake_machine
 
+
 def get_local_name(url):
     url = url.strip()
     url = re.sub('[\/]+$', '', url)

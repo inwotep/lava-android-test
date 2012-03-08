@@ -20,6 +20,7 @@ from tempfile import mkdtemp
 from lava_android_test.config import get_config, set_config
 from lava_tool.dispatcher import LavaDispatcher, run_with_dispatcher_class
 
+
 class LAVAAndroidTestDispatcher(LavaDispatcher):
     toolname = 'lava_android_test'
     description = """
@@ -29,14 +30,18 @@ class LAVAAndroidTestDispatcher(LavaDispatcher):
     Please report all bugs using the Launchpad bug tracker:
     http://bugs.launchpad.net/lava-android-test/+filebug
     """
+
+
 def check_adb_installed():
         rc = subprocess.call(["which", "adb"], stdout=open('/dev/null', 'w'))
         return rc == 0
 
+
 def main():
     if not check_adb_installed():
         print >> sys.stderr, "Can't find the command adb."
-        print >> sys.stderr, "Please add the path of adb command to PATH environment."
+        print >> sys.stderr, ("Please add the path of adb"
+                              " command to PATH environment.")
         sys.exit(1)
 
     try:
@@ -49,6 +54,7 @@ def main():
         run_with_dispatcher_class(LAVAAndroidTestDispatcher)
     finally:
         shutil.rmtree(config.tempdir_host)
+
 
 if __name__ == '__main__':
     main()
