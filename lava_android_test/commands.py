@@ -27,7 +27,9 @@ from linaro_dashboard_bundle.io import DocumentIO
 from lava_android_test.adb import ADB
 from lava_android_test.config import get_config
 from lava_android_test.testdef import testloader, AndroidTest
-from lava_android_test.testdef import AndroidTestRunner, AndroidTestInstaller, AndroidTestParser
+from lava_android_test.testdef import AndroidTestRunner, \
+                                      AndroidTestInstaller, \
+                                      AndroidTestParser
 
 
 class Command(LAVACommand):
@@ -278,8 +280,10 @@ class run(AndroidTestCommand):
     @classmethod
     def register_arguments(cls, parser):
         super(run, cls).register_arguments(parser)
-        parser.add_argument('-O', '--run-option', help=("Specified in the job file for using in the real test action,"
-                                                        " so that we can customize some test when need"))
+        parser.add_argument('-O', '--run-option',
+                    help=("Specified in the job file for using in "
+                          "the real test action, so that we can customize"
+                          " some test when need"))
         group = parser.add_argument_group("specify the bundle output file")
         group.add_argument("-o", "--output",
                             default=None,
@@ -302,7 +306,8 @@ class run(AndroidTestCommand):
                     % self.args.test_id)
 
         try:
-            result_id = test.run(quiet=self.args.quiet, run_options=self.args.run_option)
+            result_id = test.run(quiet=self.args.quiet,
+                                  run_options=self.args.run_option)
             if self.args.output:
                 output_dir = os.path.dirname(self.args.output)
                 if not os.path.exists(output_dir):
@@ -316,10 +321,12 @@ class run(AndroidTestCommand):
 
         self.say_end(tip_msg)
 
+
 class run_custom(AndroidCommand):
     """
     Run the command(s) that specified by the -c option in the command line
-    program:: lava-android-test run-custom -c 'command1' -c 'command2' -p 'parse-regex1' 
+    program:: lava-android-test run-custom -c 'command1' -c 'command2'
+     -p 'parse-regex1'
     program:: lava-android-test run test-id -s device_serial
     program:: lava-android-test run test-id -s device_serial -o outputfile
     """
@@ -327,9 +334,13 @@ class run_custom(AndroidCommand):
     @classmethod
     def register_arguments(cls, parser):
         super(run_custom, cls).register_arguments(parser)
-        parser.add_argument('-c', '--android-command', action='append', help=("Specified in the job file for using in the real test action,"
-                                                        " so that we can customize some test when need"))
-        parser.add_argument('-p', '--parse-regex', help=("Specified the regular expression used for analyzing command output"))
+        parser.add_argument('-c', '--android-command', action='append',
+                            help=("Specified in the job file for using"
+                                  " in the real test action, so that "
+                                  "we can customize some test when need"))
+        parser.add_argument('-p', '--parse-regex',
+                            help=("Specified the regular expression used"
+                                  " for analyzing command output"))
         group = parser.add_argument_group("specify the bundle output file")
         group.add_argument("-o", "--output",
                             default=None,
@@ -351,9 +362,11 @@ class run_custom(AndroidCommand):
 
         tip_msg = ''
         if self.args.serial:
-            tip_msg = "Run following custom test(s) on device(%s):\n\t\t%s" % (self.args.serial, '\n\t\t'.join(ADB_SHELL_STEPS))
+            tip_msg = "Run following custom test(s) on device(%s):\n\t\t%s" % (
+                           self.args.serial, '\n\t\t'.join(ADB_SHELL_STEPS))
         else:
-            tip_msg = "Run following custom test(s):\n\t\t%s" % ('\n\t\t'.join(ADB_SHELL_STEPS))
+            tip_msg = "Run following custom test(s):\n\t\t%s" % (
+                                             '\n\t\t'.join(ADB_SHELL_STEPS))
         self.say_begin(tip_msg)
 
         inst = AndroidTestInstaller()
@@ -361,7 +374,7 @@ class run_custom(AndroidCommand):
         parser = AndroidTestParser(pattern=PATTERN)
         test = AndroidTest(testname=test_name, installer=inst,
                                 runner=run, parser=parser)
-        test.parser.results = {'test_results':[]}
+        test.parser.results = {'test_results': []}
         test.setadb(self.adb)
 
         if not self.test_installed(test.testname):
@@ -373,13 +386,13 @@ class run_custom(AndroidCommand):
                 output_dir = os.path.dirname(self.args.output)
                 if not os.path.exists(output_dir):
                     os.makedirs(output_dir)
-                bundle = generate_bundle(self.args.serial, result_id, test=test)
+                bundle = generate_bundle(self.args.serial,
+                                          result_id, test=test)
                 with open(self.args.output, "wt") as stream:
                     DocumentIO.dump(stream, bundle)
 
         except Exception as strerror:
             raise LavaCommandError("Test execution error: %s" % strerror)
-
         self.say_end(tip_msg)
 
 
@@ -396,17 +409,19 @@ class parse(AndroidResultsCommand):
         except IOError:
             pass
 
-<<<<<<< TREE
+
 class parse_custom(AndroidResultsCommand):
     """
-    Parse the results of previous test that run with run-custom command on the specified device
-    program:: lava-android-test parse-custom test-result-id -P 
+    Parse the results of previous test that run with run-custom command
+    on the specified device
+    program:: lava-android-test parse-custom test-result-id -P
     """
     @classmethod
     def register_arguments(cls, parser):
         super(parse_custom, cls).register_arguments(parser)
         parser.add_argument('-p', '--parse-regex',
-                            help=("Specified the regular expression used for analyzing command output"))
+                            help=("Specified the regular expression used"
+                                  " for analyzing command output"))
 
     def invoke(self):
         PATTERN = None
@@ -418,20 +433,18 @@ class parse_custom(AndroidResultsCommand):
         parser = AndroidTestParser(pattern=PATTERN)
         test = AndroidTest(testname=test_name, installer=inst,
                                 runner=run, parser=parser)
-        test.parser.results = {'test_results':[]}
+        test.parser.results = {'test_results': []}
         test.setadb(ADB(self.args.serial))
 
-        bundle = generate_combined_bundle(self.args.serial, self.args.result_id, test=test)
+        bundle = generate_combined_bundle(self.args.serial,
+                                          self.args.result_id, test=test)
         try:
             print DocumentIO.dumps(bundle)
         except IOError:
             pass
 
-def generate_combined_bundle(serial=None, result_ids=None, test=None):
-=======
 
-def generate_combined_bundle(serial=None, result_ids=None):
->>>>>>> MERGE-SOURCE
+def generate_combined_bundle(serial=None, result_ids=None, test=None):
     if result_ids is None:
         return {}
 
@@ -445,6 +458,7 @@ def generate_combined_bundle(serial=None, result_ids=None):
             bundle['test_runs'].append(b['test_runs'][0])
 
     return bundle
+
 
 def generate_bundle(serial=None, result_id=None, test=None):
     if result_id is None:
