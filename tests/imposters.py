@@ -19,6 +19,7 @@ import sys
 import tempfile
 import StringIO
 
+
 class OutputImposter(object):
     def setUp(self):
         self.origstdout = sys.stdout
@@ -32,6 +33,7 @@ class OutputImposter(object):
     def getvalue(self):
         return self.fakestdout.getvalue()
 
+
 class ConfigImposter(object):
     def setUp(self):
         class fakeconfig:
@@ -43,14 +45,18 @@ class ConfigImposter(object):
                       "format": "LAVA Test Test Registry 1.0",
                       "providers": [
                           {
-                              "entry_point": "lava_test.core.providers:BuiltInProvider"
+                              "entry_point":
+                "lava_test.core.providers:BuiltInProvider"
                           },
                           {
-                              "entry_point": "lava_test.core.providers:PkgResourcesProvider",
-                              "config": {"namespace": "lava_test.test_definitions" }
+                              "entry_point":
+                 "lava_test.core.providers:PkgResourcesProvider",
+                              "config":
+                {"namespace": "lava_test.test_definitions"}
                           },
                           {
-                              "entry_point": "lava_test.core.providers:RegistryProvider",
+                              "entry_point":
+                "lava_test.core.providers:RegistryProvider",
                               "config": {
                                   "entries": []
                               }
@@ -75,4 +81,3 @@ class ConfigImposter(object):
     @property
     def resultsdir(self):
         return self.config.resultsdir
-

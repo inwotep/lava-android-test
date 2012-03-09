@@ -92,7 +92,9 @@ class AndroidTest(ITest):
             raise RuntimeError("%s is already installed" % self.testname)
         ret_code = self.adb.makedirs(installdir)
         if ret_code != 0:
-            raise RuntimeError("Failed to create directory(%s) for test(%s)" % (installdir, self.testname))
+            raise RuntimeError(
+                               "Failed to create directory(%s) for test(%s)" %
+                               (installdir, self.testname))
 
         if install_options is not None:
             self.adb.shell('echo "%s" > %s/install_options' %
@@ -101,7 +103,8 @@ class AndroidTest(ITest):
             self.installer.install(install_options)
         except Exception as e:
             self.uninstall()
-            raise RuntimeError("Failed to install test(%s):%s" % (self.testname, e))
+            raise RuntimeError(
+                    "Failed to install test(%s):%s" % (self.testname, e))
         finally:
             os.chdir(self.origdir)
 
@@ -120,7 +123,8 @@ class AndroidTest(ITest):
             self.adb.rmtree(path)
 
     def _add_install_options(self, bundle, config):
-        optionfile = "%s/%s/install_options" % (config.installdir_android, self.testname)
+        optionfile = "%s/%s/install_options" % (config.installdir_android,
+                                                self.testname)
         if self.adb.exists(optionfile):
             output = self.adb.run_adb_cmd('shell cat %s' % optionfile)[1]
             bundle['test_runs'][0]['attributes']['install_options'] = output[0]
@@ -131,15 +135,16 @@ class AndroidTest(ITest):
             'format': 'Dashboard Bundle Format 1.2',
             'test_runs': [
                 {
-                    'analyzer_assigned_uuid': analyzer_assigned_uuid,
-                    'analyzer_assigned_date': self.runner.starttime.strftime(TIMEFORMAT),
-                    'time_check_performed': False,
-                    'attributes':{},
-                    'test_id': self.testname,
-                    'test_results':[],
-                    'attachments':[],
-                    'hardware_context': hwprofile.get_hardware_context(self.adb),
-                    'software_context': swprofile.get_software_context(self.adb)
+                'analyzer_assigned_uuid': analyzer_assigned_uuid,
+                'analyzer_assigned_date':
+                        self.runner.starttime.strftime(TIMEFORMAT),
+                'time_check_performed': False,
+                'attributes':{},
+                'test_id': self.testname,
+                'test_results':[],
+                'attachments':[],
+                'hardware_context': hwprofile.get_hardware_context(self.adb),
+                'software_context': swprofile.get_software_context(self.adb)
                 }
             ]
         }
@@ -174,17 +179,20 @@ class AndroidTest(ITest):
 
     def _screencap(self, resultsdir):
         target_path = '/system/bin/screenshot'
-        self.adb.shell('%s %s' % (target_path, os.path.join(resultsdir, 'screencap.png')))
+        self.adb.shell('%s %s' % (target_path, os.path.join(resultsdir,
+                                                        'screencap.png')))
 
     def _copyorgoutputfile(self, resultsdir):
         if self.org_ouput_file == 'stdout.log':
             return
         if not self.adb.exists(resultsdir):
             self.adb.makedirs(resultsdir)
-        ret_code = self.adb.copy(self.org_ouput_file, os.path.join(resultsdir, os.path.basename(self.org_ouput_file)))
+        ret_code = self.adb.copy(self.org_ouput_file, os.path.join(resultsdir,
+                                     os.path.basename(self.org_ouput_file)))
         if ret_code != 0:
-            raise RuntimeError("Failed to copy file '%s' to '%s' for test(%s)" %
-                                (self.org_ouput_file, resultsdir, self.testname))
+            raise RuntimeError(
+                    "Failed to copy file '%s' to '%s' for test(%s)" %
+                        (self.org_ouput_file, resultsdir, self.testname))
 
     def parse(self, resultname):
         if not self.parser:
@@ -193,13 +201,19 @@ class AndroidTest(ITest):
         output_filename = os.path.basename(self.org_ouput_file)
         config = get_config()
         os.chdir(config.tempdir_host)
-        resultsdir_android = os.path.join(config.resultsdir_android, resultname)
-        result_filename_android = os.path.join(resultsdir_android, output_filename)
-        result_filename_host_temp = tempfile.mkstemp(prefix=output_filename, dir=config.tempdir_host)[1]
+        resultsdir_android = os.path.join(config.resultsdir_android,
+                                           resultname)
+        result_filename_android = os.path.join(resultsdir_android,
+                                               output_filename)
+        result_filename_host_temp = tempfile.mkstemp(prefix=output_filename,
+                                                dir=config.tempdir_host)[1]
         self.adb.pull(result_filename_android, result_filename_host_temp)
-        self.parser.parse(output_filename, output_filename=result_filename_host_temp, test_name=self.testname)
+        self.parser.parse(output_filename,
+                          output_filename=result_filename_host_temp,
+                          test_name=self.testname)
         os.remove(result_filename_host_temp)
         os.chdir(self.origdir)
+
 
 class AndroidTestInstaller(object):
 
@@ -215,7 +229,9 @@ class AndroidTestInstaller(object):
     url - location from which the test suite should be downloaded
     md5 - md5sum to check the integrety of the download
     """
-    def __init__(self, steps_host_pre=[], steps_adb_pre=[], apks=[], steps_adb_post=[], steps_host_post=[], url=None, md5=None, **kwargs):
+    def __init__(self, steps_host_pre=[], steps_adb_pre=[], apks=[],
+                 steps_adb_post=[], steps_host_post=[],
+                  url=None, md5=None, **kwargs):
         self.steps_host_pre = steps_host_pre
         self.steps_adb_pre = steps_adb_pre
         self.apks = apks
@@ -248,13 +264,12 @@ class AndroidTestInstaller(object):
                 return None
         return filename
 
-
-
     def _installapk(self):
         for apk in self.apks:
             rc = self.adb.installapk(apk)
             if rc:
-                raise RuntimeError("Failed to install apk '%s' failed. %d" % (apk, rc))
+                raise RuntimeError(
+                        "Failed to install apk '%s' failed. %d" % (apk, rc))
 
     def install(self, install_options=None):
         self._download()
@@ -266,6 +281,7 @@ class AndroidTestInstaller(object):
 
     def setadb(self, adb=None):
         self.adb = adb
+
 
 class AndroidTestRunner(object):
 
@@ -280,7 +296,8 @@ class AndroidTestRunner(object):
 
     steps - list of steps to be executed in a shell
     """
-    def __init__(self, steps_host_pre=[], steps_adb_pre=[], adbshell_steps=[], steps_adb_post=[], steps_host_post=[]):
+    def __init__(self, steps_host_pre=[], steps_adb_pre=[],
+                 adbshell_steps=[], steps_adb_post=[], steps_host_post=[]):
         self.steps_host_pre = steps_host_pre
         self.steps_adb_pre = steps_adb_pre
         self.adbshell_steps = adbshell_steps
@@ -295,27 +312,39 @@ class AndroidTestRunner(object):
             for cmd in self.adbshell_steps:
                 if option is not None:
                     cmd = cmd.replace('$(OPTIONS)', option)
-                ret_code = self.adb.run_adb_shell_for_test(cmd, stdoutlog, stderrlog)
+                ret_code = self.adb.run_adb_shell_for_test(cmd,
+                                                           stdoutlog,
+                                                            stderrlog)
                 if ret_code != 0:
-                    raise Exception("Failed to execute command(%s):ret_code=%d" % (cmd, ret_code))
+                    raise Exception(
+                        "Failed to execute command(%s):ret_code=%d" % (cmd,
+                                                                     ret_code))
         except:
             raise
         finally:
-            self.adb.shell('getprop', os.path.join(resultsdir, 'propoutput.log'))
-            self.adb.shell('cat /proc/cpuinfo', os.path.join(resultsdir, 'cpuinfo.log'))
-            self.adb.shell('cat /proc/meminfo', os.path.join(resultsdir, 'meminfo.log'))
+            self.adb.shell('getprop',
+                           os.path.join(resultsdir, 'propoutput.log'))
+            self.adb.shell('cat /proc/cpuinfo',
+                           os.path.join(resultsdir, 'cpuinfo.log'))
+            self.adb.shell('cat /proc/meminfo',
+                           os.path.join(resultsdir, 'meminfo.log'))
 
     def run(self, resultsdir, run_options=None):
         self.starttime = datetime.utcnow()
-        _run_steps_host(self.steps_host_pre, self.adb.serial, option=run_options, resultsdir=resultsdir)
-        _run_steps_adb(self.steps_adb_pre, self.adb.serial, option=run_options, resultsdir=resultsdir)
+        _run_steps_host(self.steps_host_pre, self.adb.serial, 
+                        option=run_options, resultsdir=resultsdir)
+        _run_steps_adb(self.steps_adb_pre, self.adb.serial, 
+                        option=run_options, resultsdir=resultsdir)
         self._run_steps_adbshell(resultsdir, option=run_options,)
-        _run_steps_adb(self.steps_adb_post, self.adb.serial, option=run_options, resultsdir=resultsdir)
-        _run_steps_host(self.steps_host_post, self.adb.serial, option=run_options, resultsdir=resultsdir)
+        _run_steps_adb(self.steps_adb_post, self.adb.serial, 
+                        option=run_options, resultsdir=resultsdir)
+        _run_steps_host(self.steps_host_post, self.adb.serial, 
+                        option=run_options, resultsdir=resultsdir)
         self.endtime = datetime.utcnow()
 
     def setadb(self, adb=None):
         self.adb = adb
+
 
 class AndroidTestParser(object):
     adb = ADB()
@@ -342,14 +371,16 @@ class AndroidTestParser(object):
     appendall - Append a dict to the test_results entry for each result.
         For example: if you would like to add units="MB/s" to each result:
             appendall={'units':'MB/s'}
-    failure_patterns - regexp pattern to identify whether the test is failed or success
-        If there is a string match one pattern in failure_patterns, 
-        then this test will be deal as failed. 
+    failure_patterns - regexp pattern to identify whether the test is failed
+         or success
+        If there is a string match one pattern in failure_patterns,
+        then this test will be deal as failed.
     """
-    def __init__(self, pattern=None, fixupdict=None, appendall={}, failure_patterns=[]):
+    def __init__(self, pattern=None, fixupdict=None, appendall={},
+                  failure_patterns=[]):
         self.pattern = pattern
         self.fixupdict = fixupdict
-        self.results = {'test_results':[]}
+        self.results = {'test_results': []}
         self.appendall = appendall
         self.failure_patterns = failure_patterns
 
@@ -358,7 +389,8 @@ class AndroidTestParser(object):
             if x['testid'] == test_id:
                 return self.results['test_results'].index(x)
 
-    def parse(self, result_filename='stdout.log', output_filename='stdout.log', test_name=''):
+    def parse(self, result_filename='stdout.log',
+              output_filename='stdout.log', test_name=''):
         """Parse test output to gather results
 
         Use the pattern specified when the class was instantiated to look
@@ -380,7 +412,7 @@ class AndroidTestParser(object):
                 failure_pat = re.compile(failure_pattern)
             except Exception as strerror:
                 raise RuntimeError(
-                    "AndroidTestParser - Invalid regular expression '%s' - %s" % (
+                "AndroidTestParser - Invalid regular expression '%s' - %s" % (
                         failure_pattern, strerror))
             failure_pats.append(failure_pat)
         test_ok = True
@@ -436,14 +468,14 @@ class AndroidTestParser(object):
         This is really only used for qualitative tests
         """
         for t in self.results['test_results']:
-            if t.has_key("result"):
+            if "result" in t:
                 t['result'] = fixupdict[t['result']]
 
     def fixmeasurements(self):
         """Measurements are often read as strings, but need to be float
         """
         for test_case in self.results['test_results']:
-            if test_case.has_key('measurement'):
+            if 'measurement' in test_case:
                 test_case['measurement'] = float(test_case['measurement'])
 
     def fixids(self, test_name=''):
@@ -452,14 +484,17 @@ class AndroidTestParser(object):
         """
         badchars = "[^a-zA-Z0-9\._-]"
         for test_case in self.results['test_results']:
-            if test_case.has_key('test_case_id'):
-                test_case['test_case_id'] = test_case['test_case_id'].replace(" ", "_")
-                test_case['test_case_id'] = re.sub(badchars, "", test_case['test_case_id'])
+            if 'test_case_id' in test_case:
+                test_case['test_case_id'] = test_case[
+                                            'test_case_id'].replace(" ", "_")
+                test_case['test_case_id'] = re.sub(badchars, "",
+                                                    test_case['test_case_id'])
             else:
                 test_case['test_case_id'] = test_name
 
     def setadb(self, adb=None):
         self.adb = adb
+
 
 def _run_steps_host(steps=[], serial=None, option=None, resultsdir=None):
     adb = ADB(serial)
@@ -471,24 +506,28 @@ def _run_steps_host(steps=[], serial=None, option=None, resultsdir=None):
         if option is not None:
             cmd = cmd.replace('$(OPTIONS)', option)
         cmd = cmd.strip()
-        rc, output = adb.run_cmd_host(cmd, quiet=False);
+        rc, output = adb.run_cmd_host(cmd, quiet=False)
         if rc:
-            raise RuntimeError("Run step '%s' failed. %d : %s" % (cmd, rc, output))
+            raise RuntimeError(
+                    "Run step '%s' failed. %d : %s" % (cmd, rc, output))
         if resultsdir is not None:
             stdoutlog = os.path.join(resultsdir, 'stdout.log')
             adb.push_stream_to_device(output, stdoutlog)
+
 
 def _run_steps_adb(steps=[], serial=None, option=None, resultsdir=None):
     adb = ADB(serial)
     for cmd in steps:
         if option is not None:
             cmd = cmd.replace('$(OPTIONS)', option)
-        rc, output = adb.run_adb_cmd(cmd, quiet=False);
+        rc, output = adb.run_adb_cmd(cmd, quiet=False)
         if rc:
-            raise RuntimeError("Run step '%s' failed. %d : %s" % (cmd, rc, output))
+            raise RuntimeError(
+                    "Run step '%s' failed. %d : %s" % (cmd, rc, output))
         if resultsdir is not None:
             stdoutlog = os.path.join(resultsdir, 'stdout.log')
             adb.push_stream_to_device(output, stdoutlog)
+
 
 def testloader(testname, serial=None):
     """
@@ -508,7 +547,6 @@ def testloader(testname, serial=None):
     except AttributeError:
         base = mod.testobj
 
-    base.parser.results = {'test_results':[]}
+    base.parser.results = {'test_results': []}
     base.setadb(ADB(serial))
     return base
-

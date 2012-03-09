@@ -17,7 +17,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-import os
 import re
 import lava_android_test.testdef
 
@@ -26,17 +25,20 @@ test_name = 'skia'
 INSTALL_STEPS_ADB_PRE = []
 # Skia can do many more benchmarks, but it becomes almost too much data
 # to make a nice chart for. The -match limits the ones we run
-ADB_SHELL_STEPS = [ 'logcat -c',
-                    'skia_bench -repeat 6 -timers w -config 565 -match bitmap',
-                    'skia_bench -repeat 6 -timers w -config 565 -match rects',
-                    'skia_bench -repeat 6 -timers w -config 565 -match repeat',
-                    'logcat -d -s "skia:*"']
+ADB_SHELL_STEPS = ['logcat -c',
+                   'skia_bench -repeat 6 -timers w -config 565 -match bitmap',
+                   'skia_bench -repeat 6 -timers w -config 565 -match rects',
+                   'skia_bench -repeat 6 -timers w -config 565 -match repeat',
+                   'logcat -d -s "skia:*"']
+
 
 class SkiaTestParser(lava_android_test.testdef.AndroidTestParser):
 
-    def parse(self, result_filename=None, output_filename=None, test_name=test_name):
+    def parse(self, result_filename=None, output_filename=None,
+              test_name=test_name):
         pat_test = re.compile(r'running bench \[.*?\]\W+(?P<test>\w+)\W+$')
-        pat_type = re.compile(r'\d+\):\W+(?P<type>\w+):\W+msecs =\W+(?P<time>\d+.\d+)')
+        pat_type = re.compile(
+                r'\d+\):\W+(?P<type>\w+):\W+msecs =\W+(?P<time>\d+.\d+)')
 
         test = None
         with open(output_filename, 'r') as stream:
@@ -48,7 +50,8 @@ class SkiaTestParser(lava_android_test.testdef.AndroidTestParser):
                     match = pat_type.search(line)
                     if match:
                         data = {}
-                        data['test_case_id'] = "%s_%s" % (test, match.group('type'))
+                        data['test_case_id'] = "%s_%s" % (test,
+                                                          match.group('type'))
                         data['measurement'] = match.group('time')
                         data['result'] = 'pass'
                         data['units'] = 'ms'

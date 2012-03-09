@@ -31,12 +31,12 @@ PATTERN = "^\s*(?P<test_case_id>\w+)\s*=\s*(?P<result>\w+)\s*$"
 
 parser = lava_android_test.testdef.AndroidTestParser(PATTERN)
 
-run = lava_android_test.testdef.AndroidTestRunner(steps_host_post=RUN_STEPS_HOST_POST)
-
-inst = lava_android_test.testdef.AndroidTestInstaller() # dummy installer
+run = lava_android_test.testdef.AndroidTestRunner(
+                                    steps_host_post=RUN_STEPS_HOST_POST)
+# dummy installer
+inst = lava_android_test.testdef.AndroidTestInstaller()
 
 testobj = lava_android_test.testdef.AndroidTest(testname=test_name,
                                                 runner=run,
                                                 installer=inst,
                                                 parser=parser)
-
