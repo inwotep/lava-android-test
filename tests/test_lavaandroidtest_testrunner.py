@@ -21,6 +21,7 @@ from tests.tests_util import makerunner
 from tests.imposters import OutputImposter, ConfigImposter
 from tests.fixtures import TestCaseWithFixtures
 
+
 class testTestRunner(TestCaseWithFixtures):
     def setUp(self):
         self.config = self.add_fixture(ConfigImposter())
@@ -62,4 +63,3 @@ class testTestRunner(TestCaseWithFixtures):
         runner = makerunner(steps_host_pre=steps)
         runner.run('./')
         self.assertTrue('test' in self.out.getvalue())
-

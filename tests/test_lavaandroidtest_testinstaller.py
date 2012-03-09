@@ -20,6 +20,7 @@ import tempfile
 import unittest
 from tests.tests_util import makeinstaller
 
+
 class testTestInstaller(unittest.TestCase):
     def setUp(self):
         self.origdir = os.path.abspath(os.curdir)
@@ -55,4 +56,3 @@ class testTestInstaller(unittest.TestCase):
         installer.install('./')
         self.assertTrue(os.path.exists("./foo"))
         self.assertTrue("test" in open("./foo").read())
-

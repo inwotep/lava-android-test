@@ -31,9 +31,11 @@ class LavaAndroidTestConfig(object):
         self.installdir_android = os.path.join(basedata, 'installed-tests')
         self.resultsdir_android = os.path.join(basedata, 'results')
         self.tempdir_android = os.path.join(home, 'temp')
-        self.tempdir_host = os.environ.get('ANDROID_TEST_TEMP_HOST', '/tmp/lava-android-test')
+        self.tempdir_host = os.environ.get('ANDROID_TEST_TEMP_HOST',
+                                            '/tmp/lava-android-test')
 
 _config = None
+
 
 def get_config():
     global _config
@@ -41,7 +43,7 @@ def get_config():
         return _config
     return LavaAndroidTestConfig()
 
+
 def set_config(config):
     global _config
     _config = config
-
