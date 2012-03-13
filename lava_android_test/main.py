@@ -44,15 +44,19 @@ def main():
                               " command to PATH environment.")
         sys.exit(1)
 
+    config = get_config()
     try:
-        config = get_config()
         if not os.path.exists(config.tempdir_host):
             os.makedirs(config.tempdir_host)
+            #make every user can write/read this directory
+            os.chmod(config.tempdir_host, 0777)
         config.tempdir_host = mkdtemp(dir=config.tempdir_host)
         set_config(config)
         os.chmod(config.tempdir_host, 0755)
         run_with_dispatcher_class(LAVAAndroidTestDispatcher)
     finally:
+        #can't remove the parent directory, because there may be other
+        #instance using the parent directory
         shutil.rmtree(config.tempdir_host)
 
 

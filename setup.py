@@ -41,7 +41,9 @@ setup(
     install=lava_android_test.commands:install
     uninstall=lava_android_test.commands:uninstall
     run=lava_android_test.commands:run
+    run-custom=lava_android_test.commands:run_custom
     parse=lava_android_test.commands:parse
+    parse-custom=lava_android_test.commands:parse_custom
     show=lava_android_test.commands:show
     rename=lava_android_test.commands:rename
     remove=lava_android_test.commands:remove

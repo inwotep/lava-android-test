@@ -65,6 +65,12 @@ class AndroidTest(ITest):
         self.org_ouput_file = org_ouput_file
         self.origdir = os.path.abspath(os.curdir)
 
+    def set_runner(self, runner=None):
+        self.runner = runner
+
+    def set_parser(self, parser=None):
+        self.parser = parser
+
     def install(self, install_options=None):
         """Install the test suite.
 
@@ -149,7 +155,7 @@ class AndroidTest(ITest):
         filename_target = os.path.join(self.resultsdir, 'testdata.json')
         self.adb.push(filename_host, filename_target)
 
-    def run(self, quiet=False):
+    def run(self, quiet=False, run_options=None):
         if not self.runner:
             raise RuntimeError("no test runner defined for '%s'" %
                                 self.testname)
@@ -162,7 +168,7 @@ class AndroidTest(ITest):
                      str(time.mktime(datetime.utcnow().timetuple())))
         self.resultsdir = os.path.join(config.resultsdir_android, resultname)
         self.adb.makedirs(self.resultsdir)
-        self.runner.run(self.resultsdir)
+        self.runner.run(self.resultsdir, run_options=run_options)
         self._copyorgoutputfile(self.resultsdir)
         self._screencap(self.resultsdir)
         self._savetestdata(str(uuid4()))
@@ -299,11 +305,13 @@ class AndroidTestRunner(object):
         self.steps_host_post = steps_host_post
         self.testoutput = []
 
-    def _run_steps_adbshell(self, resultsdir):
+    def _run_steps_adbshell(self, resultsdir, option=None):
         stdoutlog = os.path.join(resultsdir, 'stdout.log')
         stderrlog = os.path.join(resultsdir, 'stderr.log')
         try:
             for cmd in self.adbshell_steps:
+                if option is not None:
+                    cmd = cmd.replace('$(OPTIONS)', option)
                 ret_code = self.adb.run_adb_shell_for_test(cmd,
                                                            stdoutlog,
                                                             stderrlog)
@@ -321,17 +329,17 @@ class AndroidTestRunner(object):
             self.adb.shell('cat /proc/meminfo',
                            os.path.join(resultsdir, 'meminfo.log'))
 
-    def run(self, resultsdir):
+    def run(self, resultsdir, run_options=None):
         self.starttime = datetime.utcnow()
         _run_steps_host(self.steps_host_pre, self.adb.serial,
-                        resultsdir=resultsdir)
+                        option=run_options, resultsdir=resultsdir)
         _run_steps_adb(self.steps_adb_pre, self.adb.serial,
-                       resultsdir=resultsdir)
-        self._run_steps_adbshell(resultsdir)
+                        option=run_options, resultsdir=resultsdir)
+        self._run_steps_adbshell(resultsdir, option=run_options,)
         _run_steps_adb(self.steps_adb_post, self.adb.serial,
-                       resultsdir=resultsdir)
+                        option=run_options, resultsdir=resultsdir)
         _run_steps_host(self.steps_host_post, self.adb.serial,
-                        resultsdir=resultsdir)
+                        option=run_options, resultsdir=resultsdir)
         self.endtime = datetime.utcnow()
 
     def setadb(self, adb=None):
