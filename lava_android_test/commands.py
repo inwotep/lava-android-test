@@ -409,7 +409,7 @@ class run_custom(AndroidCommand):
                                 steps_adb_pre=STEPS_ADB_PRE,
                                 adbshell_steps=ADB_SHELL_STEPS)
         parser = AndroidTestParser(pattern=PATTERN)
-        test = AndroidTest(testname='%s(%s)' % (test_name, test_name_suffix),
+        test = AndroidTest(testname=test_name,
                             installer=inst, runner=run, parser=parser)
         test.parser.results = {'test_results': []}
         test.setadb(self.adb)
@@ -424,7 +424,8 @@ class run_custom(AndroidCommand):
                 if not os.path.exists(output_dir):
                     os.makedirs(output_dir)
                 bundle = generate_bundle(self.args.serial,
-                                          result_id, test=test)
+                        result_id, test=test,
+                        test_id='%s(%s)' % (test_name, test_name_suffix))
                 with open(self.args.output, "wt") as stream:
                     DocumentIO.dump(stream, bundle)
 
@@ -481,14 +482,14 @@ class parse_custom(AndroidResultsCommand):
             pass
 
 
-def generate_combined_bundle(serial=None, result_ids=None, test=None):
+def generate_combined_bundle(serial=None, result_ids=None, test=None, test_id=None):
     if result_ids is None:
         return {}
 
     bundle = None
 
     for rid in result_ids:
-        b = generate_bundle(serial, rid, test)
+        b = generate_bundle(serial, rid, test, test_id)
         if rid == result_ids[0]:
             bundle = b
         else:
@@ -497,7 +498,7 @@ def generate_combined_bundle(serial=None, result_ids=None, test=None):
     return bundle
 
 
-def generate_bundle(serial=None, result_id=None, test=None):
+def generate_bundle(serial=None, result_id=None, test=None, test_id=None):
     if result_id is None:
         return {}
     config = get_config()
@@ -513,6 +514,9 @@ def generate_bundle(serial=None, result_id=None, test=None):
         test_tmp = test
     else:
         test_tmp = testloader(bundle['test_runs'][0]['test_id'], serial)
+
+    if test_id:
+        bundle['test_runs'][0]['test_id'] = test_id
 
     test_tmp.parse(result_id)
     stdout_text = adb.read_file(os.path.join(resultdir,
