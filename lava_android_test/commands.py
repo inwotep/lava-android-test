@@ -1,4 +1,4 @@
-# Copyright (c) 2011, 2011 Linaro
+# Copyright (c) 2011, 2012 Linaro
 #
 # Author: Linaro Validation Team <linaro-dev@lists.linaro.org>
 #
@@ -18,6 +18,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import os
 import base64
+import urlparse
 import versiontools
 
 from lava_tool.interface import Command as LAVACommand
@@ -338,6 +339,9 @@ class run_custom(AndroidCommand):
                             help=("Specified in the job file for using"
                                   " in the real test action, so that "
                                   "we can customize some test when need"))
+        parser.add_argument('-f', '--command-file',
+                            help=("Specified the command file that will be "
+                                  "pushed into android and run."))
         parser.add_argument('-p', '--parse-regex',
                             help=("Specified the regular expression used"
                                   " for analyzing command output"))
@@ -351,11 +355,32 @@ class run_custom(AndroidCommand):
                                  " to the  specified FILE."))
 
     def invoke(self):
+        if self.args.android_command and self.args.command_file:
+            raise LavaCommandError("Please specified one option of -c and -f")
+        if not self.args.android_command and not self.args.command_file:
+            raise LavaCommandError("Please specified one option of -c and -f")
+
+        config = get_config()
         self.adb = ADB(self.args.serial)
         test_name = 'custom'
         ADB_SHELL_STEPS = []
+        STEPS_HOST_PRE = []
+        STEPS_ADB_PRE = []
         if self.args.android_command:
             ADB_SHELL_STEPS = self.args.android_command
+            test_name_suffix = 'command=[%s]' % (','.join(ADB_SHELL_STEPS))
+        elif self.args.command_file:
+            file_url = self.args.command_file
+            urlpath = urlparse.urlsplit(file_url).path
+            file_name = os.path.basename(urlpath)
+            target_path = os.path.join(config.installdir_android,
+                                     test_name, file_name)
+            STEPS_HOST_PRE = ["wget %s -O %s" % (file_url, file_name)]
+            STEPS_ADB_PRE = ["push %s %s" % (file_name, target_path)]
+            ADB_SHELL_STEPS = ["chmod 777 %s" % target_path,
+                               target_path]
+            test_name_suffix = 'command_file=%s' % file_name
+
         PATTERN = None
         if self.args.parse_regex:
             PATTERN = self.args.parse_regex
@@ -370,10 +395,13 @@ class run_custom(AndroidCommand):
         self.say_begin(tip_msg)
 
         inst = AndroidTestInstaller()
-        run = AndroidTestRunner(adbshell_steps=ADB_SHELL_STEPS)
+
+        run = AndroidTestRunner(steps_host_pre=STEPS_HOST_PRE,
+                                steps_adb_pre=STEPS_ADB_PRE,
+                                adbshell_steps=ADB_SHELL_STEPS)
         parser = AndroidTestParser(pattern=PATTERN)
-        test = AndroidTest(testname=test_name, installer=inst,
-                                runner=run, parser=parser)
+        test = AndroidTest(testname='%s:' % (test_name, test_name_suffix),
+                            installer=inst, runner=run, parser=parser)
         test.parser.results = {'test_results': []}
         test.setadb(self.adb)
 
@@ -451,7 +479,7 @@ def generate_combined_bundle(serial=None, result_ids=None, test=None):
     bundle = None
 
     for rid in result_ids:
-        b = generate_bundle(serial, rid, test=None)
+        b = generate_bundle(serial, rid, test)
         if rid == result_ids[0]:
             bundle = b
         else:
@@ -479,17 +507,17 @@ def generate_bundle(serial=None, result_id=None, test=None):
 
     test_tmp.parse(result_id)
     stdout_text = adb.read_file(os.path.join(resultdir,
-                                  os.path.basename(test.org_ouput_file)))
+                                  os.path.basename(test_tmp.org_ouput_file)))
     if stdout_text is None:
         stdout_text = ''
     stderr_text = adb.read_file(os.path.join(resultdir, 'stderr.log'))
     if stderr_text is None:
         stderr_text = ''
-    bundle['test_runs'][0]["test_results"] = test.parser.results[
+    bundle['test_runs'][0]["test_results"] = test_tmp.parser.results[
                                                         "test_results"]
     bundle['test_runs'][0]["attachments"] = [
         {
-            "pathname": test.org_ouput_file,
+            "pathname": test_tmp.org_ouput_file,
             "mime_type": "text/plain",
             "content":  base64.standard_b64encode(stdout_text)
         },

@@ -20,6 +20,7 @@
 import hashlib
 import os
 import re
+import string
 import sys
 import time
 import tempfile
@@ -434,8 +435,7 @@ class AndroidTestParser(object):
                 if data.get('result') is None:
                     data['result'] = test_ok and 'pass' or 'fail'
                 self.results['test_results'].append(data)
-        if self.fixupdict:
-            self.fixresults(self.fixupdict)
+        self.fixresults(self.fixupdict)
         if self.appendall:
             self.appendtoall(self.appendall)
         self.fixmeasurements()
@@ -469,7 +469,37 @@ class AndroidTestParser(object):
         """
         for t in self.results['test_results']:
             if "result" in t:
-                t['result'] = fixupdict[t['result']]
+                if not fixupdict:
+                    cap_result = string.upper(t['result'])
+
+                    pass_index = string.find(cap_result, 'PASS')
+                    ok_index = string.find(cap_result, 'OK')
+                    true_index = string.find(cap_result, 'TRUE')
+                    done_index = string.find(cap_result, 'DONE')
+
+                    fali_index = string.find(cap_result, 'FAIL')
+                    ng_index = string.find(cap_result, 'NG')
+                    false_index = string.find(cap_result, 'FALSE')
+
+                    skip_index = string.find(cap_result, 'SKIP')
+
+                    #every index should be greater than -1
+                    res_pass = pass_index + ok_index + true_index + done_index
+                    res_fail = fali_index + ng_index + false_index
+                    res_skip = skip_index
+                    #TODO still has skip case need to deal
+                    if res_pass > -4:
+                        t['result'] = 'pass'
+                    elif res_fail > -3:
+                        t['result'] = 'fail'
+                    elif res_skip > -1:
+                        t['result'] = 'skip'
+                    else:
+                        t['result'] = 'unknown'
+                elif t['result'] in fixupdict:
+                    t['result'] = fixupdict[t['result']]
+                else:
+                    t['result'] = 'unknown'
 
     def fixmeasurements(self):
         """Measurements are often read as strings, but need to be float
