@@ -470,29 +470,15 @@ class AndroidTestParser(object):
         for t in self.results['test_results']:
             if "result" in t:
                 if not fixupdict:
-                    cap_result = string.upper(t['result'])
+                    PASS_PATS = ['PASS', 'OK', 'TRUE', 'DONE']
+                    FAIL_PATS = ['FAIL', 'NG', 'FALSE']
+                    SKIP_PATS = ['SKIP']
 
-                    pass_index = string.find(cap_result, 'PASS')
-                    ok_index = string.find(cap_result, 'OK')
-                    true_index = string.find(cap_result, 'TRUE')
-                    done_index = string.find(cap_result, 'DONE')
-
-                    fali_index = string.find(cap_result, 'FAIL')
-                    ng_index = string.find(cap_result, 'NG')
-                    false_index = string.find(cap_result, 'FALSE')
-
-                    skip_index = string.find(cap_result, 'SKIP')
-
-                    #every index should be greater than -1
-                    res_pass = pass_index + ok_index + true_index + done_index
-                    res_fail = fali_index + ng_index + false_index
-                    res_skip = skip_index
-                    #TODO still has skip case need to deal
-                    if res_pass > -4:
+                    if self.is_result_match(t['result'], PASS_PATS):
                         t['result'] = 'pass'
-                    elif res_fail > -3:
+                    elif self.is_result_match(t['result'], FAIL_PATS):
                         t['result'] = 'fail'
-                    elif res_skip > -1:
+                    elif self.is_result_match(t['result'], SKIP_PATS):
                         t['result'] = 'skip'
                     else:
                         t['result'] = 'unknown'
@@ -500,6 +486,16 @@ class AndroidTestParser(object):
                     t['result'] = fixupdict[t['result']]
                 else:
                     t['result'] = 'unknown'
+
+    def is_result_match(self, result, patterns=[]):
+        cap_result = string.upper(result)
+        for pattern in patterns:
+            cap_pattern = string.upper(pattern)
+            pat_index = string.find(cap_result, cap_pattern)
+            if pat_index > -1:
+                return True
+
+        return False
 
     def fixmeasurements(self):
         """Measurements are often read as strings, but need to be float

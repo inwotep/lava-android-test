@@ -366,6 +366,7 @@ class run_custom(AndroidCommand):
         ADB_SHELL_STEPS = []
         STEPS_HOST_PRE = []
         STEPS_ADB_PRE = []
+        file_name = None
         if self.args.android_command:
             ADB_SHELL_STEPS = self.args.android_command
             test_name_suffix = 'command=[%s]' % (','.join(ADB_SHELL_STEPS))
@@ -387,11 +388,19 @@ class run_custom(AndroidCommand):
 
         tip_msg = ''
         if self.args.serial:
-            tip_msg = "Run following custom test(s) on device(%s):\n\t\t%s" % (
-                           self.args.serial, '\n\t\t'.join(ADB_SHELL_STEPS))
+            tip_msg = ("Run following custom test(s) on device(%s):"
+                       "\n\tcommands=%s"
+                       "\n\tcommand-file=%s\n") % (
+                       self.args.serial,
+                       '\n\t\t'.join(ADB_SHELL_STEPS),
+                       file_name)
         else:
-            tip_msg = "Run following custom test(s):\n\t\t%s" % (
-                                             '\n\t\t'.join(ADB_SHELL_STEPS))
+            tip_msg = ("Run following custom test(s):"
+                       "\n\t\tcommands=%s"
+                       "\n\tcommand-file=%s\n") % (
+                       '\n\t\t'.join(ADB_SHELL_STEPS),
+                       file_name)
+
         self.say_begin(tip_msg)
 
         inst = AndroidTestInstaller()
@@ -400,7 +409,7 @@ class run_custom(AndroidCommand):
                                 steps_adb_pre=STEPS_ADB_PRE,
                                 adbshell_steps=ADB_SHELL_STEPS)
         parser = AndroidTestParser(pattern=PATTERN)
-        test = AndroidTest(testname='%s:' % (test_name, test_name_suffix),
+        test = AndroidTest(testname='%s(%s)' % (test_name, test_name_suffix),
                             installer=inst, runner=run, parser=parser)
         test.parser.results = {'test_results': []}
         test.setadb(self.adb)
