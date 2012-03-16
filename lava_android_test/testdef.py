@@ -349,6 +349,10 @@ class AndroidTestRunner(object):
 
 class AndroidTestParser(object):
     adb = ADB()
+    PASS_PATS = ['PASS', 'OK', 'TRUE', 'DONE']
+    FAIL_PATS = ['FAIL', 'NG', 'FALSE']
+    SKIP_PATS = ['SKIP']
+
     """Base class for defining a test parser
 
     This class can be used as-is for simple results parsers, but will
@@ -470,15 +474,11 @@ class AndroidTestParser(object):
         for t in self.results['test_results']:
             if "result" in t:
                 if not fixupdict:
-                    PASS_PATS = ['PASS', 'OK', 'TRUE', 'DONE']
-                    FAIL_PATS = ['FAIL', 'NG', 'FALSE']
-                    SKIP_PATS = ['SKIP']
-
-                    if self.is_result_match(t['result'], PASS_PATS):
+                    if self.is_result_match(t['result'], self.PASS_PATS):
                         t['result'] = 'pass'
-                    elif self.is_result_match(t['result'], FAIL_PATS):
+                    elif self.is_result_match(t['result'], self.FAIL_PATS):
                         t['result'] = 'fail'
-                    elif self.is_result_match(t['result'], SKIP_PATS):
+                    elif self.is_result_match(t['result'], self.SKIP_PATS):
                         t['result'] = 'skip'
                     else:
                         t['result'] = 'unknown'
@@ -520,6 +520,14 @@ class AndroidTestParser(object):
 
     def setadb(self, adb=None):
         self.adb = adb
+
+    def set_result_patterns(self, pass_pat=[], fail_pat=[], skip_pat=[]):
+        if pass_pat:
+            self.PASS_PATS = pass_pat
+        if fail_pat:
+            self.FAIL_PATS = fail_pat
+        if skip_pat:
+            self.SKIP_PATS = skip_pat
 
 
 def _run_steps_host(steps=[], serial=None, option=None, resultsdir=None):
