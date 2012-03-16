@@ -15,6 +15,7 @@
 
 import unittest
 
+
 def test_suite():
     module_names = [
                     'tests.test_lavaandroidtest_commands',

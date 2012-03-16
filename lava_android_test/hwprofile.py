@@ -44,6 +44,7 @@ def _translate_cpuinfo(keymap, valmap, key, value):
     newval = valmap.get(key, lambda x: x)(value)
     return newkey, newval
 
+
 def get_cpu_devs(adb=ADB()):
     """
     Return a list of CPU devices
@@ -60,7 +61,7 @@ def get_cpu_devs(adb=ADB()):
 
     try:
         (retcode, cpuinfo) = adb.get_shellcmdoutput("cat /proc/cpuinfo")
-        if retcode != 0 or cpuinfo is None :
+        if retcode != 0 or cpuinfo is None:
             raise IOError("Faile to get content of file(%s)" % "/proc/cpuinfo")
         for line in cpuinfo:
             match = pattern.match(line)
@@ -86,6 +87,7 @@ def get_cpu_devs(adb=ADB()):
         print >> sys.stderr, "WARNING: Could not read cpu information"
     return devices
 
+
 def get_board_devs(adb=ADB()):
     """
     Return a list of board devices
@@ -96,13 +98,13 @@ def get_board_devs(adb=ADB()):
 
     try:
         (retcode, cpuinfo) = adb.get_shellcmdoutput("cat /proc/cpuinfo")
-        if retcode != 0 or cpuinfo is None :
+        if retcode != 0 or cpuinfo is None:
             raise IOError("Faile to get content of file(%s)" % "/proc/cpuinfo")
         pattern = re.compile("^Hardware\s*:\s*(?P<description>.+)$", re.M)
         found = False
         for line in cpuinfo:
             match = pattern.search(line)
-            if match :
+            if match:
                 found = True
                 device['description'] = match.group('description').strip()
         if not found:
@@ -115,6 +117,7 @@ def get_board_devs(adb=ADB()):
     device['device_type'] = 'device.board'
     devices.append(device)
     return devices
+
 
 def get_mem_devs(adb=ADB()):
     """ Return a list of memory devices
@@ -138,7 +141,8 @@ def get_mem_devs(adb=ADB()):
             value = value.strip()
             if key not in ('MemTotal', 'SwapTotal'):
                 continue
-            capacity = int(value) << 10 #Kernel reports in 2^10 units
+            #Kernel reports in 2^10 units
+            capacity = int(value) << 10
             if capacity == 0:
                 continue
             if key == 'MemTotal':
@@ -155,6 +159,7 @@ def get_mem_devs(adb=ADB()):
     except IOError:
         print >> sys.stderr, "WARNING: Could not read memory information"
     return devices
+
 
 def get_hardware_context(adb=ADB()):
     """

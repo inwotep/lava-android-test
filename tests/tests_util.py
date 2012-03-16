@@ -17,23 +17,32 @@
 import os
 import stat
 import subprocess
-from lava_android_test.testdef import AndroidTest, AndroidTestInstaller, AndroidTestRunner, AndroidTestParser
+from lava_android_test.testdef import AndroidTest, \
+                                      AndroidTestInstaller, \
+                                      AndroidTestRunner, \
+                                      AndroidTestParser
+
 
 def maketest(name="foo", version="", installer=None, runner=None, parser=None):
     if installer is None:
         installer = makeinstaller()
     return AndroidTest(name, version, installer, runner, parser)
 
+
 def makerunner(**kwargs):
     return AndroidTestRunner(**kwargs)
 
+
 def makeinstaller(**kwargs):
     return AndroidTestInstaller(**kwargs)
+
 
 def makeparser(*args, **kwargs):
         return AndroidTestParser(*args, **kwargs)
 
 test_tmp = '/tmp/lava-android-test-tmp'
+
+
 def fake_adb(output_str='', target_path=test_tmp, ret_code=0):
     if not os.path.exists(target_path):
         os.makedirs(target_path)
@@ -55,6 +64,7 @@ def fake_adb(output_str='', target_path=test_tmp, ret_code=0):
     os.chmod(target_path, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
     os.environ['PATH'] = target_path + ':' + os.environ['PATH']
 
+
 def clear_fake(target_path=test_tmp):
     if not os.path.exists(target_path):
         return
@@ -65,12 +75,14 @@ def clear_fake(target_path=test_tmp):
     else:
         os.unlink(target_path)
 
+
 def main():
-    fake_adb('hello, \ntest');
+    fake_adb('hello, \ntest')
     cmd = 'adb shell ls'
     p = subprocess.Popen(cmd, shell=True)
     p.wait()
     clear_fake()
+
 
 if __name__ == '__main__':
     main()

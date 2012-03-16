@@ -1,6 +1,11 @@
 #!/system/bin/sh
 
 test_func(){
+    if [ ! -f /system/bin/busybox ]; then
+         echo "busybox=unexist"
+         exit
+    fi  
+
     if /system/bin/busybox [ $# -lt 1 ]; then
         return 0
     fi

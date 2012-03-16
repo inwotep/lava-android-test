@@ -18,7 +18,9 @@ import os
 from tests.fixtures import TestCaseWithFixtures
 from tests.tests_util import makeparser
 
+
 class testTestParser(TestCaseWithFixtures):
+
     def setUp(self):
         self.test_id = "ABC"
 
@@ -34,12 +36,13 @@ class testTestParser(TestCaseWithFixtures):
         self.writeoutputlog("test001: pass")
         parser = makeparser(pattern)
         parser.parse()
-        self.assertTrue(parser.results["test_results"][0]["testid"] == "test001" and
-                        parser.results["test_results"][0]["result"] == "pass")
+        self.assertTrue(
+            parser.results["test_results"][0]["testid"] == "test001" and
+            parser.results["test_results"][0]["result"] == "pass")
 
     def test_fixupdict(self):
         pattern = "^(?P<testid>\w+):\W+(?P<result>\w+)"
-        fixup = {"pass":"PASS"}
+        fixup = {"pass": "PASS"}
         self.writeoutputlog("test001: pass")
         parser = makeparser(pattern, fixupdict=fixup)
         parser.parse()
@@ -47,9 +50,8 @@ class testTestParser(TestCaseWithFixtures):
 
     def test_appendall(self):
         pattern = "^(?P<testid>\w+):\W+(?P<result>\w+)"
-        append = {"units":"foo/s"}
+        append = {"units": "foo/s"}
         self.writeoutputlog("test001: pass")
         parser = makeparser(pattern, appendall=append)
         parser.parse()
         self.assertEqual("foo/s", parser.results["test_results"][0]["units"])
-

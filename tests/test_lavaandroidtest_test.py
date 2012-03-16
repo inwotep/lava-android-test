@@ -13,7 +13,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import re, os
+import re
+import os
 import subprocess
 from lava_android_test.config import get_config
 from lava_android_test.adb import ADB
@@ -21,6 +22,7 @@ from tests.imposters import ConfigImposter, OutputImposter
 from tests.fixtures import TestCaseWithFixtures
 from tests.tests_util import maketest, makerunner, test_tmp, clear_fake, \
     fake_adb
+
 
 class FakeAdb(ADB):
     def __init__(self):
@@ -46,13 +48,17 @@ class FakeAdb(ADB):
                 return 1
         elif command.startswith('rm -r'):
             dir_path = command[len('rm -r '):]
-            proc = subprocess.Popen('rm -fr %s/%s' % (test_tmp, dir_path), shell=True)
+            proc = subprocess.Popen('rm -fr %s/%s' % (test_tmp, dir_path),
+                                    shell=True)
             return proc.wait()
         else:
             return 0
 
-fake_output_str = '''[ro.build.display.id]: [sdk-eng 4.0.1 ICS_MR0 202595 test-keys]
+fake_output_str = \
+'''[ro.build.display.id]: [sdk-eng 4.0.1 ICS_MR0 202595 test-keys]
 RET_CODE=0'''
+
+
 class TestAndroidTest(TestCaseWithFixtures):
     def setUp(self):
         super(TestAndroidTest, self).setUp()
@@ -69,7 +75,9 @@ class TestAndroidTest(TestCaseWithFixtures):
         clear_fake()
         testrunner = makerunner(steps_host_pre=["echo foo"])
         test = maketest(name=test_name, runner=testrunner)
-        real_installed_path = '%s/%s/%s' % (test_tmp, config.installdir_android, test_name)
+        real_installed_path = '%s/%s/%s' % (test_tmp,
+                                            config.installdir_android,
+                                             test_name)
         test.setadb(FakeAdb())
         self.assertFalse(os.path.exists(real_installed_path))
         test.install()

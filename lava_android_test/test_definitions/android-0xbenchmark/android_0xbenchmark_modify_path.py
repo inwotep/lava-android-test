@@ -26,7 +26,8 @@ from commands import getstatusoutput
 
 curdir = os.path.realpath(os.path.dirname(__file__))
 source = '%s/ZeroxBench_Preference.xml' % curdir
-target = '/data/data/org.zeroxlab.zeroxbenchmark/shared_prefs/ZeroxBench_Preference.xml'
+target = ("/data/data/org.zeroxlab.zeroxbenchmark/shared_prefs/"
+          "ZeroxBench_Preference.xml")
 
 if len(sys.argv) == 1:
     adbcmd = 'adb'
@@ -37,19 +38,24 @@ target_dir = '/data/data'
 lscmd = '%s shell ls -l  %s' % (adbcmd, target_dir)
 rc, output = getstatusoutput(lscmd)
 if rc != 0:
-    print 'Failed to get group and owner of directory(%s) : %s' % (target_dir, output)
+    print 'Failed to get group and owner of directory(%s) : %s' % (target_dir,
+                                                                    output)
     sys.exit(1)
 group = None
 owner = None
-##drwxr-x--x app_76   app_76            2011-10-21 14:40 org.zeroxlab.zeroxbenchmark
-pattern = re.compile('^d\S+\s+(?P<group>\S+?)\s+(?P<owner>\S+?)\s+\S+\s+\S+\s+org\.zeroxlab\.zeroxbenchmark\s*$')
+##drwxr-x--x app_76   app_76            2011-10-21 14:40
+## org.zeroxlab.zeroxbenchmark
+pattern = re.compile(
+            ("^d\S+\s+(?P<group>\S+?)\s+(?P<owner>\S+?)\s+"
+             "\S+\s+\S+\s+org\.zeroxlab\.zeroxbenchmark\s*$"))
 for line in output.splitlines():
     match = pattern.match(line)
     if match:
         group, owner = match.groups()
         break
 if (group is None) or (owner is None):
-    print 'Failed to get group and owner of directory(%s): %s' % (target_dir, output)
+    print 'Failed to get group and owner of directory(%s): %s' % (target_dir,
+                                                                   output)
     sys.exit(1)
 
 target_dir = '/data/data/org.zeroxlab.zeroxbenchmark/shared_prefs'
@@ -62,25 +68,29 @@ if rc != 0:
 chowncmd = '%s shell chown %s.%s %s' % (adbcmd, owner, group, target_dir)
 rc, output = getstatusoutput(chowncmd)
 if rc != 0:
-    print 'Failed to change group(%s) and owner(%s) of file(%s): %s' % (group, owner, target_dir, output)
+    print 'Failed to change group(%s) and owner(%s) of file(%s): %s' % (group,
+                                                    owner, target_dir, output)
     sys.exit(1)
 
 chmodcmd = '%s shell chmod 771 %s' % (adbcmd, target_dir)
 rc, output = getstatusoutput(chmodcmd)
 if rc != 0:
-    print 'Failed to change chmod to 771 for file(%s): %s' % (target_dir, output)
+    print 'Failed to change chmod to 771 for file(%s): %s' % (target_dir,
+                                                               output)
     sys.exit(1)
 
 pushcmd = '%s push %s %s' % (adbcmd, source, target)
 rc, output = getstatusoutput(pushcmd)
 if rc != 0:
-    print 'Failed to push file(%s) to file(%s): %s' % (source, target, output)
+    print 'Failed to push file(%s) to file(%s): %s' % (source, target,
+                                                        output)
     sys.exit(1)
 
 chowncmd = '%s shell chown %s.%s %s' % (adbcmd, owner, group, target)
 rc, output = getstatusoutput(chowncmd)
 if rc != 0:
-    print 'Failed to change group(%s) and owner(%s) of file(%s): %s' % (group, owner, target, output)
+    print 'Failed to change group(%s) and owner(%s) of file(%s): %s' % (group,
+                                owner, target, output)
     sys.exit(1)
 
 chmodcmd = '%s shell chmod 660 %s' % (adbcmd, target)
@@ -99,12 +109,13 @@ if rc != 0:
 chowncmd = '%s shell chown %s.%s %s' % (adbcmd, owner, group, target_dir)
 rc, output = getstatusoutput(chowncmd)
 if rc != 0:
-    print 'Failed to change group(%s) and owner(%s) of file(%s): %s' % (group, owner, target_dir, output)
+    print 'Failed to change group(%s) and owner(%s) of file(%s): %s' % (group,
+                                 owner, target_dir, output)
     sys.exit(1)
 
 chmodcmd = '%s shell chmod 771 %s' % (adbcmd, target_dir)
 rc, output = getstatusoutput(chmodcmd)
 if rc != 0:
-    print 'Failed to change chmod to 771 for file(%s): %s' % (target_dir, output)
+    print 'Failed to change chmod to 771 for file(%s): %s' % (target_dir,
+                                                               output)
     sys.exit(1)
-
