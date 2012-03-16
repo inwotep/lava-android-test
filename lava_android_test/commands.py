@@ -335,11 +335,12 @@ class run_custom(AndroidCommand):
     @classmethod
     def register_arguments(cls, parser):
         super(run_custom, cls).register_arguments(parser)
-        parser.add_argument('-c', '--android-command', action='append',
+        group = parser.add_mutually_exclusive_group()
+        group.add_argument('-c', '--android-command', action='append',
                             help=("Specified in the job file for using"
                                   " in the real test action, so that "
                                   "we can customize some test when need"))
-        parser.add_argument('-f', '--command-file',
+        group.add_argument('-f', '--command-file',
                             help=("Specified the command file that will be "
                                   "pushed into android and run."))
         parser.add_argument('-p', '--parse-regex',
