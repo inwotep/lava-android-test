@@ -335,7 +335,7 @@ class run_custom(AndroidCommand):
     @classmethod
     def register_arguments(cls, parser):
         super(run_custom, cls).register_arguments(parser)
-        group = parser.add_mutually_exclusive_group()
+        group = parser.add_mutually_exclusive_group(required=True)
         group.add_argument('-c', '--android-command', action='append',
                             help=("Specified in the job file for using"
                                   " in the real test action, so that "
@@ -356,10 +356,6 @@ class run_custom(AndroidCommand):
                                  " to the  specified FILE."))
 
     def invoke(self):
-        if self.args.android_command and self.args.command_file:
-            raise LavaCommandError("Please specified one option of -c and -f")
-        if not self.args.android_command and not self.args.command_file:
-            raise LavaCommandError("Please specified one option of -c and -f")
 
         config = get_config()
         self.adb = ADB(self.args.serial)
