@@ -236,10 +236,10 @@ class ADB(object):
             if 'List' in line:
                 pass
             elif 'device' in line:
-                devices.append(line.split()[0])
+               devices.append(line.split()[0])
 
         return devices
-    
+
     def run_adb_shell_for_test(self, cmd, stdoutlog=None,
                                stderrlog=None, quiet=False):
         cmd = '%s shell %s' % (self.adb, cmd)
@@ -268,12 +268,11 @@ class ADB(object):
         os.remove(tmp_path)
 
     def isDeviceConnected(self):
-        devices = self.devices()
-
-        if not self.serial:
-            return len(devices) > 0
-
-        return self.serial in devices
+        status, lines = self.run_cmd_host('%s get-state' % self.adb)
+        for line in lines:
+            if 'device' in line:
+                return True
+        return False
     
 class CommandExecutor(object):
     def __init__(self, quiet=True):
