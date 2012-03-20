@@ -26,11 +26,6 @@ import tempfile
 from Queue import Queue
 from lava_android_test.config import get_config
 
-try:
-    import posix
-except ImportError:
-    posix = None
-
 config = get_config()
 
 
@@ -265,7 +260,8 @@ class ADB(object):
             if 'device' in line:
                 return True
         return False
-    
+
+
 class CommandExecutor(object):
     def __init__(self, quiet=True):
         self._queue = Queue()

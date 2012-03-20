@@ -151,9 +151,11 @@ class AndroidCommand(Command):
     def assertDeviceIsConnected(self):
         if not self.adb.isDeviceConnected():
             if self.adb.serial:
-                raise LavaCommandError("Device '%s' is not connected" % self.adb.serial)
+                raise LavaCommandError("Device '%s' is not connected" %
+                                       self.adb.serial)
             else:
                 raise LavaCommandError("No device found")
+
 
 class AndroidTestCommand(AndroidCommand):
     @classmethod
@@ -250,7 +252,8 @@ class install(AndroidTestCommand):
         self.say_begin(tip_msg)
 
         if self.test_installed(self.args.test_id):
-            raise LavaCommandError("The test (%s) has already installed." % self.args.test_id)
+            raise LavaCommandError("The test (%s) has already installed." %
+                                   self.args.test_id)
         test = testloader(self.args.test_id, self.args.serial)
         try:
             test.install(self.args.install_option)
@@ -311,7 +314,9 @@ class run(AndroidTestCommand):
         self.say_begin(tip_msg)
 
         if not self.test_installed(self.args.test_id):
-            raise LavaCommandError("The test (%s) has not been installed yet." % self.args.test_id)
+            raise LavaCommandError(
+                "The test (%s) has not been installed yet." %
+                self.args.test_id)
         test = testloader(self.args.test_id, self.args.serial)
 
         if not self.test_installed(test.testname):
@@ -493,7 +498,8 @@ class parse_custom(AndroidResultsCommand):
             pass
 
 
-def generate_combined_bundle(serial=None, result_ids=None, test=None, test_id=None):
+def generate_combined_bundle(serial=None, result_ids=None, test=None,
+                             test_id=None):
     if result_ids is None:
         return {}
 
@@ -513,13 +519,13 @@ def generate_bundle(serial=None, result_id=None, test=None, test_id=None):
     if result_id is None:
         return {}
     config = get_config()
-    self.adb = ADB(serial)
-    self.assertDeviceIsConnected()
+    adb = ADB(serial)
+    adb.assertDeviceIsConnected()
     resultdir = os.path.join(config.resultsdir_android, result_id)
     if not adb.exists(resultdir):
         raise  LavaCommandError("The result (%s) is not existed." % result_id)
 
-    bundle_text = self.adb.read_file(os.path.join(resultdir, "testdata.json"))
+    bundle_text = adb.read_file(os.path.join(resultdir, "testdata.json"))
     bundle = DocumentIO.loads(bundle_text)[1]
     test_tmp = None
     if bundle['test_runs'][0]['test_id'] == 'custom':
@@ -535,7 +541,7 @@ def generate_bundle(serial=None, result_id=None, test=None, test_id=None):
                                   os.path.basename(test_tmp.org_ouput_file)))
     if stdout_text is None:
         stdout_text = ''
-    stderr_text = self.adb.read_file(os.path.join(resultdir, 'stderr.log'))
+    stderr_text = adb.read_file(os.path.join(resultdir, 'stderr.log'))
     if stderr_text is None:
         stderr_text = ''
     bundle['test_runs'][0]["test_results"] = test_tmp.parser.results[
@@ -553,9 +559,9 @@ def generate_bundle(serial=None, result_id=None, test=None, test_id=None):
         }
     ]
     screencap_path = os.path.join(resultdir, 'screencap.png')
-    if self.adb.exists(screencap_path):
+    if adb.exists(screencap_path):
         tmp_path = os.path.join(config.tempdir_host, 'screencap.png')
-        self.adb.pull(screencap_path, tmp_path)
+        adb.pull(screencap_path, tmp_path)
         with open(tmp_path, 'rb') as stream:
             data = stream.read()
         if data:
