@@ -20,6 +20,7 @@
 import hashlib
 import os
 import re
+import string
 import sys
 import time
 import tempfile
@@ -348,6 +349,10 @@ class AndroidTestRunner(object):
 
 class AndroidTestParser(object):
     adb = ADB()
+    PASS_PATS = ['PASS', 'OK', 'TRUE', 'DONE']
+    FAIL_PATS = ['FAIL', 'NG', 'FALSE']
+    SKIP_PATS = ['SKIP']
+
     """Base class for defining a test parser
 
     This class can be used as-is for simple results parsers, but will
@@ -434,8 +439,7 @@ class AndroidTestParser(object):
                 if data.get('result') is None:
                     data['result'] = test_ok and 'pass' or 'fail'
                 self.results['test_results'].append(data)
-        if self.fixupdict:
-            self.fixresults(self.fixupdict)
+        self.fixresults(self.fixupdict)
         if self.appendall:
             self.appendtoall(self.appendall)
         self.fixmeasurements()
@@ -469,7 +473,29 @@ class AndroidTestParser(object):
         """
         for t in self.results['test_results']:
             if "result" in t:
-                t['result'] = fixupdict[t['result']]
+                if not fixupdict:
+                    if self.is_result_match(t['result'], self.PASS_PATS):
+                        t['result'] = 'pass'
+                    elif self.is_result_match(t['result'], self.FAIL_PATS):
+                        t['result'] = 'fail'
+                    elif self.is_result_match(t['result'], self.SKIP_PATS):
+                        t['result'] = 'skip'
+                    else:
+                        t['result'] = 'unknown'
+                elif t['result'] in fixupdict:
+                    t['result'] = fixupdict[t['result']]
+                else:
+                    t['result'] = 'unknown'
+
+    def is_result_match(self, result, patterns=[]):
+        cap_result = string.upper(result)
+        for pattern in patterns:
+            cap_pattern = string.upper(pattern)
+            pat_index = string.find(cap_result, cap_pattern)
+            if pat_index > -1:
+                return True
+
+        return False
 
     def fixmeasurements(self):
         """Measurements are often read as strings, but need to be float
@@ -494,6 +520,14 @@ class AndroidTestParser(object):
 
     def setadb(self, adb=None):
         self.adb = adb
+
+    def set_result_patterns(self, pass_pat=[], fail_pat=[], skip_pat=[]):
+        if pass_pat:
+            self.PASS_PATS = pass_pat
+        if fail_pat:
+            self.FAIL_PATS = fail_pat
+        if skip_pat:
+            self.SKIP_PATS = skip_pat
 
 
 def _run_steps_host(steps=[], serial=None, option=None, resultsdir=None):

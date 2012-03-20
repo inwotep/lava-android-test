@@ -230,15 +230,7 @@ class ADB(object):
         return (result.returncode, result.stdout)
 
     def devices(self):
-        status, lines = self.run_cmd_host('%s devices' % self.adb)
-        devices = []
-        for line in lines:
-            if 'List' in line:
-                pass
-            elif 'device' in line:
-               devices.append(line.split()[0])
-
-        return devices
+        return self.run_cmd_host('%s devices' % self.adb)
 
     def run_adb_shell_for_test(self, cmd, stdoutlog=None,
                                stderrlog=None, quiet=False):
