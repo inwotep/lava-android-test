@@ -520,7 +520,6 @@ def generate_bundle(serial=None, result_id=None, test=None, test_id=None):
         return {}
     config = get_config()
     adb = ADB(serial)
-    adb.assertDeviceIsConnected()
     resultdir = os.path.join(config.resultsdir_android, result_id)
     if not adb.exists(resultdir):
         raise  LavaCommandError("The result (%s) is not existed." % result_id)
