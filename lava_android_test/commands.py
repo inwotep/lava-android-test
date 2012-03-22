@@ -311,7 +311,7 @@ class run(AndroidTestCommand):
                                   run_options=self.args.run_option)
             if self.args.output:
                 output_dir = os.path.dirname(self.args.output)
-                if not os.path.exists(output_dir):
+                if output_dir and (not os.path.exists(output_dir)):
                     os.makedirs(output_dir)
                 bundle = generate_bundle(self.args.serial, result_id)
                 with open(self.args.output, "wt") as stream:
@@ -366,7 +366,10 @@ class run_custom(AndroidCommand):
         file_name = None
         if self.args.android_command:
             ADB_SHELL_STEPS = self.args.android_command
-            test_name_suffix = 'command=[%s]' % (','.join(ADB_SHELL_STEPS))
+            cmds_str = ','.join(ADB_SHELL_STEPS)
+            if len(cmds_str) > 40:
+                cmds_str = '%s...' % (cmds_str[:40])
+            test_name_suffix = 'command=[%s]' % (cmds_str)
         elif self.args.command_file:
             file_url = self.args.command_file
             urlpath = urlparse.urlsplit(file_url).path
@@ -377,7 +380,10 @@ class run_custom(AndroidCommand):
             STEPS_ADB_PRE = ["push %s %s" % (file_name, target_path)]
             ADB_SHELL_STEPS = ["chmod 777 %s" % target_path,
                                target_path]
-            test_name_suffix = 'command_file=%s' % file_name
+            file_name_str = file_name
+            if len(file_name_str) > 40:
+                file_name_str = '%s...' % (cmds_str[:40])
+            test_name_suffix = 'command_file=%s' % (file_name_str)
 
         PATTERN = None
         if self.args.parse_regex:
@@ -418,7 +424,7 @@ class run_custom(AndroidCommand):
             result_id = test.run(quiet=self.args.quiet)
             if self.args.output:
                 output_dir = os.path.dirname(self.args.output)
-                if not os.path.exists(output_dir):
+                if output_dir and (not os.path.exists(output_dir)):
                     os.makedirs(output_dir)
                 bundle = generate_bundle(self.args.serial,
                         result_id, test=test,
@@ -479,7 +485,8 @@ class parse_custom(AndroidResultsCommand):
             pass
 
 
-def generate_combined_bundle(serial=None, result_ids=None, test=None, test_id=None):
+def generate_combined_bundle(serial=None, result_ids=None, test=None,
+                             test_id=None):
     if result_ids is None:
         return {}
 
