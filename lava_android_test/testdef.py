@@ -403,6 +403,8 @@ class AndroidTestParser(object):
         Results are then stored in self.results.  If a fixupdict was supplied
         it is used to convert test result strings to a standard format.
         """
+        if not self.pattern:
+            return
 
         try:
             pat = re.compile(self.pattern)

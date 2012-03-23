@@ -7,6 +7,9 @@ Version 0.0.11
 ==============
 * new gator test
 * update mmtest script
+* Bug #962094: error occurred when no parser specified for run-custom
+command
+* Bug #962096: the test_id generated is longer than 64
 
 .. _version_0_0.10:
 
