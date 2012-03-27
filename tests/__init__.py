@@ -13,4 +13,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-__version__ = (0, 2, 0, "final", 0)
+import unittest
+
+
+def test_suite():
+    module_names = [
+                    'tests.test_lavaandroidtest_commands',
+                    'tests.test_lavaandroidtest_test',
+                    'tests.test_lavaandroidtest_testinstaller',
+                    'tests.test_lavaandroidtest_testparser',
+                    'tests.test_lavaandroidtest_testrunner',
+                    'tests.test_swprofile',
+                    'tests.test_hwprofile']
+    loader = unittest.TestLoader()
+    suite = loader.loadTestsFromNames(module_names)
+    return suite

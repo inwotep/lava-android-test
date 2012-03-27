@@ -13,4 +13,25 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-__version__ = (0, 2, 0, "final", 0)
+import unittest
+
+
+class TestCaseWithFixtures(unittest.TestCase):
+    """TestCase extended to allow adding fixtures
+
+    Fixtures added should contain at least a setUp() method, and
+    optionally a tearDown method as well
+    """
+
+    def add_fixture(self, fixture):
+        if not hasattr(self, "_fixtures"):
+            self._fixtures = []
+        fixture.setUp()
+        if hasattr(self, "tearDown"):
+            self._fixtures.append(fixture)
+        return fixture
+
+    def tearDown(self):
+        for fixture in self._fixtures:
+            fixture.tearDown()
+        self._fixtures = []

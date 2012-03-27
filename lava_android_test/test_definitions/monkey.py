@@ -25,22 +25,26 @@ test_name = 'monkey'
 config = get_config()
 curdir = os.path.realpath(os.path.dirname(__file__))
 monkey_sh_name = 'monkey.sh'
-monkey_sh_temp_path = os.path.join(config.tempdir_host, monkey_sh_name)
-monkey_sh_android_path = os.path.join(config.installdir_android, test_name, monkey_sh_name)
+monkey_sh_path = os.path.join(curdir, 'monkey', monkey_sh_name)
+monkey_sh_android_path = os.path.join(config.installdir_android,
+                                      test_name, monkey_sh_name)
 
-INSTALL_STEPS_HOST_PRE = ['cp -rf %s/monkey/monkey.sh .' % curdir]
-INSTALL_STEPS_ADB_PRE = ['push %s %s ' % (monkey_sh_temp_path, monkey_sh_android_path),
+INSTALL_STEPS_ADB_PRE = ['push %s %s ' % (monkey_sh_path,
+                                          monkey_sh_android_path),
                           'shell chmod 777 %s' % monkey_sh_android_path]
 
 ADB_SHELL_STEPS = [monkey_sh_android_path]
 #PATTERN = "^(?P<test_case_id>\w+):\W+(?P<measurement>\d+\.\d+)"
 PATTERN = "## Network stats: elapsed time=(?P<measurement>\d+)ms"
-FAILURE_PATTERNS = ['\*\* Monkey aborted due to error.',
-                    '\*\* System appears to have crashed']
+FAILURE_PATTERNS = []
+#FAILURE_PATTERNS = ['\*\* Monkey aborted due to error.',
+#                    '\*\* System appears to have crashed']
 
-inst = lava_android_test.testdef.AndroidTestInstaller(steps_host_pre=INSTALL_STEPS_HOST_PRE, steps_adb_pre=INSTALL_STEPS_ADB_PRE)
-run = lava_android_test.testdef.AndroidTestRunner(adbshell_steps=ADB_SHELL_STEPS)
+inst = lava_android_test.testdef.AndroidTestInstaller(
+                                    steps_adb_pre=INSTALL_STEPS_ADB_PRE)
+run = lava_android_test.testdef.AndroidTestRunner(
+                                    adbshell_steps=ADB_SHELL_STEPS)
 parser = lava_android_test.testdef.AndroidTestParser(PATTERN,
-               appendall={'units':'ms'}, failure_patterns=FAILURE_PATTERNS)
-testobj = lava_android_test.testdef.AndroidTest(testname=test_name, installer=inst,
-                                  runner=run, parser=parser)
+               appendall={'units': 'ms'}, failure_patterns=FAILURE_PATTERNS)
+testobj = lava_android_test.testdef.AndroidTest(testname=test_name,
+                        installer=inst, runner=run, parser=parser)

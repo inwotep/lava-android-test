@@ -1,4 +1,4 @@
-# Copyright (c) 2011, 2011 Linaro
+# Copyright (c) 2011, 2012 Linaro
 #
 # Author: Linaro Validation Team <linaro-dev@lists.linaro.org>
 #
@@ -18,6 +18,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import os
 import base64
+import urlparse
 import versiontools
 
 from lava_tool.interface import Command as LAVACommand
@@ -26,7 +27,11 @@ from linaro_dashboard_bundle.io import DocumentIO
 
 from lava_android_test.adb import ADB
 from lava_android_test.config import get_config
-from lava_android_test.testdef import testloader
+from lava_android_test.testdef import testloader, AndroidTest
+from lava_android_test.testdef import AndroidTestRunner, \
+                                      AndroidTestInstaller, \
+                                      AndroidTestParser
+
 
 class Command(LAVACommand):
 
@@ -65,6 +70,7 @@ class Command(LAVACommand):
         elif stream_name == 'stderr':
             self.say('(stderr) {0}', line.rstrip())
 
+
 class list_devices(Command):
     """
     List available devices
@@ -84,6 +90,7 @@ class list_devices(Command):
         except OSError:
             print "No device attached"
 
+
 class list_tests(Command):
     """
     List available tests
@@ -96,6 +103,7 @@ class list_tests(Command):
         self.say("Known tests:")
         for importer, mod, ispkg in walk_packages(test_definitions.__path__):
             self.say(" - {test_id}", test_id=mod)
+
 
 class version(Command):
     """
@@ -133,11 +141,13 @@ class AndroidCommand(Command):
                             metavar="serial",
                             help=("specify the device with serial number"
                                  "that this command will be run on"))
+
     def test_installed(self, test_id):
         if self.adb is None:
             self.adb = ADB()
         test_dir = os.path.join(self.config.installdir_android, test_id)
         return self.adb.exists(test_dir)
+
 
 class AndroidTestCommand(AndroidCommand):
     @classmethod
@@ -145,12 +155,16 @@ class AndroidTestCommand(AndroidCommand):
         super(AndroidTestCommand, self).register_arguments(parser)
         parser.add_argument("test_id",
                             help="Test identifier")
+
     def get_tip_msg(self, text):
         if self.args.serial:
-            tip_msg = "%s (%s) on device(%s)" % (text, self.args.test_id, self.args.serial)
+            tip_msg = "%s (%s) on device(%s)" % (text,
+                                                 self.args.test_id,
+                                                 self.args.serial)
         else:
             tip_msg = "%s (%s)" % (text, self.args.test_id)
         return tip_msg
+
 
 class AndroidResultCommand(AndroidCommand):
     @classmethod
@@ -158,6 +172,15 @@ class AndroidResultCommand(AndroidCommand):
         super(AndroidResultCommand, self).register_arguments(parser)
         parser.add_argument("result_id",
                             help="Test result identifier")
+
+
+class AndroidResultsCommand(AndroidCommand):
+    @classmethod
+    def register_arguments(self, parser):
+        super(AndroidResultsCommand, self).register_arguments(parser)
+        parser.add_argument("result_id", nargs="+",
+                            help="One or more result identifiers")
+
 
 class list_installed(AndroidCommand):
     """
@@ -179,6 +202,7 @@ class list_installed(AndroidCommand):
         except OSError:
             self.say("No tests installed")
 
+
 class list_results(AndroidCommand):
     """
     List results of tests that has been run on the  specified device.
@@ -189,7 +213,8 @@ class list_results(AndroidCommand):
         self.adb = ADB(self.args.serial)
         self.say("Saved results:")
         try:
-            (ret_code, output) = self.adb.listdir(self.config.resultsdir_android)
+            (ret_code, output) = self.adb.listdir(
+                                        self.config.resultsdir_android)
             if ret_code != 0:
                 raise OSError()
             for dir_name in output:
@@ -197,31 +222,40 @@ class list_results(AndroidCommand):
         except OSError:
             self.say("No results found")
 
+
 class install(AndroidTestCommand):
     """
     Install test to the specified device.
-    program:: lava-android-test install test-id 
+    program:: lava-android-test install test-id
     program:: lava-android-test install test-id -s device_serial
     """
+
+    @classmethod
+    def register_arguments(cls, parser):
+        super(cls, install).register_arguments(parser)
+        parser.add_argument('-o', '--install-option')
+
     def invoke(self):
         tip_msg = self.get_tip_msg("Install test")
         self.say_begin(tip_msg)
 
         self.adb = ADB(self.args.serial)
         if self.test_installed(self.args.test_id):
-            raise LavaCommandError("The test (%s) has already installed." % self.args.test_id)
+            raise LavaCommandError(
+                    "The test (%s) has already installed." % self.args.test_id)
         test = testloader(self.args.test_id, self.args.serial)
         try:
-            test.install()
+            test.install(self.args.install_option)
         except Exception as strerror:
             raise LavaCommandError("Test installation error: %s" % strerror)
 
         self.say_end(tip_msg)
 
+
 class uninstall(AndroidTestCommand):
     """
     Unistall test of the specified device.
-    program:: lava-android-test uninstall test-id 
+    program:: lava-android-test uninstall test-id
     program:: lava-android-test uninstall test-id -s device_serial
     """
     def invoke(self):
@@ -235,10 +269,11 @@ class uninstall(AndroidTestCommand):
             raise LavaCommandError("Test uninstall error: %s" % strerror)
         self.say_end(tip_msg)
 
+
 class run(AndroidTestCommand):
     """
     Run a previously installed test program on the specified device
-    program:: lava-android-test run test-id 
+    program:: lava-android-test run test-id
     program:: lava-android-test run test-id -s device_serial
     program:: lava-android-test run test-id -s device_serial -o outputfile
     """
@@ -246,6 +281,10 @@ class run(AndroidTestCommand):
     @classmethod
     def register_arguments(cls, parser):
         super(run, cls).register_arguments(parser)
+        parser.add_argument('-O', '--run-option',
+                    help=("Specified in the job file for using in "
+                          "the real test action, so that we can customize"
+                          " some test when need"))
         group = parser.add_argument_group("specify the bundle output file")
         group.add_argument("-o", "--output",
                             default=None,
@@ -254,21 +293,25 @@ class run(AndroidTestCommand):
                                  " artefacts, fuse them with the initial"
                                  " bundle and finally save the complete bundle"
                                  " to the  specified FILE."))
-    def invoke(self):
 
+    def invoke(self):
         tip_msg = self.get_tip_msg("Run test")
         self.say_begin(tip_msg)
 
         self.adb = ADB(self.args.serial)
-        if not self.test_installed(self.args.test_id):
-            raise LavaCommandError("The test (%s) has not been installed yet." % self.args.test_id)
-
         test = testloader(self.args.test_id, self.args.serial)
+
+        if not self.test_installed(test.testname):
+            raise LavaCommandError(
+                    "The test (%s) has not been installed yet."
+                    % self.args.test_id)
+
         try:
-            result_id = test.run(quiet=self.args.quiet)
+            result_id = test.run(quiet=self.args.quiet,
+                                  run_options=self.args.run_option)
             if self.args.output:
                 output_dir = os.path.dirname(self.args.output)
-                if not os.path.exists(output_dir):
+                if output_dir and (not os.path.exists(output_dir)):
                     os.makedirs(output_dir)
                 bundle = generate_bundle(self.args.serial, result_id)
                 with open(self.args.output, "wt") as stream:
@@ -279,20 +322,187 @@ class run(AndroidTestCommand):
 
         self.say_end(tip_msg)
 
-class parse(AndroidResultCommand):
+
+class run_custom(AndroidCommand):
+    """
+    Run the command(s) that specified by the -c option in the command line
+    program:: lava-android-test run-custom -c 'command1' -c 'command2'
+     -p 'parse-regex1'
+    program:: lava-android-test run test-id -s device_serial
+    program:: lava-android-test run test-id -s device_serial -o outputfile
+    """
+
+    @classmethod
+    def register_arguments(cls, parser):
+        super(run_custom, cls).register_arguments(parser)
+        group = parser.add_mutually_exclusive_group(required=True)
+        group.add_argument('-c', '--android-command', action='append',
+                            help=("Specified in the job file for using"
+                                  " in the real test action, so that "
+                                  "we can customize some test when need"))
+        group.add_argument('-f', '--command-file',
+                            help=("Specified the command file that will be "
+                                  "pushed into android and run."))
+        parser.add_argument('-p', '--parse-regex',
+                            help=("Specified the regular expression used"
+                                  " for analyzing command output"))
+        group = parser.add_argument_group("specify the bundle output file")
+        group.add_argument("-o", "--output",
+                            default=None,
+                            metavar="FILE",
+                           help=("After running the test parse the result"
+                                 " artefacts, fuse them with the initial"
+                                 " bundle and finally save the complete bundle"
+                                 " to the  specified FILE."))
+
+    def invoke(self):
+
+        config = get_config()
+        self.adb = ADB(self.args.serial)
+        test_name = 'custom'
+        ADB_SHELL_STEPS = []
+        STEPS_HOST_PRE = []
+        STEPS_ADB_PRE = []
+        file_name = None
+        if self.args.android_command:
+            ADB_SHELL_STEPS = self.args.android_command
+            cmds_str = ','.join(ADB_SHELL_STEPS)
+            if len(cmds_str) > 40:
+                cmds_str = '%s...' % (cmds_str[:40])
+            test_name_suffix = 'command=[%s]' % (cmds_str)
+        elif self.args.command_file:
+            file_url = self.args.command_file
+            urlpath = urlparse.urlsplit(file_url).path
+            file_name = os.path.basename(urlpath)
+            target_path = os.path.join(config.installdir_android,
+                                     test_name, file_name)
+            STEPS_HOST_PRE = ["wget %s -O %s" % (file_url, file_name)]
+            STEPS_ADB_PRE = ["push %s %s" % (file_name, target_path)]
+            ADB_SHELL_STEPS = ["chmod 777 %s" % target_path,
+                               target_path]
+            file_name_str = file_name
+            if len(file_name_str) > 40:
+                file_name_str = '%s...' % (cmds_str[:40])
+            test_name_suffix = 'command_file=%s' % (file_name_str)
+
+        PATTERN = None
+        if self.args.parse_regex:
+            PATTERN = self.args.parse_regex
+
+        tip_msg = ''
+        if self.args.serial:
+            tip_msg = ("Run following custom test(s) on device(%s):"
+                       "\n\tcommands=%s"
+                       "\n\tcommand-file=%s\n") % (
+                       self.args.serial,
+                       '\n\t\t'.join(ADB_SHELL_STEPS),
+                       file_name)
+        else:
+            tip_msg = ("Run following custom test(s):"
+                       "\n\t\tcommands=%s"
+                       "\n\tcommand-file=%s\n") % (
+                       '\n\t\t'.join(ADB_SHELL_STEPS),
+                       file_name)
+
+        self.say_begin(tip_msg)
+
+        inst = AndroidTestInstaller()
+
+        run = AndroidTestRunner(steps_host_pre=STEPS_HOST_PRE,
+                                steps_adb_pre=STEPS_ADB_PRE,
+                                adbshell_steps=ADB_SHELL_STEPS)
+        parser = AndroidTestParser(pattern=PATTERN)
+        test = AndroidTest(testname=test_name,
+                            installer=inst, runner=run, parser=parser)
+        test.parser.results = {'test_results': []}
+        test.setadb(self.adb)
+
+        if not self.test_installed(test.testname):
+            test.install()
+
+        try:
+            result_id = test.run(quiet=self.args.quiet)
+            if self.args.output:
+                output_dir = os.path.dirname(self.args.output)
+                if output_dir and (not os.path.exists(output_dir)):
+                    os.makedirs(output_dir)
+                bundle = generate_bundle(self.args.serial,
+                        result_id, test=test,
+                        test_id='%s(%s)' % (test_name, test_name_suffix))
+                with open(self.args.output, "wt") as stream:
+                    DocumentIO.dump(stream, bundle)
+
+        except Exception as strerror:
+            raise LavaCommandError("Test execution error: %s" % strerror)
+        self.say_end(tip_msg)
+
+
+class parse(AndroidResultsCommand):
     """
     Parse the results of previous test that run on the specified device
-    program:: lava-android-test parse test-result-id 
-    program:: lava-android-test parse test-result-id -s device_serial
+    program:: lava-android-test parse test-result-id
     """
     def invoke(self):
-        bundle = generate_bundle(self.args.serial, self.args.result_id)
+        bundle = generate_combined_bundle(self.args.serial,
+                                          self.args.result_id)
         try:
             print DocumentIO.dumps(bundle)
         except IOError:
             pass
 
-def generate_bundle(serial=None, result_id=None):
+
+class parse_custom(AndroidResultsCommand):
+    """
+    Parse the results of previous test that run with run-custom command
+    on the specified device
+    program:: lava-android-test parse-custom test-result-id -P
+    """
+    @classmethod
+    def register_arguments(cls, parser):
+        super(parse_custom, cls).register_arguments(parser)
+        parser.add_argument('-p', '--parse-regex',
+                            help=("Specified the regular expression used"
+                                  " for analyzing command output"))
+
+    def invoke(self):
+        PATTERN = None
+        if self.args.parse_regex:
+            PATTERN = self.args.parse_regex
+        test_name = 'custom'
+        inst = AndroidTestInstaller()
+        run = AndroidTestRunner()
+        parser = AndroidTestParser(pattern=PATTERN)
+        test = AndroidTest(testname=test_name, installer=inst,
+                                runner=run, parser=parser)
+        test.parser.results = {'test_results': []}
+        test.setadb(ADB(self.args.serial))
+
+        bundle = generate_combined_bundle(self.args.serial,
+                                          self.args.result_id, test=test)
+        try:
+            print DocumentIO.dumps(bundle)
+        except IOError:
+            pass
+
+
+def generate_combined_bundle(serial=None, result_ids=None, test=None,
+                             test_id=None):
+    if result_ids is None:
+        return {}
+
+    bundle = None
+
+    for rid in result_ids:
+        b = generate_bundle(serial, rid, test, test_id)
+        if rid == result_ids[0]:
+            bundle = b
+        else:
+            bundle['test_runs'].append(b['test_runs'][0])
+
+    return bundle
+
+
+def generate_bundle(serial=None, result_id=None, test=None, test_id=None):
     if result_id is None:
         return {}
     config = get_config()
@@ -303,19 +513,28 @@ def generate_bundle(serial=None, result_id=None):
 
     bundle_text = adb.read_file(os.path.join(resultdir, "testdata.json"))
     bundle = DocumentIO.loads(bundle_text)[1]
-    test = testloader(bundle['test_runs'][0]['test_id'], serial)
+    test_tmp = None
+    if bundle['test_runs'][0]['test_id'] == 'custom':
+        test_tmp = test
+    else:
+        test_tmp = testloader(bundle['test_runs'][0]['test_id'], serial)
 
-    test.parse(result_id)
-    stdout_text = adb.read_file(os.path.join(resultdir, os.path.basename(test.org_ouput_file)))
+    if test_id:
+        bundle['test_runs'][0]['test_id'] = test_id
+
+    test_tmp.parse(result_id)
+    stdout_text = adb.read_file(os.path.join(resultdir,
+                                  os.path.basename(test_tmp.org_ouput_file)))
     if stdout_text is None:
         stdout_text = ''
     stderr_text = adb.read_file(os.path.join(resultdir, 'stderr.log'))
     if stderr_text is None:
         stderr_text = ''
-    bundle['test_runs'][0]["test_results"] = test.parser.results["test_results"]
+    bundle['test_runs'][0]["test_results"] = test_tmp.parser.results[
+                                                        "test_results"]
     bundle['test_runs'][0]["attachments"] = [
         {
-            "pathname": test.org_ouput_file,
+            "pathname": test_tmp.org_ouput_file,
             "mime_type": "text/plain",
             "content":  base64.standard_b64encode(stdout_text)
         },
@@ -339,17 +558,20 @@ def generate_bundle(serial=None, result_id=None):
 
     return bundle
 
+
 class show(AndroidResultCommand):
     """
     Display the output from a previous test that run on the specified device
-    program:: lava-android-test show result-id 
+    program:: lava-android-test show result-id
     program:: lava-android-test show result-id -s device_serial
     """
     def invoke(self):
         self.adb = ADB(self.args.serial)
-        resultsdir = os.path.join(self.config.resultsdir_android, self.args.result_id)
+        resultsdir = os.path.join(self.config.resultsdir_android,
+                                   self.args.result_id)
         if not self.adb.exists(resultsdir):
-            raise  LavaCommandError("The result (%s) is not existed." % self.args.result_id)
+            raise  LavaCommandError(
+                    "The result (%s) is not existed." % self.args.result_id)
 
         stdout = os.path.join(resultsdir, "stdout.log")
         if not self.adb.exists(stdout):
@@ -374,10 +596,11 @@ class show(AndroidResultCommand):
         except IOError:
             pass
 
+
 class rename(AndroidResultCommand):
     """
     Rename the result's id of a previous test that run on the specified device
-    program:: lava-android-test rename result-id result-id-new 
+    program:: lava-android-test rename result-id result-id-new
     program:: lava-android-test remove result-id result-id-new -s device_serial
     """
 
@@ -386,9 +609,12 @@ class rename(AndroidResultCommand):
         super(rename, self).register_arguments(parser)
         parser.add_argument("result_id_new",
                             help="New test result identifier")
+
     def invoke(self):
-        srcdir = os.path.join(self.config.resultsdir_android, self.args.result_id)
-        destdir = os.path.join(self.config.resultsdir_android, self.args.result_id_new)
+        srcdir = os.path.join(self.config.resultsdir_android,
+                               self.args.result_id)
+        destdir = os.path.join(self.config.resultsdir_android,
+                                self.args.result_id_new)
         adb = ADB(self.args.serial)
         if not adb.exists(srcdir):
             self.say("Result (%s) not found" % self.args.result_id)
@@ -397,10 +623,12 @@ class rename(AndroidResultCommand):
             self.say("Destination result name already exists")
         adb.move(srcdir, destdir)
 
-class remove(AndroidResultCommand):
+
+class remove(AndroidResultsCommand):
     """
     Remove the result of a previous test that run on the specified device
     program:: lava-android-test remove result-id
+    program:: lava-android-test remove result-id0 result-id1
     program:: lava-android-test remove result-id -s device_serial
     """
 
@@ -409,18 +637,22 @@ class remove(AndroidResultCommand):
         super(remove, self).register_arguments(parser)
         group = parser.add_argument_group("force to remove")
         group.add_argument("-f", "--force",
-                            default=None,
+                            action="store_true",
                             help=("give an interactive question about remove"))
 
-    def invoke(self):
-        resultsdir = os.path.join(self.config.resultsdir_android, self.args.result_id)
-        adb = ADB(self.args.serial)
+    def remove(self, adb, rid):
+        resultsdir = os.path.join(self.config.resultsdir_android, rid)
         if not adb.exists(resultsdir):
-            self.say("No result found for '%s'" % self.args.result_id)
+            self.say("No result found for '%s'" % rid)
             return
         if not self.args.force:
-            self.say("Remove result '%s' for good? [Y/N]" % self.args.result_id)
+            self.say("Remove result '%s' for good? [Y/N]" % rid)
             response = raw_input()
             if response[0].upper() != 'Y':
                 return
         adb.rmtree(resultsdir)
+
+    def invoke(self):
+        adb = ADB(self.args.serial)
+        for rid in self.args.result_id:
+            self.remove(adb, rid)
