@@ -32,6 +32,8 @@ except ImportError:
     posix = None
 
 config = get_config()
+
+
 class ADB(object):
     ERR_CHMOD = 260
     ERR_WRAPPER = 300
@@ -82,11 +84,14 @@ class ADB(object):
         tmpdir = config.tempdir_host
         if not os.path.exists(tmpdir):
             os.mkdir(tmpdir)
-        (tmpshell, tmpshell_name) = tempfile.mkstemp(suffix='.sh', prefix='lava-android-test', dir=tmpdir)
+        (tmpshell, tmpshell_name) = tempfile.mkstemp(suffix='.sh',
+                                             prefix='lava-android-test',
+                                             dir=tmpdir)
         tmpfile_path = os.path.join(tmpdir, tmpshell_name)
         os.write(tmpshell, '#/system/bin/sh\n')
         os.write(tmpshell, 'base=/system\n')
-        os.write(tmpshell, 'export PATH=/sbin:/vendor/bin:/system/sbin:/system/bin:/system/xbin\n')
+        os.write(tmpshell, ("export PATH=/sbin:/vendor/bin:/system/sbin:"
+                            "/system/bin:/system/xbin\n"))
         org_cmd = command
         if stdout is not None:
             command = '%s 1>>%s' % (command, stdout)
@@ -96,8 +101,10 @@ class ADB(object):
         os.write(tmpshell, command + '\n')
         os.write(tmpshell, 'RET_CODE=$?\n')
         if stdout is not None:
-            os.write(tmpshell, 'echo ANDROID_TEST_COMMAND="%s">>%s\n' % (org_cmd, stdout))
-            os.write(tmpshell, 'echo ANDROID_TEST_RET_CODE=${RET_CODE} >>%s\n' % (stdout))
+            os.write(tmpshell,
+                    'echo ANDROID_TEST_COMMAND="%s">>%s\n' % (org_cmd, stdout))
+            os.write(tmpshell,
+                    'echo ANDROID_TEST_RET_CODE=${RET_CODE} >>%s\n' % (stdout))
 
         os.write(tmpshell, 'echo RET_CODE=${RET_CODE}\n')
         os.close(tmpshell)
@@ -107,7 +114,8 @@ class ADB(object):
         if ret_code != 0:
             return self.ERR_PUSH
 
-        s = self.cmdExecutor.run('%s shell chmod 777 %s' % (self.adb, target_path))
+        s = self.cmdExecutor.run(
+                    '%s shell chmod 777 %s' % (self.adb, target_path))
         ret_code = s.returncode
         if ret_code != 0:
             return self.ERR_CHMOD + ret_code
@@ -155,11 +163,14 @@ class ADB(object):
 
     def makedirs(self, path):
         parent_path = os.path.dirname(path)
-        if not self.exists(parent_path):
-            ret_code = self.makedirs(parent_path)
-            if ret_code != 0:
-                return ret_code
-        return self.shell("mkdir %s" % path)
+        if parent_path == '/' or self.exists(parent_path):
+            return self.shell("mkdir %s" % path)
+        else:
+            ret = self.makedirs(parent_path)
+            if ret == 0:
+                return self.shell("mkdir %s" % path)
+            else:
+                return ret
 
     def rmtree(self, dirpath):
         ret_code = self.shell("rm -r %s" % dirpath)
@@ -183,13 +194,15 @@ class ADB(object):
 
     def listdir(self, dirpath):
         if self.exists(dirpath):
-            (ret_code, output) = self.run_cmd_host('%s shell ls %s ' % (self.adb, dirpath))
+            (ret_code, output) = self.run_cmd_host(
+                            '%s shell ls %s ' % (self.adb, dirpath))
             return (ret_code, output)
         else:
             return (1, None)
 
     def read_file(self, filepath):
-        tmpfile_name = tempfile.mkstemp(prefix='read_file_', dir=config.tempdir_host)[1]
+        tmpfile_name = tempfile.mkstemp(
+                        prefix='read_file_', dir=config.tempdir_host)[1]
         ret_code = self.pull(filepath, tmpfile_name)
         if ret_code != 0:
             return None
@@ -219,7 +232,8 @@ class ADB(object):
     def devices(self):
         return self.run_cmd_host('%s devices' % self.adb)
 
-    def run_adb_shell_for_test(self, cmd, stdoutlog=None, stderrlog=None, quiet=False):
+    def run_adb_shell_for_test(self, cmd, stdoutlog=None,
+                               stderrlog=None, quiet=False):
         cmd = '%s shell %s' % (self.adb, cmd)
         result = self.cmdExecutor.run(cmd, quiet)
         if result.returncode != 0:
@@ -234,7 +248,8 @@ class ADB(object):
         if self.exists(path):
             retcode = self.pull(path, tmp_path)
             if retcode != 0:
-                raise Exception('Failed to pull file(%s)stdout to android %s' % path)
+                raise Exception(
+                    'Failed to pull file(%s)stdout to android %s' % path)
 
         with open(tmp_path, 'a') as tmp_fd:
             tmp_fd.writelines(stream_lines)
@@ -243,6 +258,7 @@ class ADB(object):
         if self.push(tmp_path, path)[1] is None:
             raise Exception('Failed to push stdout to android %s' % path)
         os.remove(tmp_path)
+
 
 class CommandExecutor(object):
     def __init__(self, quiet=True):
@@ -283,7 +299,8 @@ class CommandExecutor(object):
         self.quiet = quiet
         self.stdout = []
         self.stderr = []
-        self.say("Begin to execute command: %s" % cmd)
+        self.say("Begin to execute command: %s" %
+                 cmd.replace('{', '{{').replace('}', '}}'))
         proc = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                                     stderr=subprocess.STDOUT,
                                     shell=True)
@@ -308,6 +325,7 @@ class CommandExecutor(object):
             self._queue.put(None)
             ui_printer.join()
         return CommandResult(proc.returncode, self.stdout, self.stderr)
+
 
 class CommandResult(object):
     def __init__(self, returncode, stdout=[], stderr=[]):

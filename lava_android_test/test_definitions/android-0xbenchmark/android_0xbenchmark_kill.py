@@ -29,6 +29,7 @@ if len(sys.argv) == 1:
 else:
     adb_cmd = "adb -s %s" % (sys.argv[1])
 
+
 def back():
     back_cmd = '%s shell input keyevent 4' % (adb_cmd)
     rc, output = getstatusoutput(back_cmd)
@@ -39,13 +40,16 @@ back()
 back()
 back()
 
-##app_76    861   80    165896 28848 ffffffff afd0eb18 S org.zeroxlab.zeroxbenchmark
-pattern = re.compile('^\S+\s+(?P<pid>\d+?)\s+.*org\.zeroxlab\.zeroxbenchmark\s*$')
+##app_76    861   80    165896 28848 ffffffff afd0eb18 S
+##    org.zeroxlab.zeroxbenchmark
+pattern = re.compile(
+        '^\S+\s+(?P<pid>\d+?)\s+.*org\.zeroxlab\.zeroxbenchmark\s*$')
 while True:
     pscmd = '%s shell ps' % (adb_cmd)
     rc, output = getstatusoutput(pscmd)
     if rc != 0:
-        print 'Failed to get process information about org.zeroxlab.zeroxbenchmark:%s' % output
+        print ("Failed to get process information about "
+               "org.zeroxlab.zeroxbenchmark:%s") % output
         sys.exit(1)
     pid = None
     for line in output.splitlines():
@@ -55,7 +59,7 @@ while True:
             break
 
     if pid is None:
-       sys.exit(0)
+        sys.exit(0)
 
     killcmd = '%s shell kill %s' % (adb_cmd, pid)
     rc, output = getstatusoutput(killcmd)

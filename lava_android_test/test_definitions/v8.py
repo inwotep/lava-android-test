@@ -1,4 +1,4 @@
-# Copyright (c) 2011 Linaro
+# Copyright (c) 2012 Linaro
 
 # Author: Linaro Validation Team <linaro-dev@lists.linaro.org>
 #
@@ -18,24 +18,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import os
+import lava_android_test.config
 import lava_android_test.testdef
-from lava_android_test.config import get_config
 
-test_name = 'busybox'
-config = get_config()
-curdir = os.path.realpath(os.path.dirname(__file__))
-test_sh_name = 'busybox_test.sh'
-test_sh_path = os.path.join(curdir, test_name, test_sh_name)
-test_sh_android_path = os.path.join(config.installdir_android,
-                                    test_name, test_sh_name)
+test_name = 'v8'
 
-INSTALL_STEPS_ADB_PRE = ['push %s %s ' % (test_sh_path,
-                                          test_sh_android_path),
-                          'shell chmod 777 %s' % test_sh_android_path]
-
-ADB_SHELL_STEPS = [test_sh_android_path]
-#PATTERN = "^(?P<test_case_id>\w+):\W+(?P<measurement>\d+\.\d+)"
-PATTERN = "^\s*(?P<test_case_id>\w+)=(?P<result>\w+)\s*$"
+INSTALL_STEPS_ADB_PRE = []
+ADB_SHELL_STEPS = ['"cd /data/benchmark/v8; v8shell run.js"']
+PATTERN = "^(?P<test_case_id>.*?):\s+(?P<measurement>\d+)\s*$"
 
 inst = lava_android_test.testdef.AndroidTestInstaller(
                                 steps_adb_pre=INSTALL_STEPS_ADB_PRE)

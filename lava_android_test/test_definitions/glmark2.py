@@ -1,4 +1,4 @@
-# Copyright (c) 2011 Linaro
+# Copyright (C) 2010-2012 Linaro Limited
 
 # Author: Linaro Validation Team <linaro-dev@lists.linaro.org>
 #
@@ -21,27 +21,22 @@ import os
 import lava_android_test.testdef
 from lava_android_test.config import get_config
 
-test_name = 'busybox'
+test_name = 'glmark2'
 config = get_config()
 curdir = os.path.realpath(os.path.dirname(__file__))
-test_sh_name = 'busybox_test.sh'
+test_sh_name = 'glmark2.sh'
 test_sh_path = os.path.join(curdir, test_name, test_sh_name)
-test_sh_android_path = os.path.join(config.installdir_android,
-                                    test_name, test_sh_name)
+RUN_STEPS_HOST_PRE = ['/bin/bash %s $(SERIAL)' % test_sh_path]
 
-INSTALL_STEPS_ADB_PRE = ['push %s %s ' % (test_sh_path,
-                                          test_sh_android_path),
-                          'shell chmod 777 %s' % test_sh_android_path]
+#I/glmark2 ( 1818): [texture] texture-filter=nearest: FPS: 8
+PATTERN = ("^\s*I/glmark2\s*\(.+\):\s+\[\w+\]\s+(?P<test_case_id>\S+):"
+           "\s+FPS:\s+(?P<measurement>\d+)\s*$")
 
-ADB_SHELL_STEPS = [test_sh_android_path]
-#PATTERN = "^(?P<test_case_id>\w+):\W+(?P<measurement>\d+\.\d+)"
-PATTERN = "^\s*(?P<test_case_id>\w+)=(?P<result>\w+)\s*$"
-
-inst = lava_android_test.testdef.AndroidTestInstaller(
-                                steps_adb_pre=INSTALL_STEPS_ADB_PRE)
+inst = lava_android_test.testdef.AndroidTestInstaller()
 run = lava_android_test.testdef.AndroidTestRunner(
-                                    adbshell_steps=ADB_SHELL_STEPS)
-parser = lava_android_test.testdef.AndroidTestParser(PATTERN)
+                                    steps_host_pre=RUN_STEPS_HOST_PRE)
+parser = lava_android_test.testdef.AndroidTestParser(PATTERN,
+                                        appendall={'units': 'FPS'})
 testobj = lava_android_test.testdef.AndroidTest(testname=test_name,
                                     installer=inst,
                                     runner=run,
