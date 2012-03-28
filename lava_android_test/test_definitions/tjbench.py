@@ -26,19 +26,19 @@ test_name = 'tjbench'
 config = get_config()
 curdir = os.path.realpath(os.path.dirname(__file__))
 ppm_file_name = 'nightshot_iso_100.ppm'
+ppm_url = "https://wiki.linaro.org/TestDataLinkPage?action=AttachFile&do=get&target=nightshot_iso_100.ppm"
 ppm_temp_path = os.path.join(config.tempdir_host, ppm_file_name)
 ppm_android_path = os.path.join(config.tempdir_android, test_name,
                                 ppm_file_name)
 ppm_tmpfs_path = os.path.join('/mnt/mytmpfs', ppm_file_name)
-
-INSTALL_STEPS_HOST_PRE = ['wget --no-check-certificate "https://wiki.linaro.org/TestDataLinkPage?action=AttachFile&do=get&target=nightshot_iso_100.ppm" -O ./nightshot_iso_100.ppm']
+INSTALL_STEPS_HOST_PRE = ['wget --no-check-certificate -q "%s" -O ./%s' % (ppm_url, ppm_file_name)]
 INSTALL_STEPS_ADB_PRE = ['push %s %s' % (ppm_temp_path, ppm_android_path)]
 
 RUN_STEPS_ADB_SHELL = ['mkdir /mnt/mytmpfs',
                        'mount -t tmpfs -o mode=777 tmpfs /mnt/mytmpfs',
                        'dd if=%s of=%s' % (ppm_android_path, ppm_tmpfs_path),
                        'tjbench %s 95 -rgb -quiet scale 1/2' % ppm_tmpfs_path,
-                       'tjbench %s 95 -rgb' % ppm_tmpfs_path,
+                       'tjbench %s 95 -rgb -quiet' % ppm_tmpfs_path,
                        'umount /mnt/mytmpfs',
                        'rmdir /mnt/mytmpfs']
 
