@@ -1,4 +1,4 @@
-# Copyright (c) 2011 Linaro
+# Copyright (c) 2011-2012 Linaro
 
 # Author: Linaro Validation Team <linaro-dev@lists.linaro.org>
 #
@@ -26,12 +26,14 @@ test_name = 'tjbench'
 config = get_config()
 curdir = os.path.realpath(os.path.dirname(__file__))
 ppm_file_name = 'nightshot_iso_100.ppm'
-ppm_url = "https://wiki.linaro.org/TestDataLinkPage?action=AttachFile&do=get&target=nightshot_iso_100.ppm"
+ppm_url = ("https://wiki.linaro.org/TestDataLinkPage?action=AttachFile&"
+           "do=get&target=nightshot_iso_100.ppm")
 ppm_temp_path = os.path.join(config.tempdir_host, ppm_file_name)
 ppm_android_path = os.path.join(config.tempdir_android, test_name,
                                 ppm_file_name)
 ppm_tmpfs_path = os.path.join('/mnt/mytmpfs', ppm_file_name)
-INSTALL_STEPS_HOST_PRE = ['wget --no-check-certificate -q "%s" -O ./%s' % (ppm_url, ppm_file_name)]
+INSTALL_STEPS_HOST_PRE = ['wget --no-check-certificate -q "%s" -O ./%s' % (
+                                                    ppm_url, ppm_file_name)]
 INSTALL_STEPS_ADB_PRE = ['push %s %s' % (ppm_temp_path, ppm_android_path)]
 
 RUN_STEPS_ADB_SHELL = ['mkdir /mnt/mytmpfs',
@@ -42,9 +44,11 @@ RUN_STEPS_ADB_SHELL = ['mkdir /mnt/mytmpfs',
                        'umount /mnt/mytmpfs',
                        'rmdir /mnt/mytmpfs']
 
+
 class TjbenchTestParser(lava_android_test.testdef.AndroidTestParser):
 
-    def parse(self, result_filename='stdout.log', output_filename='stdout.log', test_name=''):
+    def parse(self, result_filename='stdout.log', output_filename='stdout.log',
+              test_name=''):
         """Parse test output to gather results
         Use the pattern specified when the class was instantiated to look
         through the results line-by-line and find lines that match it.
@@ -52,13 +56,19 @@ class TjbenchTestParser(lava_android_test.testdef.AndroidTestParser):
         it is used to convert test result strings to a standard format.
         """
         try:
-            unit_pat = re.compile(r'^\s*All performance values in (?P<units>\S+)\s*$')
-            measure_pat = re.compile(r'^\s*(?P<format>\S+)\s+\S+\s+(?P<subsamp>\S+)\s+(?P<qual>\d+)\s+\d+\s+\d+\s+(?P<comp_perf>[\d\.]+)\s+(?P<comp_ratio>[\d\.]+)\s+(?P<dcomp_perf>[\d\.]+)\s*$')
+            unit_pat = re.compile(
+                r'^\s*All performance values in (?P<units>\S+)\s*$')
+            measure_pat = re.compile(
+                ('^\s*(?P<format>\S+)\s+\S+\s+(?P<subsamp>\S+)\s+'
+                 '(?P<qual>\d+)\s+\d+\s+\d+\s+(?P<comp_perf>[\d\.]+)\s+'
+                 '(?P<comp_ratio>[\d\.]+)\s+(?P<dcomp_perf>[\d\.]+)\s*$')
+                )
         except Exception as strerror:
             raise RuntimeError(
                 "AndroidTestParser - Invalid regular expression '%s' - %s" % (
                     self.pattern, strerror))
         units = None
+        prefix_hash = {}
         with open(output_filename, 'r') as stream:
             for lineno, line in enumerate(stream, 1):
                 if units is None:
@@ -74,26 +84,34 @@ class TjbenchTestParser(lava_android_test.testdef.AndroidTestParser):
                     test_case_preffix = '%s_%s_%s' % (tmpdata['format'],
                                           tmpdata['subsamp'],
                                           tmpdata['qual'])
+                    if not prefix_hash.get(test_case_preffix):
+                        prefix_hash[test_case_preffix] = True
+                        test_case_preffix = '%s_%s' % (test_case_preffix,
+                                                      'scale_half')    
                     common_data = {'log_filename': result_filename,
                                    'log_lineno': lineno,
-                                   'result':'pass'
+                                   'result': 'pass'
                                    }
-                    comp_perf = {'test_case_id': '%s_%s' % (test_case_preffix, 'comp_perf'),
-                                 'units':units,
+                    comp_perf = {'test_case_id': '%s_%s' % (test_case_preffix,
+                                                            'comp_perf'),
+                                 'units': units,
                                  'measurement': tmpdata['comp_perf']
                                  }
                     comp_perf.update(common_data)
-                    comp_ratio = {'test_case_id': '%s_%s' % (test_case_preffix, 'comp_ratio'),
-                                 'units':'%',
+                    comp_ratio = {'test_case_id': '%s_%s' % (test_case_preffix,
+                                                             'comp_ratio'),
+                                 'units': '%',
                                  'measurement': tmpdata['comp_ratio']
                                  }
                     comp_ratio.update(common_data)
-                    dcomp_perf = {'test_case_id': '%s_%s' % (test_case_preffix, 'dcomp_perf'),
-                                 'units':units,
+                    dcomp_perf = {'test_case_id': '%s_%s' % (test_case_preffix,
+                                                             'dcomp_perf'),
+                                 'units': units,
                                  'measurement': tmpdata['dcomp_perf']
                                  }
                     dcomp_perf.update(common_data)
-                    self.results['test_results'].extend([comp_perf, comp_ratio, dcomp_perf])
+                    self.results['test_results'].extend([comp_perf, comp_ratio,
+                                                         dcomp_perf])
         if self.fixupdict:
             self.fixresults(self.fixupdict)
         if self.appendall:
@@ -101,8 +119,13 @@ class TjbenchTestParser(lava_android_test.testdef.AndroidTestParser):
         self.fixmeasurements()
         self.fixids(test_name=test_name)
 
-inst = lava_android_test.testdef.AndroidTestInstaller(steps_host_pre=INSTALL_STEPS_HOST_PRE, steps_adb_pre=INSTALL_STEPS_ADB_PRE)
-run = lava_android_test.testdef.AndroidTestRunner(adbshell_steps=RUN_STEPS_ADB_SHELL)
+inst = lava_android_test.testdef.AndroidTestInstaller(
+                                steps_host_pre=INSTALL_STEPS_HOST_PRE,
+                                steps_adb_pre=INSTALL_STEPS_ADB_PRE)
+run = lava_android_test.testdef.AndroidTestRunner(
+                                adbshell_steps=RUN_STEPS_ADB_SHELL)
 parser = TjbenchTestParser()
-testobj = lava_android_test.testdef.AndroidTest(testname="tjbench", installer=inst,
-                                  runner=run, parser=parser)
+testobj = lava_android_test.testdef.AndroidTest(testname="tjbench",
+                                                installer=inst,
+                                                runner=run,
+                                                parser=parser)
