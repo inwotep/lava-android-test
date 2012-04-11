@@ -122,12 +122,10 @@ class version(Command):
         import lava_tool
         import lava_android_test
         import linaro_dashboard_bundle
-        import linaro_json
         return [
             lava_android_test,
             lava_tool,
-            linaro_dashboard_bundle,
-            linaro_json]
+            linaro_dashboard_bundle]
 
 
 class AndroidCommand(Command):
