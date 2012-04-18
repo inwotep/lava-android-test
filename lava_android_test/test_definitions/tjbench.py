@@ -87,7 +87,7 @@ class TjbenchTestParser(lava_android_test.testdef.AndroidTestParser):
                     if not prefix_hash.get(test_case_preffix):
                         prefix_hash[test_case_preffix] = True
                         test_case_preffix = '%s_%s' % (test_case_preffix,
-                                                      'scale_half')    
+                                                      'scale_half')
                     common_data = {'log_filename': result_filename,
                                    'log_lineno': lineno,
                                    'result': 'pass'

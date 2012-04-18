@@ -26,11 +26,6 @@ import tempfile
 from Queue import Queue
 from lava_android_test.config import get_config
 
-try:
-    import posix
-except ImportError:
-    posix = None
-
 config = get_config()
 
 

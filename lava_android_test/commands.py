@@ -21,16 +21,20 @@ import base64
 import urlparse
 import versiontools
 
+from tempfile import mkdtemp
+
 from lava_tool.interface import Command as LAVACommand
 from lava_tool.interface import LavaCommandError
 from linaro_dashboard_bundle.io import DocumentIO
 
 from lava_android_test.adb import ADB
 from lava_android_test.config import get_config
+from lava_android_test.repository import GitRepository
 from lava_android_test.testdef import testloader, AndroidTest
 from lava_android_test.testdef import AndroidTestRunner, \
                                       AndroidTestInstaller, \
                                       AndroidTestParser
+from lava_android_test import utils
 
 
 class Command(LAVACommand):
@@ -145,6 +149,17 @@ class AndroidCommand(Command):
             self.adb = ADB()
         test_dir = os.path.join(self.config.installdir_android, test_id)
         return self.adb.exists(test_dir)
+
+    def get_device_serial(self):
+        if not self.args.serial:
+            serial_ary = ADB().run_cmd_host('adb get-serialno')[1]
+            serial = serial_ary[0].strip()
+            if not serial or serial == 'unknown':
+                return ''
+            else:
+                return serial
+        else:
+            return self.args.serial
 
 
 class AndroidTestCommand(AndroidCommand):
@@ -435,6 +450,95 @@ class run_custom(AndroidCommand):
         self.say_end(tip_msg)
 
 
+class run_monkeyrunner(AndroidCommand):
+    """
+    Run the monkeyrunner scripts that stored in the specified git repository
+    program:: lava-android-test run-monkeyrunner -g giturl -r resultfilelist
+    """
+
+    @classmethod
+    def register_arguments(cls, parser):
+        super(run_monkeyrunner, cls).register_arguments(parser)
+        parser.add_argument("url",
+                            help="The repository url of the test scripts")
+        parser.add_argument('-t', '--repo-type',
+                            default='git',
+                            help=("Specify the type of the repository"))
+        group = parser.add_argument_group("specify the bundle output file")
+        group.add_argument("-o", "--output",
+                            default=None,
+                            metavar="FILE",
+                            help=("After running the test parse the result"
+                                 " artefacts, fuse them with the initial"
+                                 " bundle and finally save the complete bundle"
+                                 " to the  specified FILE."))
+
+    def invoke(self):
+        test_name = 'monkeyrunner'
+        config = get_config()
+        if self.args.serial:
+            serial = self.args.serial
+        else:
+            serial = self.get_device_serial()
+            if not serial:
+                raise LavaCommandError("No device attached")
+        self.adb = ADB(serial)
+
+        if self.args.repo_type == 'git':
+            target_dir = mkdtemp(prefix='git_repo', dir=config.tempdir_host)
+            os.chmod(target_dir, 0755)
+            GitRepository(self.args.url).checkout(target_dir)
+
+        script_list = utils.find_files(target_dir, '.py')
+        STEPS_HOST_PRE = []
+        for script in script_list:
+            STEPS_HOST_PRE.append('monkeyrunner %s %s' % (script, serial))
+            file_name_str = self.args.url
+            if len(file_name_str) > 40:
+                file_name_str = '%s...' % (file_name_str[:40])
+            test_name_suffix = 'url=%s' % (file_name_str)
+
+        tip_msg = ("Run monkeyrunner scripts in following url on device(%s):"
+                       "\n\turl=%s"
+                       "\n\tresult-file-list=%s\n") % (
+                       self.args.serial,
+                       self.args.url,
+                       self.args.result_file_list)
+
+        self.say_begin(tip_msg)
+
+        inst = AndroidTestInstaller()
+
+        run = AndroidTestRunner(steps_host_pre=STEPS_HOST_PRE)
+        parser = AndroidTestParser()
+        test = AndroidTest(testname=test_name,
+                            installer=inst, runner=run, parser=parser)
+        test.parser.results = {'test_results': []}
+        test.setadb(self.adb)
+
+        if not self.test_installed(test.testname):
+            test.install()
+
+        try:
+            result_id = test.run(quiet=self.args.quiet)
+            if self.args.output:
+                png_file_list = utils.find_files(os.path.curdir, '.%s' % 'png')
+                ##TODO collect the result files
+                output_dir = os.path.dirname(self.args.output)
+                if output_dir and (not os.path.exists(output_dir)):
+                    os.makedirs(output_dir)
+                bundle = generate_bundle(self.args.serial,
+                        result_id, test=test,
+                        test_id='%s(%s)' % (test_name, test_name_suffix),
+                        attachments=png_file_list)
+                with open(self.args.output, "wt") as stream:
+                    DocumentIO.dump(stream, bundle)
+
+        except Exception as strerror:
+            raise LavaCommandError("Test execution error: %s" % strerror)
+        self.say_end(tip_msg)
+
+
 class parse(AndroidResultsCommand):
     """
     Parse the results of previous test that run on the specified device
@@ -500,7 +604,8 @@ def generate_combined_bundle(serial=None, result_ids=None, test=None,
     return bundle
 
 
-def generate_bundle(serial=None, result_id=None, test=None, test_id=None):
+def generate_bundle(serial=None, result_id=None, test=None,
+                    test_id=None, attachments=[]):
     if result_id is None:
         return {}
     config = get_config()
@@ -553,7 +658,17 @@ def generate_bundle(serial=None, result_id=None, test=None, test_id=None):
             "pathname": 'screencap.png',
             "mime_type": 'image/png',
             "content": base64.standard_b64encode(data)})
+        os.unlink(tmp_path)
 
+    for attach in attachments:
+        if os.path.exists(attach):
+            with open(tmp_path, 'rb') as stream:
+                data = stream.read()
+            if data:
+                bundle['test_runs'][0]["attachments"].append({
+                            "pathname": os.path.basename(attach),
+                            "mime_type": 'image/png',
+                            "content": base64.standard_b64encode(data)})
     return bundle
 
 
