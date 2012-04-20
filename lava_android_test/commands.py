@@ -499,9 +499,14 @@ class run_monkeyrunner(AndroidCommand):
         self.say_begin(tip_msg)
         bundles = []
         for script in script_list:
-            sub_bundle = self.run_monkeyrunner_test(script, serial)
-            if sub_bundle:
-                bundles.append(sub_bundle)
+            try:
+                sub_bundle = self.run_monkeyrunner_test(script, serial)
+                if sub_bundle:
+                    bundles.append(sub_bundle)
+            except Exception as strerror:
+                self.say('Failed to run script(%s) with error:\n%s' % (
+                                                                script,
+                                                                strerror))
 
         if self.args.output:
             output_dir = os.path.dirname(self.args.output)
@@ -543,7 +548,7 @@ class run_monkeyrunner(AndroidCommand):
                         attachments=png_file_list)
 
         except Exception as strerror:
-            raise LavaCommandError("Test execution error: %s" % strerror)
+            raise Exception("Test execution error: %s" % strerror)
         return bundle
 
 class parse(AndroidResultsCommand):
@@ -627,7 +632,7 @@ def generate_bundle(serial=None, result_id=None, test=None,
     adb = ADB(serial)
     resultdir = os.path.join(config.resultsdir_android, result_id)
     if not adb.exists(resultdir):
-        raise  LavaCommandError("The result (%s) is not existed." % result_id)
+        raise  Exception("The result (%s) is not existed." % result_id)
 
     bundle_text = adb.read_file(os.path.join(resultdir, "testdata.json"))
     bundle = DocumentIO.loads(bundle_text)[1]
