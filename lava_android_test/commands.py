@@ -474,7 +474,6 @@ class run_monkeyrunner(AndroidCommand):
                                  " to the  specified FILE."))
 
     def invoke(self):
-        test_name = 'monkeyrunner'
         config = get_config()
         if self.args.serial:
             serial = self.args.serial
@@ -490,26 +489,39 @@ class run_monkeyrunner(AndroidCommand):
             GitRepository(self.args.url).checkout(target_dir)
 
         script_list = utils.find_files(target_dir, '.py')
-        STEPS_HOST_PRE = []
-        for script in script_list:
-            STEPS_HOST_PRE.append('monkeyrunner %s %s' % (script, serial))
-            file_name_str = self.args.url
-            if len(file_name_str) > 40:
-                file_name_str = '%s...' % (file_name_str[:40])
-            test_name_suffix = 'url=%s' % (file_name_str)
+
 
         tip_msg = ("Run monkeyrunner scripts in following url on device(%s):"
-                       "\n\turl=%s"
-                       "\n\tresult-file-list=%s\n") % (
+                       "\n\turl=%s") % (
                        self.args.serial,
-                       self.args.url,
-                       self.args.result_file_list)
+                       self.args.url)
 
         self.say_begin(tip_msg)
+        bundles = []
+        for script in script_list:
+            sub_bundle = self.run_monkeyrunner_test(script, serial)
+            if sub_bundle:
+                bundles.append(sub_bundle)
+
+        if self.args.output:
+            output_dir = os.path.dirname(self.args.output)
+            if output_dir and (not os.path.exists(output_dir)):
+                os.makedirs(output_dir)
+            with open(self.args.output, "wt") as stream:
+                    DocumentIO.dump(stream, merge_bundles(bundles))
+
+        self.say_end(tip_msg)
+
+
+    def run_monkeyrunner_test(self, script, serial):
+        test_name = 'monkeyrunner'
+        test_id_suffix = script
+        if len(test_id_suffix) > 40:
+            test_id_suffix = '%s...' % (test_id_suffix[:40])
 
         inst = AndroidTestInstaller()
-
-        run = AndroidTestRunner(steps_host_pre=STEPS_HOST_PRE)
+        run = AndroidTestRunner(steps_host_pre=[
+                                'monkeyrunner %s %s' % (script, serial)])
         parser = AndroidTestParser()
         test = AndroidTest(testname=test_name,
                             installer=inst, runner=run, parser=parser)
@@ -519,25 +531,20 @@ class run_monkeyrunner(AndroidCommand):
         if not self.test_installed(test.testname):
             test.install()
 
+        bundle = []
         try:
             result_id = test.run(quiet=self.args.quiet)
             if self.args.output:
                 png_file_list = utils.find_files(os.path.curdir, '.%s' % 'png')
-                ##TODO collect the result files
-                output_dir = os.path.dirname(self.args.output)
-                if output_dir and (not os.path.exists(output_dir)):
-                    os.makedirs(output_dir)
+
                 bundle = generate_bundle(self.args.serial,
                         result_id, test=test,
-                        test_id='%s(%s)' % (test_name, test_name_suffix),
+                        test_id='%s(%s)' % (test_name, test_id_suffix),
                         attachments=png_file_list)
-                with open(self.args.output, "wt") as stream:
-                    DocumentIO.dump(stream, bundle)
 
         except Exception as strerror:
             raise LavaCommandError("Test execution error: %s" % strerror)
-        self.say_end(tip_msg)
-
+        return bundle
 
 class parse(AndroidResultsCommand):
     """
@@ -602,6 +609,14 @@ def generate_combined_bundle(serial=None, result_ids=None, test=None,
             bundle['test_runs'].append(b['test_runs'][0])
 
     return bundle
+
+
+def merge_bundles(bundles=[]):
+    merged_bundles = {'test_runs':[]}
+    for bundle in bundles:
+        if bundle['test_runs']:
+            merged_bundles['test_runs'].append(bundle['test_runs'][0])
+    return merged_bundles
 
 
 def generate_bundle(serial=None, result_id=None, test=None,
