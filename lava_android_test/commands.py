@@ -490,6 +490,10 @@ class run_monkeyrunner(AndroidCommand):
 
         script_list = utils.find_files(target_dir, '.py')
 
+        test_id = self.args.url
+        if len(test_id) > 40:
+            test_id = '%s...' % (test_id[:40])
+        test_id = 'monkeyrunner_%s' % test_id
 
         tip_msg = ("Run monkeyrunner scripts in following url on device(%s):"
                        "\n\turl=%s") % (
@@ -499,36 +503,58 @@ class run_monkeyrunner(AndroidCommand):
         self.say_begin(tip_msg)
         bundles = []
         for script in script_list:
+            sub_bundle = {}
+            from datetime import datetime
+            starttime = datetime.utcnow()
+            test_case_id = script.replace('%s/' % target_dir, '')
+            if len(test_case_id) > 50:
+                test_case_id = '%s...' % (test_case_id[:50])
             try:
-                sub_bundle = self.run_monkeyrunner_test(script, serial)
+                sub_bundle = self.run_monkeyrunner_test(script, serial,
+                                                         test_case_id)
+                test_result = {"test_case_id": test_case_id,
+                               "result": 'pass'}
                 if sub_bundle:
-                    bundles.append(sub_bundle)
+                    sub_bundle['test_runs'][0]['test_results'].append(
+                                                            test_result)
             except Exception as strerror:
                 self.say('Failed to run script(%s) with error:\n%s' % (
                                                                 script,
                                                                 strerror))
+
+                test_result = {"test_case_id": test_case_id,
+                               "result": 'fail'}
+                from uuid import uuid4
+                TIMEFORMAT = '%Y-%m-%dT%H:%M:%SZ'
+                sub_bundle['test_runs'] = [{
+                                'test_results': [test_result],
+                                'test_id':
+                                    'monkeyrunner(%s)' % test_case_id,
+                                'time_check_performed': False,
+                                'analyzer_assigned_uuid':
+                                        str(uuid4()),
+                                'analyzer_assigned_date':
+                                    starttime.strftime(TIMEFORMAT)}]
+            if sub_bundle:
+                    bundles.append(sub_bundle)
 
         if self.args.output:
             output_dir = os.path.dirname(self.args.output)
             if output_dir and (not os.path.exists(output_dir)):
                 os.makedirs(output_dir)
             with open(self.args.output, "wt") as stream:
-                    DocumentIO.dump(stream, merge_bundles(bundles))
+                DocumentIO.dump(stream, merge_bundles(bundles))
 
         self.say_end(tip_msg)
 
-
-    def run_monkeyrunner_test(self, script, serial):
-        test_name = 'monkeyrunner'
-        test_id_suffix = script
-        if len(test_id_suffix) > 40:
-            test_id_suffix = '%s...' % (test_id_suffix[:40])
+    def run_monkeyrunner_test(self, script, serial, test_case_id=None):
+        config = get_config()
 
         inst = AndroidTestInstaller()
         run = AndroidTestRunner(steps_host_pre=[
                                 'monkeyrunner %s %s' % (script, serial)])
         parser = AndroidTestParser()
-        test = AndroidTest(testname=test_name,
+        test = AndroidTest(testname='monkeyrunner',
                             installer=inst, runner=run, parser=parser)
         test.parser.results = {'test_results': []}
         test.setadb(self.adb)
@@ -536,20 +562,23 @@ class run_monkeyrunner(AndroidCommand):
         if not self.test_installed(test.testname):
             test.install()
 
-        bundle = []
-        try:
-            result_id = test.run(quiet=self.args.quiet)
-            if self.args.output:
-                png_file_list = utils.find_files(os.path.curdir, '.%s' % 'png')
+        bundle = {}
+        org_png_file_list = utils.find_files(config.tempdir_host,
+                                             '.%s' % 'png')
+        result_id = test.run(quiet=self.args.quiet)
+        if self.args.output:
+            cur_all_png_list = utils.find_files(config.tempdir_host,
+                                                '.%s' % 'png')
+            new_png_list = set(cur_all_png_list).difference(org_png_file_list)
+            test_id = 'monkeyrunner(%s)' % (test_case_id)
+            bundle = generate_bundle(self.args.serial,
+                    result_id, test=test,
+                    test_id=test_id,
+                    attachments=list(new_png_list))
+            utils.delete_files(new_png_list)
 
-                bundle = generate_bundle(self.args.serial,
-                        result_id, test=test,
-                        test_id='%s(%s)' % (test_name, test_id_suffix),
-                        attachments=png_file_list)
-
-        except Exception as strerror:
-            raise Exception("Test execution error: %s" % strerror)
         return bundle
+
 
 class parse(AndroidResultsCommand):
     """
@@ -617,7 +646,8 @@ def generate_combined_bundle(serial=None, result_ids=None, test=None,
 
 
 def merge_bundles(bundles=[]):
-    merged_bundles = {'test_runs':[]}
+    merged_bundles = {"format": "Dashboard Bundle Format 1.2",
+                      'test_runs': []}
     for bundle in bundles:
         if bundle['test_runs']:
             merged_bundles['test_runs'].append(bundle['test_runs'][0])
@@ -637,7 +667,7 @@ def generate_bundle(serial=None, result_id=None, test=None,
     bundle_text = adb.read_file(os.path.join(resultdir, "testdata.json"))
     bundle = DocumentIO.loads(bundle_text)[1]
     test_tmp = None
-    if bundle['test_runs'][0]['test_id'] == 'custom':
+    if test:
         test_tmp = test
     else:
         test_tmp = testloader(bundle['test_runs'][0]['test_id'], serial)
@@ -667,6 +697,7 @@ def generate_bundle(serial=None, result_id=None, test=None,
             "content":  base64.standard_b64encode(stderr_text)
         }
     ]
+
     screencap_path = os.path.join(resultdir, 'screencap.png')
     if adb.exists(screencap_path):
         tmp_path = os.path.join(config.tempdir_host, 'screencap.png')
@@ -682,7 +713,7 @@ def generate_bundle(serial=None, result_id=None, test=None,
 
     for attach in attachments:
         if os.path.exists(attach):
-            with open(tmp_path, 'rb') as stream:
+            with open(attach, 'rb') as stream:
                 data = stream.read()
             if data:
                 bundle['test_runs'][0]["attachments"].append({

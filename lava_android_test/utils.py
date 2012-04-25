@@ -170,3 +170,9 @@ def find_files(target_dir, ext):
 
     file_list.sort()
     return file_list
+
+
+def delete_files(flist=[]):
+    for f in flist:
+        if os.path.exists(f):
+            os.unlink(f)
