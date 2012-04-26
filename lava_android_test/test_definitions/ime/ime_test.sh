@@ -7,7 +7,7 @@ test_func(){
     fi  
 
     /system/bin/ime list -a
-    echo "ime = pass"
+    echo "ime=pass"
 }
 
 test_func
