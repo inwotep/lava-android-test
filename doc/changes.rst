@@ -1,6 +1,14 @@
 Version History
 ***************
 
+.. _version_0_3:
+
+Version 0.3
+===========
+* new tjbench test
+* new bluetooth test
+* remove dependency on linaro_json
+
 .. _version_0_2:
 
 Version 0.2
