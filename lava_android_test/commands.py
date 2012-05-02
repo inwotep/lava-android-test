@@ -149,10 +149,10 @@ class AndroidCommand(Command):
     def assertDeviceIsConnected(self):
         if not self.adb.isDeviceConnected():
             if self.adb.serial:
-                raise LavaCommandError("Device '%s' is not connected" %
+                raise Exception("Device '%s' is not connected" %
                                        self.adb.serial)
             else:
-                raise LavaCommandError("No device found")
+                raise Exception("No device found")
 
 
 class AndroidTestCommand(AndroidCommand):
