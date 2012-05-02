@@ -1,12 +1,23 @@
 Version History
 ***************
 
-.. _version_0_0.11:
+.. _version_0_3:
 
-Version 0.0.11
-==============
+Version 0.3
+===========
+* new tjbench test
+* new bluetooth test
+* remove dependency on linaro_json
+
+.. _version_0_2:
+
+Version 0.2
+===========
 * new gator test
 * update mmtest script
+* Bug #962094: error occurred when no parser specified for run-custom
+command
+* Bug #962096: the test_id generated is longer than 64
 
 .. _version_0_0.10:
 
