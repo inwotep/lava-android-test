@@ -2,7 +2,7 @@
 
 test_func(){
     if [ ! -f cat /sys/class/android_usb/android0/state ]; then
-         echo "state=unexist"
+         echo "usbhardware=fail"
          exit
     fi  
 
