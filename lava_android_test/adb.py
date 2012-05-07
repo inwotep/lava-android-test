@@ -1,4 +1,4 @@
-# Copyright (c) 2011 Linaro
+# Copyright (c) 2011 - 2012 Linaro
 #
 # Author: Linaro Validation Team <linaro-dev@lists.linaro.org>
 #
@@ -15,7 +15,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import threading
 import os
@@ -25,11 +25,6 @@ import tempfile
 
 from Queue import Queue
 from lava_android_test.config import get_config
-
-try:
-    import posix
-except ImportError:
-    posix = None
 
 config = get_config()
 
@@ -258,6 +253,13 @@ class ADB(object):
         if self.push(tmp_path, path)[1] is None:
             raise Exception('Failed to push stdout to android %s' % path)
         os.remove(tmp_path)
+
+    def isDeviceConnected(self):
+        status, lines = self.run_cmd_host('%s get-state' % self.adb)
+        for line in lines:
+            if 'device' in line:
+                return True
+        return False
 
 
 class CommandExecutor(object):
