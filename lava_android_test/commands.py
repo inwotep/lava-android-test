@@ -344,8 +344,7 @@ class run(AndroidTestCommand):
 class run_custom(AndroidCommand):
     """
     Run the command(s) that specified by the -c option in the command line
-    program:: lava-android-test run-custom -c 'command1' -c 'command2'
-     -p 'parse-regex1'
+    program:: lava-android-test run-custom -c 'command1' -c 'command2' -p 'parse-regex1'
     program:: lava-android-test run test-id -s device_serial
     program:: lava-android-test run test-id -s device_serial -o outputfile
     """
