@@ -2,7 +2,7 @@
 
 test_func(){
     if [ ! -f /system/bin/ime ]; then
-         echo "ime=unexist"
+         echo "ime=fail"
          exit
     fi  
 
