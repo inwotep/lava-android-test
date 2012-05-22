@@ -24,7 +24,7 @@ import lava_android_test.testdef
 test_name = 'cache-coherency'
 
 INSTALL_STEPS_ADB_PRE = []
-ADB_SHELL_STEPS = ['"stressapptest -M 16 --cc_test -s 10"']
+ADB_SHELL_STEPS = ['stressapptest -M 16 --cc_test -s 10']
 PATTERN = "^\s*(?P<test_case_id>Status?):\s+(?P<result>(PASS|FAIL)?)\s+-\s+"
 
 inst = lava_android_test.testdef.AndroidTestInstaller(

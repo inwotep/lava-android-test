@@ -24,7 +24,7 @@ import lava_android_test.testdef
 test_name = 'memtester'
 
 INSTALL_STEPS_ADB_PRE = []
-ADB_SHELL_STEPS = ['"memtester 1M 1"']
+ADB_SHELL_STEPS = ['memtester 1M 1']
 PATTERN = "^\s*(?P<test_case_id>.*?)\s*:\s*(?P<result>\w+)\s*$"
 
 inst = lava_android_test.testdef.AndroidTestInstaller(

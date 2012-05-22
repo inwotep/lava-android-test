@@ -24,7 +24,7 @@ import lava_android_test.testdef
 test_name = 'iozone'
 
 INSTALL_STEPS_ADB_PRE = []
-ADB_SHELL_STEPS = ['"iozone -a -i 0 -i 2 -s 16m -V teststring"']
+ADB_SHELL_STEPS = ['iozone -a -i 0 -i 2 -s 16m -V teststring']
 PATTERN = "^\s*(?P<test_case_id>Status?):\s+(?P<result>(PASS|FAIL)?)\s+-\s+"
 
 inst = lava_android_test.testdef.AndroidTestInstaller(
