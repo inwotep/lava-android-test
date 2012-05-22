@@ -22,8 +22,10 @@ import lava_android_test.testdef
 
 test_name = 'bluetooth'
 
-cmd = ("am instrument -r -w "
-       "com.android.bluetooth.tests/android.bluetooth.BluetoothTestRunner")
+cmd = ("am instrument -r -e enable_iterations 2 -e discoverable_iterations 2"
+       " -e scan_iterations 2 -e enable_pan_iterations 2 -e pair_iterations 1 "
+       " -e device_address $(OPTIONS) "
+       " -w com.android.bluetooth.tests/android.bluetooth.BluetoothTestRunner")
 RUN_ADB_SHELL_STEPS = [cmd]
 
 
