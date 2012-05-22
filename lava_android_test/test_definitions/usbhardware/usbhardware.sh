@@ -1,7 +1,7 @@
 #!/system/bin/sh
 
 test_func(){
-    if [ ! -f cat /sys/class/android_usb/android0/state ]; then
+    if [ ! -f /sys/class/android_usb/android0/state ]; then
          echo "usbhardware=fail"
          exit
     fi  
