@@ -161,12 +161,10 @@ def check_command_exist(command):
 
 def find_files(target_dir, ext):
     file_list = []
-    for f in os.listdir(target_dir):
-        f_path = '%s/%s' % (target_dir, f)
-        if os.path.isdir(f_path):
-            file_list.extend(find_files(f_path, ext))
-        elif f_path.upper().endswith(ext.upper()):
-            file_list.append(f_path)
+    for rootdir, dirs, files in os.walk(target_dir):
+        for f in files:
+            if f.upper().endswith(ext.upper()):
+                file_list.append(os.path.join(rootdir, f))
 
     file_list.sort()
     return file_list

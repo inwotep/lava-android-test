@@ -19,6 +19,7 @@
 import os
 import base64
 import urlparse
+from uuid import uuid4
 import versiontools
 
 from tempfile import mkdtemp
@@ -174,7 +175,7 @@ class AndroidCommand(Command):
 
         self.invoke_sub()
 
-    def invoke_sub():
+    def invoke_sub(self):
         raise NotImplementedError
 
 
@@ -355,7 +356,7 @@ class run(AndroidTestCommand):
 class run_custom(AndroidCommand):
     """
     Run the command(s) that specified by the -c option in the command line
-    program:: lava-android-test run-custom -c 'command1' -c 'command2' -p 'parse-regex1'
+    program:: lava-android-test run-custom -c 'cm1' -c 'cmd2' -p 'parse-regex1'
     program:: lava-android-test run test-id -s device_serial
     program:: lava-android-test run test-id -s device_serial -o outputfile
     """
@@ -501,6 +502,9 @@ class run_monkeyrunner(AndroidCommand):
             target_dir = mkdtemp(prefix='git_repo', dir=config.tempdir_host)
             os.chmod(target_dir, 0755)
             GitRepository(self.args.url).checkout(target_dir)
+        else:
+            raise LavaCommandError("The repository type(%s) is not supported"
+                                   % self.args.repo_type)
 
         script_list = utils.find_files(target_dir, '.py')
 
@@ -538,17 +542,12 @@ class run_monkeyrunner(AndroidCommand):
 
                 test_result = {"test_case_id": test_case_id,
                                "result": 'fail'}
-                from uuid import uuid4
                 TIMEFORMAT = '%Y-%m-%dT%H:%M:%SZ'
-                sub_bundle['test_runs'] = [{
-                                'test_results': [test_result],
-                                'test_id':
-                                    'monkeyrunner(%s)' % test_case_id,
-                                'time_check_performed': False,
-                                'analyzer_assigned_uuid':
-                                        str(uuid4()),
-                                'analyzer_assigned_date':
-                                    starttime.strftime(TIMEFORMAT)}]
+                sub_bundle['test_runs'] = [{'test_results': [test_result],
+                    'test_id': 'monkeyrunner(%s)' % test_case_id,
+                    'time_check_performed': False,
+                    'analyzer_assigned_uuid': str(uuid4()),
+                    'analyzer_assigned_date': starttime.strftime(TIMEFORMAT)}]
             if sub_bundle:
                     bundles.append(sub_bundle)
 
@@ -573,9 +572,14 @@ class run_monkeyrunner(AndroidCommand):
         test.parser.results = {'test_results': []}
         test.setadb(self.adb)
 
+        ##By calling the install function, we will create the directory
+        ##on the target, and the the output file and error file
+        ##will be pushed there
         if not self.test_installed(test.testname):
             test.install()
 
+        ##The png files here are generated to the host by the monkeyrunner
+        ##monkeyrunner is run on host, not on the target
         bundle = {}
         org_png_file_list = utils.find_files(config.tempdir_host,
                                              '.%s' % 'png')
@@ -617,7 +621,7 @@ class parse_custom(AndroidResultsCommand):
     @classmethod
     def register_arguments(cls, parser):
         super(parse_custom, cls).register_arguments(parser)
-        parser.add_argument('-p', '--parse-regex',
+        parser.add_argument(' - p', ' - -parse - regex',
                             help=("Specified the regular expression used"
                                   " for analyzing command output"))
 
@@ -660,7 +664,8 @@ def generate_combined_bundle(serial=None, result_ids=None, test=None,
 
 
 def merge_bundles(bundles=[]):
-    merged_bundles = {"format": "Dashboard Bundle Format 1.2",
+    config = get_config()
+    merged_bundles = {"format": config.bundel_format,
                       'test_runs': []}
     for bundle in bundles:
         if bundle['test_runs']:
