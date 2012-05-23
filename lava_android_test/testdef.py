@@ -133,7 +133,7 @@ class AndroidTest(ITest):
     def _savetestdata(self, analyzer_assigned_uuid):
         TIMEFORMAT = '%Y-%m-%dT%H:%M:%SZ'
         bundle = {
-            'format': 'Dashboard Bundle Format 1.2',
+            'format': 'Dashboard Bundle Format 1.3',
             'test_runs': [
                 {
                 'analyzer_assigned_uuid': analyzer_assigned_uuid,
