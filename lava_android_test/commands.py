@@ -157,6 +157,8 @@ class AndroidCommand(Command):
             serial = serial_ary[0].strip()
             if not serial or serial == 'unknown':
                 return ''
+            else:
+                return serial
 
     def assertDeviceIsConnected(self):
         if not self.adb.isDeviceConnected():
