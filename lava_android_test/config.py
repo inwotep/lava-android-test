@@ -33,7 +33,7 @@ class LavaAndroidTestConfig(object):
         self.tempdir_android = os.path.join(home, 'temp')
         self.tempdir_host = os.environ.get('ANDROID_TEST_TEMP_HOST',
                                             '/tmp/lava-android-test')
-        self.bundle_format = os.environ.get("Dashboard Bundle Format 1.3")
+        self.bundle_format = "Dashboard Bundle Format 1.3"
 
 
 _config = None
