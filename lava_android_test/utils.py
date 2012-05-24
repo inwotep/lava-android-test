@@ -1,4 +1,4 @@
-# Copyright (c) 2010 Linaro
+# Copyright (c) 2010-2012 Linaro
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -152,3 +152,25 @@ def get_local_name(url):
     if rest is None or  rest == '':
         return host
     return os.path.basename(rest)
+
+
+def check_command_exist(command):
+    rc = subprocess.call(["which", command], stdout=open('/dev/null', 'w'))
+    return rc == 0
+
+
+def find_files(target_dir, ext):
+    file_list = []
+    for rootdir, dirs, files in os.walk(target_dir):
+        for f in files:
+            if f.upper().endswith(ext.upper()):
+                file_list.append(os.path.join(rootdir, f))
+
+    file_list.sort()
+    return file_list
+
+
+def delete_files(flist=[]):
+    for f in flist:
+        if os.path.exists(f):
+            os.unlink(f)

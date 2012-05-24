@@ -1,4 +1,4 @@
-# Copyright (c) 2010 Linaro
+# Copyright (c) 2010-2012 Linaro
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,9 +14,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import os
 import sys
-import subprocess
 import shutil
 from tempfile import mkdtemp
+from lava_android_test import utils
 from lava_android_test.config import get_config, set_config
 from lava_tool.dispatcher import LavaDispatcher, run_with_dispatcher_class
 
@@ -33,8 +33,7 @@ class LAVAAndroidTestDispatcher(LavaDispatcher):
 
 
 def check_adb_installed():
-        rc = subprocess.call(["which", "adb"], stdout=open('/dev/null', 'w'))
-        return rc == 0
+    return utils.check_command_exist('adb')
 
 
 def main():
