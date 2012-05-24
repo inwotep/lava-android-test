@@ -134,7 +134,7 @@ class AndroidTest(ITest):
         config = get_config()
         TIMEFORMAT = '%Y-%m-%dT%H:%M:%SZ'
         bundle = {
-            'format': config.bundel_format,
+            'format': config.bundle_format,
             'test_runs': [
                 {
                 'analyzer_assigned_uuid': analyzer_assigned_uuid,

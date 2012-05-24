@@ -665,7 +665,7 @@ def generate_combined_bundle(serial=None, result_ids=None, test=None,
 
 def merge_bundles(bundles=[]):
     config = get_config()
-    merged_bundles = {"format": config.bundel_format,
+    merged_bundles = {"format": config.bundle_format,
                       'test_runs': []}
     for bundle in bundles:
         if bundle['test_runs']:
