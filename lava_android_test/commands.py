@@ -623,7 +623,7 @@ class parse_custom(AndroidResultsCommand):
     @classmethod
     def register_arguments(cls, parser):
         super(parse_custom, cls).register_arguments(parser)
-        parser.add_argument(' - p', ' - -parse - regex',
+        parser.add_argument('-p', '--parse-regex',
                             help=("Specified the regular expression used"
                                   " for analyzing command output"))
 
