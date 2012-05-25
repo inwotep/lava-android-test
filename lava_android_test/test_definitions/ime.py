@@ -34,7 +34,7 @@ INSTALL_STEPS_ADB_PRE = ['push %s %s ' % (test_sh_path,
                           'shell chmod 777 %s' % test_sh_android_path]
 
 ADB_SHELL_STEPS = [test_sh_android_path]
-PATTERN = "^\s*(?P<test_case_id>\w+)=(?P<result>\w+)\s*$"
+PATTERN = "^\s*(?P<test_case_id>ime)=(?P<result>\w+)\s*$"
 
 inst = lava_android_test.testdef.AndroidTestInstaller(
                                 steps_adb_pre=INSTALL_STEPS_ADB_PRE)
