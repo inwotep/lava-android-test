@@ -532,6 +532,50 @@ class AndroidTestParser(object):
             self.SKIP_PATS = skip_pat
 
 
+
+class AndroidInstrumentTestParser(AndroidTestParser):
+
+    def parse(self, result_filename='stdout.log', output_filename='stdout.log',
+               test_name=''):
+        """Parser for Instrument test that run with the -r option
+        """
+        pat_test = re.compile(
+            r'^\s*INSTRUMENTATION_STATUS:\s*test=(?P<test_case_id>.+)\s*$')
+        pat_status_code = re.compile(
+            r'^\s*INSTRUMENTATION_STATUS_CODE:\s*(?P<status_code>[\d-]+)\s*$')
+        data = {}
+        with open(output_filename, 'r') as stream:
+            for lineno, line in enumerate(stream, 1):
+                match = pat_test.search(line)
+                if match:
+                    data['test_case_id'] = match.group('test_case_id')
+                    continue
+
+                match = pat_status_code.search(line)
+                if match:
+                    status_code = match.group('status_code')
+                    if status_code == '1':
+                        # test case started
+                        data = {}
+                    elif data['test_case_id']:
+                        if status_code == '0':
+                            data['result'] = 'pass'
+                        else:
+                            data['result'] = 'fail'
+                        data["log_filename"] = result_filename
+                        data["log_lineno"] = lineno
+                        self.results['test_results'].append(data)
+                        data = {}
+                    continue
+
+        if self.fixupdict:
+            self.fixresults(self.fixupdict)
+        if self.appendall:
+            self.appendtoall(self.appendall)
+        self.fixmeasurements()
+        self.fixids()
+
+
 def _run_steps_host(steps=[], serial=None, option=None, resultsdir=None):
     adb = ADB(serial)
     for cmd in steps:
