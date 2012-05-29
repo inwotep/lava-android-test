@@ -30,8 +30,9 @@ from linaro_dashboard_bundle.io import DocumentIO
 
 from lava_android_test.adb import ADB
 from lava_android_test.config import get_config
+from lava_android_test.provider import TestProvider
 from lava_android_test.repository import GitRepository
-from lava_android_test.testdef import testloader, AndroidTest
+from lava_android_test.testdef import AndroidTest
 from lava_android_test.testdef import AndroidTestRunner, \
                                       AndroidTestInstaller, \
                                       AndroidTestParser
@@ -103,11 +104,10 @@ class list_tests(Command):
     """
 
     def invoke(self):
-        from lava_android_test import test_definitions
-        from pkgutil import walk_packages
         self.say("Known tests:")
-        for importer, mod, ispkg in walk_packages(test_definitions.__path__):
-            self.say(" - {test_id}", test_id=mod)
+        for provider in TestProvider().get_test_provider_list():
+            for test in provider().list_test():
+                self.say(" - {test_id}", test_id=test)
 
 
 class version(Command):
@@ -272,7 +272,7 @@ class install(AndroidTestCommand):
         if self.test_installed(self.args.test_id):
             raise LavaCommandError("The test (%s) has already installed." %
                                    self.args.test_id)
-        test = testloader(self.args.test_id, self.args.serial)
+        test = TestProvider().load_test(self.args.test_id, self.args.serial)
         try:
             test.install(self.args.install_option)
         except Exception as strerror:
@@ -291,7 +291,7 @@ class uninstall(AndroidTestCommand):
         tip_msg = self.get_tip_msg("Uninstall test")
         self.say_begin(tip_msg)
 
-        test = testloader(self.args.test_id, self.args.serial)
+        test = TestProvider().load_test(self.args.test_id, self.args.serial)
         try:
             test.uninstall()
         except Exception as strerror:
@@ -331,7 +331,7 @@ class run(AndroidTestCommand):
             raise LavaCommandError(
                 "The test (%s) has not been installed yet." %
                 self.args.test_id)
-        test = testloader(self.args.test_id, self.args.serial)
+        test = TestProvider().load_test(self.args.test_id, self.args.serial)
 
         if not self.test_installed(test.testname):
             raise LavaCommandError(
@@ -691,8 +691,8 @@ def generate_bundle(serial=None, result_id=None, test=None,
     if test:
         test_tmp = test
     else:
-        test_tmp = testloader(bundle['test_runs'][0]['test_id'], serial)
-
+        test_tmp = TestProvider().load_test(bundle['test_runs'][0]['test_id'],
+                                             serial)
     if test_id:
         bundle['test_runs'][0]['test_id'] = test_id
 

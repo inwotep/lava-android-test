@@ -21,7 +21,6 @@ import hashlib
 import os
 import re
 import string
-import sys
 import time
 import tempfile
 from datetime import datetime
@@ -532,7 +531,6 @@ class AndroidTestParser(object):
             self.SKIP_PATS = skip_pat
 
 
-
 class AndroidInstrumentTestParser(AndroidTestParser):
 
     def parse(self, result_filename='stdout.log', output_filename='stdout.log',
@@ -607,26 +605,3 @@ def _run_steps_adb(steps=[], serial=None, option=None, resultsdir=None):
         if resultsdir is not None:
             stdoutlog = os.path.join(resultsdir, 'stdout.log')
             adb.push_stream_to_device(output, stdoutlog)
-
-
-def testloader(testname, serial=None):
-    """
-    Load the test definition, which can be either an individual
-    file, or a directory with an __init__.py
-    """
-    importpath = "lava_android_test.test_definitions.%s" % testname
-    try:
-        mod = __import__(importpath)
-    except ImportError:
-        print "unknown test '%s'" % testname
-        sys.exit(1)
-    for i in importpath.split('.')[1:]:
-        mod = getattr(mod, i)
-    try:
-        base = mod.testdir.testobj
-    except AttributeError:
-        base = mod.testobj
-
-    base.parser.results = {'test_results': []}
-    base.setadb(ADB(serial))
-    return base
