@@ -1,6 +1,13 @@
 Version History
 ***************
 
+.. _version_0_6:
+
+Version 0.6
+===========
+
+* Unreleased.
+
 .. _version_0_5:
 
 Version 0.5
