@@ -1,6 +1,17 @@
 Version History
 ***************
 
+.. _version_0_5:
+
+Version 0.5
+===========
+
+* new tests:
+  * cache-coherency
+  * iozone
+  * memtester
+* support running monkeyrunner tests
+
 .. _version_0_4:
 
 Version 0.4
