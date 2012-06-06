@@ -26,8 +26,8 @@ test_name = 'tjbench'
 config = get_config()
 curdir = os.path.realpath(os.path.dirname(__file__))
 ppm_file_name = 'nightshot_iso_100.ppm'
-ppm_url = ("https://wiki.linaro.org/TestDataLinkPage?action=AttachFile&"
-           "do=get&target=nightshot_iso_100.ppm")
+ppm_url = ("http://testdata.validation.linaro.org/tjbench/"
+           "nightshot_iso_100.ppm")
 ppm_temp_path = os.path.join(config.tempdir_host, ppm_file_name)
 ppm_android_path = os.path.join(config.tempdir_android, test_name,
                                 ppm_file_name)
@@ -81,30 +81,30 @@ class TjbenchTestParser(lava_android_test.testdef.AndroidTestParser):
                 match = measure_pat.search(line)
                 if match:
                     tmpdata = match.groupdict()
-                    test_case_preffix = '%s_%s_%s' % (tmpdata['format'],
+                    test_case_prefix = '%s_%s_%s' % (tmpdata['format'],
                                           tmpdata['subsamp'],
                                           tmpdata['qual'])
-                    if not prefix_hash.get(test_case_preffix):
-                        prefix_hash[test_case_preffix] = True
-                        test_case_preffix = '%s_%s' % (test_case_preffix,
+                    if not prefix_hash.get(test_case_prefix):
+                        prefix_hash[test_case_prefix] = True
+                        test_case_prefix = '%s_%s' % (test_case_prefix,
                                                       'scale_half')
                     common_data = {'log_filename': result_filename,
                                    'log_lineno': lineno,
                                    'result': 'pass'
                                    }
-                    comp_perf = {'test_case_id': '%s_%s' % (test_case_preffix,
+                    comp_perf = {'test_case_id': '%s_%s' % (test_case_prefix,
                                                             'comp_perf'),
                                  'units': units,
                                  'measurement': tmpdata['comp_perf']
                                  }
                     comp_perf.update(common_data)
-                    comp_ratio = {'test_case_id': '%s_%s' % (test_case_preffix,
+                    comp_ratio = {'test_case_id': '%s_%s' % (test_case_prefix,
                                                              'comp_ratio'),
                                  'units': '%',
                                  'measurement': tmpdata['comp_ratio']
                                  }
                     comp_ratio.update(common_data)
-                    dcomp_perf = {'test_case_id': '%s_%s' % (test_case_preffix,
+                    dcomp_perf = {'test_case_id': '%s_%s' % (test_case_prefix,
                                                              'dcomp_perf'),
                                  'units': units,
                                  'measurement': tmpdata['dcomp_perf']
