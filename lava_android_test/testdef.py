@@ -131,9 +131,10 @@ class AndroidTest(ITest):
             bundle['test_runs'][0]['attributes']['install_options'] = output[0]
 
     def _savetestdata(self, analyzer_assigned_uuid):
+        config = get_config()
         TIMEFORMAT = '%Y-%m-%dT%H:%M:%SZ'
         bundle = {
-            'format': 'Dashboard Bundle Format 1.2',
+            'format': config.bundle_format,
             'test_runs': [
                 {
                 'analyzer_assigned_uuid': analyzer_assigned_uuid,
@@ -149,7 +150,6 @@ class AndroidTest(ITest):
                 }
             ]
         }
-        config = get_config()
         self._add_install_options(bundle, config)
         filename_host = os.path.join(config.tempdir_host, 'testdata.json')
         write_file(DocumentIO.dumps(bundle), filename_host)

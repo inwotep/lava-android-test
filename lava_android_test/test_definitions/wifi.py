@@ -1,4 +1,4 @@
-# copyright (C) 2012 Linaro Limited
+# copyright (C) 2011-2012 Linaro Limited
 #
 # Author: Linaro Validation Team <linaro-dev@lists.linaro.org>
 #
@@ -20,16 +20,14 @@
 import re
 import lava_android_test.testdef
 
-test_name = 'bluetooth'
+test_name = 'wifi'
 
-cmd = ("am instrument -r -e enable_iterations 2 -e discoverable_iterations 2"
-       " -e scan_iterations 2 -e enable_pan_iterations 2 -e pair_iterations 1 "
-       " -e device_address $(OPTIONS) "
-       " -w com.android.bluetooth.tests/android.bluetooth.BluetoothTestRunner")
+cmd = ("am instrument -r -w "
+       "com.android.wifi.tests/android.wifi.WifiTestRunner")
 RUN_ADB_SHELL_STEPS = [cmd]
 
 
-class BluetoothTestTestParser(lava_android_test.testdef.AndroidTestParser):
+class WifiTestTestParser(lava_android_test.testdef.AndroidTestParser):
 
     def parse(self, result_filename='stdout.log', output_filename='stdout.log',
                test_name=test_name):
@@ -78,7 +76,7 @@ class BluetoothTestTestParser(lava_android_test.testdef.AndroidTestParser):
 inst = lava_android_test.testdef.AndroidTestInstaller()
 run = lava_android_test.testdef.AndroidTestRunner(
                                 adbshell_steps=RUN_ADB_SHELL_STEPS)
-parser = BluetoothTestTestParser()
+parser = WifiTestTestParser()
 testobj = lava_android_test.testdef.AndroidTest(testname=test_name,
                                                 installer=inst,
                                                 runner=run,

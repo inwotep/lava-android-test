@@ -1,4 +1,4 @@
-# Copyright (c) 2010-2011 Linaro
+# Copyright (c) 2010-2012 Linaro
 
 # Author: Linaro Validation Team <linaro-dev@lists.linaro.org>
 #
@@ -33,6 +33,8 @@ class LavaAndroidTestConfig(object):
         self.tempdir_android = os.path.join(home, 'temp')
         self.tempdir_host = os.environ.get('ANDROID_TEST_TEMP_HOST',
                                             '/tmp/lava-android-test')
+        self.bundle_format = "Dashboard Bundle Format 1.3"
+
 
 _config = None
 

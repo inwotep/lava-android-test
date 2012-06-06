@@ -17,14 +17,15 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import lava_android_test.config
 import lava_android_test.testdef
 
-test_name = 'v8'
+test_name = 'cache-coherency'
 
 INSTALL_STEPS_ADB_PRE = []
-ADB_SHELL_STEPS = ['"cd /data/benchmark/v8; v8shell run.js"']
-PATTERN = "^(?P<test_case_id>.*?):\s+(?P<measurement>\d+)\s*$"
+ADB_SHELL_STEPS = ['stressapptest -M 16 --cc_test -s 10']
+PATTERN = "^\s*(?P<test_case_id>Status?):\s+(?P<result>(PASS|FAIL)?)\s+-\s+"
 
 inst = lava_android_test.testdef.AndroidTestInstaller(
                                 steps_adb_pre=INSTALL_STEPS_ADB_PRE)
