@@ -26,7 +26,8 @@ test_name = 'tjbench'
 config = get_config()
 curdir = os.path.realpath(os.path.dirname(__file__))
 ppm_file_name = 'nightshot_iso_100.ppm'
-ppm_url = ("http://testdata.validation.linaro.org/nightshot_iso_100.ppm")
+ppm_url = ("http://testdata.validation.linaro.org/tjbench/"
+           "nightshot_iso_100.ppm")
 ppm_temp_path = os.path.join(config.tempdir_host, ppm_file_name)
 ppm_android_path = os.path.join(config.tempdir_android, test_name,
                                 ppm_file_name)
