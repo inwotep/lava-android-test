@@ -499,6 +499,13 @@ class run_monkeyrunner(AndroidCommand):
             if not serial:
                 raise LavaCommandError("No device attached")
         self.adb = ADB(serial)
+        try:
+            self.assertDeviceIsConnected()
+        except Exception as err:
+            raise LavaCommandError(err)
+
+        if not utils.check_command_exist('monkeyrunner'):
+            raise LavaCommandError('The command monkeyrunner can not be found')
 
         if self.args.repo_type == 'git':
             target_dir = mkdtemp(prefix='git_repo', dir=config.tempdir_host)
