@@ -43,7 +43,10 @@ def get_properties(adb=ADB()):
 
 def get_image_name_from_properties(adb=ADB()):
     props = get_properties(adb)
-    return props.get('ro.build.display.id')
+    if props.get('ro.build.display.id'):
+        return props.get('ro.build.display.id')
+    else:
+        return ''
 
 
 def get_source_info(adb=ADB()):
