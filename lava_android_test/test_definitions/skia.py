@@ -26,9 +26,9 @@ INSTALL_STEPS_ADB_PRE = []
 # Skia can do many more benchmarks, but it becomes almost too much data
 # to make a nice chart for. The -match limits the ones we run
 ADB_SHELL_STEPS = ['logcat -c',
-                   'skia_bench -repeat 6 -timers w -config 565 -match bitmap',
-                   'skia_bench -repeat 6 -timers w -config 565 -match rects',
-                   'skia_bench -repeat 6 -timers w -config 565 -match repeat',
+                   'skia_bench -repeat 1000 -timers w -config 565 -match bitmap',
+                   'skia_bench -repeat 1000 -timers w -config 565 -match rects',
+                   'skia_bench -repeat 1000 -timers w -config 565 -match repeat',
                    'logcat -d -s "skia:*"']
 
 
