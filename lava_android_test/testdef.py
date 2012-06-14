@@ -57,12 +57,13 @@ class AndroidTest(ITest):
         return self.adb
 
     def __init__(self, testname, version="", installer=None, runner=None,
-                 parser=None, org_ouput_file='stdout.log'):
+                 parser=None, default_options=None, org_ouput_file='stdout.log'):
         self.testname = testname
         self.version = version
         self.installer = installer
         self.runner = runner
         self.parser = parser
+        self.default_options = default_options
         self.org_ouput_file = org_ouput_file
         self.origdir = os.path.abspath(os.curdir)
 
@@ -160,6 +161,9 @@ class AndroidTest(ITest):
         if not self.runner:
             raise RuntimeError("no test runner defined for '%s'" %
                                 self.testname)
+        if not run_options:
+            run_options = self.default_options
+
         self.runner.setadb(self.adb)
         config = get_config()
         if not os.path.exists(config.tempdir_host):
