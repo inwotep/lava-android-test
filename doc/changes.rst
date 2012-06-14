@@ -6,7 +6,6 @@ Version History
 Version 0.6
 ===========
 
-* Unreleased
 * added new sleep test
 * added a hello world example test
 * increase number of repeats for skia benchmark
