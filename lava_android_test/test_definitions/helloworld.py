@@ -25,7 +25,7 @@ test_name = 'helloworld'
 
 INSTALL_STEPS_ADB_PRE = []
 ADB_SHELL_STEPS = ['echo helloworld: PASS']
-PATTERN = "^\s*(?P<test_case_id>[^:]*?):\s+(?P<result>(PASS|FAIL)?)\s+-\s+"
+PATTERN = "^\s*(?P<test_case_id>[^:]+?):\s+(?P<result>(PASS|FAIL)?)\s*$"
 
 inst = lava_android_test.testdef.AndroidTestInstaller(
                                 steps_adb_pre=INSTALL_STEPS_ADB_PRE)
