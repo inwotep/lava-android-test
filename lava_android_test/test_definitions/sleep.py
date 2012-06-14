@@ -23,6 +23,8 @@ import lava_android_test.testdef
 
 test_name = 'sleep'
 
+DEFAULT_OPTIONS='10'
+
 INSTALL_STEPS_ADB_PRE = []
 ADB_SHELL_STEPS = ['sleep $(OPTIONS); echo sleep_$(OPTIONS): PASS']
 PATTERN = "^\s*(?P<test_case_id>[^:]+?):\s+(?P<result>(PASS|FAIL)?)\s*$"
@@ -35,4 +37,5 @@ parser = lava_android_test.testdef.AndroidTestParser(PATTERN)
 testobj = lava_android_test.testdef.AndroidTest(testname=test_name,
                                     installer=inst,
                                     runner=run,
-                                    parser=parser)
+                                    parser=parser,
+                                    default_options=DEFAULT_OPTIONS)
