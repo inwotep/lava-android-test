@@ -33,9 +33,9 @@ test_func(){
    tests_dirs="cpuidle cpufreq cpuhotplug sched_mc suspend thermal utils"
    files=`find cpuidle cpufreq cpuhotplug sched_mc suspend thermal utils -name "*.sh"`
 
-   for tests_dirs in $tests_dirs
+   for dir in $tests_dirs
    do
-       subDir=`pwd`/$tests_dirs
+       subDir=`pwd`/$dir
        if [ -d $subDir ]; then
        cd $subDir
        fi
