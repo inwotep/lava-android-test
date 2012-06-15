@@ -19,6 +19,7 @@ test_func(){
    busybox ln -s -f /system/bin/busybox grep
    busybox ln -s -f /system/bin/busybox rm
    busybox ln -s -f /system/bin/busybox seq
+   busybox ln -s -f /system/bin/busybox taskset
    busybox ln -s -f /system/bin/busybox tee
    busybox ln -s -f /system/bin/busybox printf
    busybox ln -s -f /system/bin/busybox wc
