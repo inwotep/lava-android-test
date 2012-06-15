@@ -43,9 +43,9 @@ test_func(){
        echo `pwd`
        for file in `find . -name "*.sh"`
        do
-      path=$file
-      echo $path
-      `echo $SHELL` $path
+       path=$file
+       echo $path
+       /system/bin/sh $path
        done
        cd ..
    done
