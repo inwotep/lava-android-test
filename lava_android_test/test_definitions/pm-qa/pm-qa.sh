@@ -40,9 +40,9 @@ test_func(){
        fi
 
        echo `pwd`
-       for dir in `find . -name "*.sh"`
+       for file in `find . -name "*.sh"`
        do
-      path=$dir
+      path=$file
       echo $path
       `echo $SHELL` $path
        done
