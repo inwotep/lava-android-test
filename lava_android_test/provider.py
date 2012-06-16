@@ -221,7 +221,7 @@ class ShellTestProvider(TestProvider):
 
         INSTALL_STEPS_ADB_PRE = [
                      'push %s %s ' % (sh_file, test_sh_android_path),
-                     'shell chmod 777 %s' % test_sh_android_path]
+                     'shell chmod 777 %s $(OPTIONS)' % test_sh_android_path]
 
         ADB_SHELL_STEPS = [test_sh_android_path]
         PATTERN = ("^\s*(?P<test_case_id>\w+)="

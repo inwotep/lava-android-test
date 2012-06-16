@@ -312,6 +312,9 @@ class AndroidTestRunner(object):
             for cmd in self.adbshell_steps:
                 if option is not None:
                     cmd = cmd.replace('$(OPTIONS)', option)
+                else:
+                    cmd = cmd.replace('$(OPTIONS)', '')
+                cmd = cmd.strip()
                 ret_code = self.adb.run_adb_shell_for_test(cmd,
                                                            stdoutlog,
                                                             stderrlog)
@@ -583,6 +586,8 @@ def _run_steps_host(steps=[], serial=None, option=None, resultsdir=None):
             cmd = cmd.replace('$(SERIAL)', '')
         if option is not None:
             cmd = cmd.replace('$(OPTIONS)', option)
+        else:
+            cmd = cmd.replace('$(OPTIONS)', '')
         cmd = cmd.strip()
         rc, output = adb.run_cmd_host(cmd, quiet=False)
         if rc:
@@ -598,6 +603,9 @@ def _run_steps_adb(steps=[], serial=None, option=None, resultsdir=None):
     for cmd in steps:
         if option is not None:
             cmd = cmd.replace('$(OPTIONS)', option)
+        else:
+            cmd = cmd.replace('$(OPTIONS)', '')
+        cmd = cmd.strip()
         rc, output = adb.run_adb_cmd(cmd, quiet=False)
         if rc:
             raise RuntimeError(

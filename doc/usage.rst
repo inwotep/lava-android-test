@@ -144,13 +144,42 @@ If the test tools are just command that can be run on android system,
 and the output is well formatted, then congratulations, you can go
 directly to step 6. You don't need to wrap script again.
 
-3. About test scripts/tools
+3. Three types simple test
 
-If the test tools has already been build into the android image or 
-in the host image(normal Ubuntu image), then you won't need to define any
-scripts for organizing the test tools, you can skip this step.
+  1. Instrumentation test, run like "adb shell am instrument ..."
+  
+  create a file like lava_android_test/test_definitions/instruments/example.py,
+  and put it under lava_android_test/test_definitions/instruments::
+      
+    cmd = ("am instrument -r -w "
+       "com.android.emulator.connectivity.test/"
+       "android.test.InstrumentationTestRunner")
+    RUN_ADB_SHELL_STEPS = [cmd]
+     
+      
+  2. Android command test, run like "adb shell test-command"
+  
+  create a file like lava_android_test/test_definitions/commands/example.py
+  and put it under lava_android_test/test_definitions/commands::
+      
+    RUN_ADB_SHELL_STEPS = ['tjunittest']
+    PATTERN = ("^\s*(?P<test_case_id>.+)\s+\.\.\.\s+(?P<result>\w+)\."
+           "\s+(?P<measurement>[\d\.]+)\s+(?P<units>\w+)\s*$")
+          
+           
+  3. Android shell test, need to write a shell and run like "adb shell script.sh"
 
-Otherwise, put the actual test tools in some place, normally they are 
+  create a file like lava_android_test/test_definitions/shells/example.py
+  and put it under lava_android_test/test_definitions/shells::
+      
+    #!/system/bin/sh
+
+    echo "test_case_fail=fail"
+    echo "test_case_pass=pass"
+
+4. About test scripts/tools
+
+Put the actual test tools in some place, normally they are 
 in a sub directory of test_definitions, like the busybox test, i.e. 
 the actual test tool is busybox_test.sh, and it is put in the 
 lava_android_test/test_definitions/busybox directory.
@@ -162,7 +191,7 @@ lava_android_test/test_definitions/busybox directory.
 
    include lava_android_test/test_definitions/busybox/
 
-4. Add a test wrapper script for your test into the test_definitions directory. 
+5. Add a test wrapper script for your test into the test_definitions directory. 
 
 The content of the wrapper script should be something like below,
 Normally, you just need to redefine the red and bold part in the above::
@@ -233,7 +262,10 @@ then you can run lava-android-test install -o "install options string" or lava-a
    then there is no need to pass the device serial number, lava-android-test will do this for you.
 
 
-5. you can:
+6. you can:
+
+Here is a blog about install/test lava-android-test that you can reference:
+   http://www.linaro.org/linaro-blog/2011/12/01/local-lava-testing-of-android-ics
 
 * use "lava-android-test list-tests" to check if the test wrapper created can be recognized,
 * use "lava-android-test install ${test_name}" to install the test,
@@ -241,18 +273,15 @@ then you can run lava-android-test install -o "install options string" or lava-a
 * use "lava-android-test show ${result_id}" to show the output the test executed,
 * use "lava-android-test parse ${result_id}" to to generate the result bundle for the test executed.
 
-Here is a blog about install/test lava-android-test that you can reference::
-
-  http://www.linaro.org/linaro-blog/2011/12/01/local-lava-testing-of-android-ics/
-
-6. Integrate Into Lava
+7. Integrate Into Lava
 
 When you have done the above steps and verified your test that works well, 
-then you can integrate it in LAVA with the android-build. Here is a description about that::
+then you can integrate it in LAVA with the android-build. 
 
-  https://wiki.linaro.org/Platform/Android/AndroidBuild-LavaIntegration
+Here is a description about that:
+   https://wiki.linaro.org/Platform/Android/AndroidBuild-LavaIntegration
 
-7. Add Document
+8. Add Document
 
 At last don’t forget to add an entry and some document in the doc/tests.rst file. Like::
 
@@ -263,7 +292,7 @@ At last don’t forget to add an entry and some document in the doc/tests.rst fi
 Then the information will be listed in the below url:
    http://lava-android-test.readthedocs.org/en/latest/tests.html
 
-8. Commit Modification
+9. Commit Modification
 
 In lava-android-test directory, run the following commands::
 
