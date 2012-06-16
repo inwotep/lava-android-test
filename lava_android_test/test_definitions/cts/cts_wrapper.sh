@@ -22,14 +22,14 @@
 
 cts_pkg="android-cts-4.0.3_r3-linux_x86-arm.zip"
 media_pkg="android-cts-media-1.0.zip"
-#cts_pkg_url="https://dl.google.com/dl/android/cts/${cts_pkg}"
-#media_pkg_url="https://dl.google.com/dl/android/cts/${media_pkg}"
-local_url="http://192.168.1.127/images/cts/"
-cts_pkg_url="${local_url}${cts_pkg}"
-media_pkg_url="${local_url}${media_pkg}"
+site_url="https://dl.google.com/dl/android/cts/"
+test_str='--plan CTS'
+#site_url="http://192.168.1.127/images/cts/"
 #test_str='--package android.admin'
-test_str='--plan AppSecurity'
-#test_str='--plan CTS'
+#test_str='--plan AppSecurity'
+
+cts_pkg_url="${site_url}${cts_pkg}"
+media_pkg_url="${site_url}${media_pkg}"
 
 ADB_OPTION=""
 SERIAL=""

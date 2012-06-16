@@ -178,7 +178,7 @@ def delete_files(flist=[]):
             os.unlink(f)
 
 
-def stop_at_pattern(command=None, pattern=None, timeout=-1):
+def stop_at_pattern(command=None, pattern=None, timeout= -1):
     if not command:
         return
 
@@ -194,9 +194,11 @@ def stop_at_pattern(command=None, pattern=None, timeout=-1):
         if match_id == 0:
             time.sleep(5)
             proc.sendcontrol('C')
+            proc.sendline('')
     except pexpect.TIMEOUT:
         result = False
     finally:
         proc.sendcontrol('C')
+        proc.sendline('')
 
     return result
