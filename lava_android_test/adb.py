@@ -238,27 +238,55 @@ class ADB(object):
         return result.returncode
 
     def push_stream_to_device(self, stream_lines, path):
+        if self.serial:
+            android_info = 'android(%s)' % self.serial
+        else:
+            android_info = 'android'
+
+        if not self.isDeviceConnected():
+            if not self.reconnect():
+                raise Exception('Failed to pull file(%s) to %s, '
+                                'because the device is not connected' % (
+                                                         path, android_info))
         basename = os.path.basename(path)
         tmp_path = os.path.join(config.tempdir_host, basename)
         if self.exists(path):
             retcode = self.pull(path, tmp_path)
             if retcode != 0:
                 raise Exception(
-                    'Failed to pull file(%s)stdout to android %s' % path)
+                    'Failed to pull file(%s) to %s' % (path, android_info))
 
         with open(tmp_path, 'a') as tmp_fd:
             tmp_fd.writelines(stream_lines)
             tmp_fd.close()
 
         if self.push(tmp_path, path)[1] is None:
-            raise Exception('Failed to push stdout to android %s' % path)
+            raise Exception(
+                    'Failed to pull file(%s) to %s' % (path, android_info))
         os.remove(tmp_path)
 
     def isDeviceConnected(self):
-        status, lines = self.run_cmd_host('%s get-state' % self.adb)
+        lines = self.run_cmd_host('%s get-state' % self.adb)[1]
         for line in lines:
             if 'device' in line:
                 return True
+        return False
+
+    def conncect(self):
+        if self.serial:
+            status = self.run_cmd_host('adb connect %s' % self.serial)[0]
+            return status == 0
+        return False
+
+    def disconncect(self):
+        if self.serial:
+            status = self.run_cmd_host('adb disconnect %s' % self.serial)[0]
+            return status == 0
+        return False
+
+    def reconnect(self):
+        if self.disconncect():
+            return self.conncect()
         return False
 
 

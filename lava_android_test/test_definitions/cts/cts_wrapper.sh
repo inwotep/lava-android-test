@@ -20,36 +20,55 @@
 
 #http://source.android.com/compatibility/downloads.html
 
-ADB_CMD="adb"
-if [ "x${1}" != "x" ]; then
-    ADB_CMD="${ADB_CMD} -s ${1}"
-fi
+cts_pkg="android-cts-4.0.3_r3-linux_x86-arm.zip"
+media_pkg="android-cts-media-1.0.zip"
+#cts_pkg_url="https://dl.google.com/dl/android/cts/${cts_pkg}"
+#media_pkg_url="https://dl.google.com/dl/android/cts/${media_pkg}"
+local_url="http://192.168.1.127/images/cts/"
+cts_pkg_url="${local_url}${cts_pkg}"
+media_pkg_url="${local_url}${media_pkg}"
+#test_str='--package android.admin'
+test_str='--plan AppSecurity'
+#test_str='--plan CTS'
 
-cts_url_txt='https://wiki.linaro.org/TestDataLinkPage?action=AttachFile&do=get&target=android-cts-url.txt'
-mix_zip_name='mix.zip'
-android_cts_name='android-cts.zip'
+ADB_OPTION=""
+SERIAL=""
+if [ "x${1}" != "x" ]; then
+    ADB_OPTION="-s ${1}"
+    SERIAL="${1}"
+fi
+ADB_CMD="adb ${ADB_OPTION}"
+
+
+function download_unzip(){
+    if [ -z "$1" ] || [ -z "$2" ]; then
+        return
+    fi
+    url="${1}"
+    pkg="${2}"
+    
+    echo "wget -i ${url} -O ${pkg}"
+    wget "${url}" -O ${pkg}
+    if [ $? -ne 0 ]; then
+        echo "Failed to get the package ${url}"
+        exit 1
+    fi
+    echo "unzip ${pkg}"
+    unzip ${pkg}
+    if [ $? -ne 0 ]; then
+        echo "Faild to unzip the package "
+        exit 1
+    fi
+}
 
 rm -fr android-cts.zip android-cts
+download_unzip "${cts_pkg_url}" ${cts_pkg}
+download_unzip "${media_pkg_url}" ${media_pkg}
 
-echo "wget -i ${cts_url_txt} -O ${mix_zip_name}"
-wget -i "${cts_url_txt}" -O ${mix_zip_name}
-if [ $? -ne 0 ]; then
-    echo "Failed to get the android-cts packages"
-    exit 1
-fi
-echo "tail --lines=+2 ${mix_zip_name}>${android_cts_name}"
-tail --lines=+2 ${mix_zip_name}>${android_cts_name}
-if [ $? -ne 0 ]; then
-    echo "Failed to get the android-cts packages from downloaded packages"
-    exit 1
-fi
-
-echo "unzip ${android_cts_name}"
-unzip ${android_cts_name}
-if [ $? -ne 0 ]; then
-    echo "Faild to unzip the android-cts packages"
-    exit 1
-fi
+echo "adb ${ADB_OPTION} shell mkdir /mnt/sdcard/test"
+chmod +x copy_media.sh
+echo "copy_media.sh all ${ADB_OPTION}"
+/bin/bash ./copy_media.sh all ${ADB_OPTION}
 
 echo "${ADB_CMD} install -r android-cts/repository/testcases/CtsDeviceAdmin.apk"
 ${ADB_CMD} install -r android-cts/repository/testcases/CtsDeviceAdmin.apk
@@ -58,24 +77,12 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-RET_CODE=0
-#test_str='--package android.admin'
-test_str='--plan AppSecurity'
-test_str='--plan CTS'
 if [ "x${1}" != "x" ]; then
-    echo "./android-cts/tools/cts-tradefed run cts --serial ${1} ${test_str}|tee cts_output.log"
-    ./android-cts/tools/cts-tradefed run cts --serial ${1} ${test_str}|tee cts_output.log
-    RET_CODE=$?
+    echo "./android-cts/tools/cts-tradefed run cts --serial ${SERIAL} ${test_str}|tee cts_output.log"
+    ./android-cts/tools/cts-tradefed run cts --serial ${SERIAL} ${test_str}|tee cts_output.log
 else
     echo "./android-cts/tools/cts-tradefed run cts ${test_str}|tee cts_output.log"
     ./android-cts/tools/cts-tradefed run cts ${test_str}|tee cts_output.log
-    RET_CODE=$?
 fi
-rm -f tee cts_output.log
-if [ ${RET_CODE} -ne 0 ]; then
-    echo "Faild to run cts for test (${test_str})"
-### comment it so that we can get the test result that has been executed
-### otherwise we won't get any test result about cts
-#    exit 1
-fi
+
 exit 0

@@ -1,11 +1,10 @@
 #!/usr/bin/python
 
-# Copyright (c) 2011 Linaro
+# Copyright (c) 2012 Linaro
 
 # Author: Linaro Validation Team <linaro-dev@lists.linaro.org>
 #
 # This file is part of LAVA Android Test.
-#
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,22 +18,18 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-import sys
-import time
 
+import os
+import sys
 from lava_android_test.utils import stop_at_pattern
 
-if len(sys.argv) == 1:
-    adb_cmd = "adb"
-else:
-    adb_cmd = "adb -s %s" % (sys.argv[1])
+curdir = os.path.realpath(os.path.dirname(__file__))
+command = os.path.join(curdir, 'cts_wrapper.sh')
+if not len(sys.argv) == 1:
+    command = '%s %s' % (command, sys.argv[1])
 
-logcat_cmd = '%s logcat' % (adb_cmd)
-pattern = "Displayed org.zeroxlab.zeroxbenchmark/.Report"
+pattern = "Time:"
+if not stop_at_pattern(command=command, pattern=pattern, timeout=36000):
+    print "CTS test times out"
 
-if not stop_at_pattern(command=logcat_cmd, pattern=pattern, timeout=2400):
-    print "0xbench Test: TIMEOUT Fail"
-    sys.exit(1)
-
-time.sleep(3)
 sys.exit(0)

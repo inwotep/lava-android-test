@@ -14,9 +14,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import re
 import os
+import pexpect
 import shutil
 import subprocess
 import sys
+import time
 import urllib2
 import urlparse
 
@@ -174,3 +176,27 @@ def delete_files(flist=[]):
     for f in flist:
         if os.path.exists(f):
             os.unlink(f)
+
+
+def stop_at_pattern(command=None, pattern=None, timeout=-1):
+    if not command:
+        return
+
+    if not pattern:
+        response = [pexpect.EOF]
+    else:
+        response = [pattern, pexpect.EOF]
+
+    result = True
+    try:
+        proc = pexpect.spawn(command, logfile=sys.stdout)
+        match_id = proc.expect(response, timeout=timeout)
+        if match_id == 0:
+            time.sleep(5)
+            proc.sendcontrol('C')
+    except pexpect.TIMEOUT:
+        result = False
+    finally:
+        proc.sendcontrol('C')
+
+    return result
