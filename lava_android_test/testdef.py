@@ -338,7 +338,7 @@ class AndroidTestRunner(object):
                         option=run_options, resultsdir=resultsdir)
         _run_steps_adb(self.steps_adb_pre, self.adb.serial,
                         option=run_options, resultsdir=resultsdir)
-        self._run_steps_adbshell(resultsdir, option=run_options,)
+        self._run_steps_adbshell(resultsdir, option=run_options)
         _run_steps_adb(self.steps_adb_post, self.adb.serial,
                         option=run_options, resultsdir=resultsdir)
         _run_steps_host(self.steps_host_post, self.adb.serial,
