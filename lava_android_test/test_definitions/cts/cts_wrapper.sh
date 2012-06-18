@@ -47,7 +47,7 @@ function download_unzip(){
     url="${1}"
     pkg="${2}"
     
-    echo "wget -i ${url} -O ${pkg}"
+    echo "wget ${url} -O ${pkg}"
     wget "${url}" -O ${pkg}
     if [ $? -ne 0 ]; then
         echo "Failed to get the package ${url}"
