@@ -188,13 +188,11 @@ def stop_at_pattern(command=None, pattern=None, timeout= -1):
         response = [pattern, pexpect.EOF]
 
     result = True
+    proc = pexpect.spawn(command, logfile=sys.stdout)
     try:
-        proc = pexpect.spawn(command, logfile=sys.stdout)
         match_id = proc.expect(response, timeout=timeout)
         if match_id == 0:
             time.sleep(5)
-            proc.sendcontrol('C')
-            proc.sendline('')
     except pexpect.TIMEOUT:
         result = False
     finally:
