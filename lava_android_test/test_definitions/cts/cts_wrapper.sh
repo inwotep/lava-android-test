@@ -47,8 +47,8 @@ function download_unzip(){
     url="${1}"
     pkg="${2}"
     
-    echo "wget ${url} -O ${pkg}"
-    wget "${url}" -O ${pkg}
+    echo "wget --connect-timeout=30 -S --progress=dot - e dotbytes=2M ${url} -O ${pkg}"
+    wget --connect-timeout=30 -S --progress=dot - e dotbytes=2M "${url}" -O ${pkg}
     if [ $? -ne 0 ]; then
         echo "Failed to get the package ${url}"
         exit 1
@@ -70,12 +70,46 @@ chmod +x copy_media.sh
 echo "copy_media.sh all ${ADB_OPTION}"
 /bin/bash ./copy_media.sh all ${ADB_OPTION}
 
+
+#1. Your phone should be running a user build (Android 4.0 and later) from source.android.com
+#2. Please refer to this link on the Android developer site and set up your device accordingly.
+#3. Make sure that your device has been flashed with a user build (Android 4.0and later) before you run CTS.
+#4. You need to ensure the Text To Speech files are installed on the device. 
+#   You can check via Settings > Speech synthesis > Install voice data 
+#   before running CTS tests. 
+#   (Note that this assumes you have Android Market installed on the device, 
+#   if not you will need to install the files manually via adb)
+#5. Make sure the device has a SD card plugged in and the card is empty. 
+#   Warning: CTS may modify/erase data on the SD card plugged in to the device.
+#6. Do a factory data reset on the device (Settings > SD Card & phone storage >Factory data reset). 
+#   Warning: This will erase all user data from the phone.
+#7. Make sure no lock pattern is set on the device (Settings > Security > Screen Lock should be 'None').
+#8. Make sure the "USB Debugging" development option is checked (Settings >Developer options > USB debugging).
+#9. Make sure Settings > Developer options > Stay Awake is checked
+#10. Make sure Settings > Developer options > Allow mock locations is checked
+#11. Make sure device is connected to a functioning Wi-Fi network (Settings > WiFi)
+#12. Make sure the device is at the home screen at the start of CTS (Press the home button).
+#13. While a device is running tests, it must not be used for any other tasks.
+#14. Do not press any keys on the device while CTS is running. 
+#   Pressing keys or touching the screen of a test device will interfere with the running tests and may lead to test failures.
+
+#15. Set up accessibility tests:
+echo "${ADB_CMD} install -r android-cts/repository/testcases/CtsDelegatingAccessibilityService.apk"
+${ADB_CMD} install -r android-cts/repository/testcases/CtsDelegatingAccessibilityService.apk
+if [ $? -ne 0 ]; then
+    echo "Faild to install CtsDelegatingAccessibilityService.apk"
+    exit 1
+fi
+##TODO On the device, enable Settings > Accessibility > DelegatingAccessibility Service
+
+#16. Set up device administration tests:
 echo "${ADB_CMD} install -r android-cts/repository/testcases/CtsDeviceAdmin.apk"
 ${ADB_CMD} install -r android-cts/repository/testcases/CtsDeviceAdmin.apk
 if [ $? -ne 0 ]; then
     echo "Faild to install CtsDeviceAdmin.apk"
     exit 1
 fi
+##TODO On the device, enable Settings > Security > Device Administrators >android.deviceadmin.cts.CtsDeviceAdmin* settings
 
 if [ "x${1}" != "x" ]; then
     echo "./android-cts/tools/cts-tradefed run cts --serial ${SERIAL} ${test_str}|tee cts_output.log"
