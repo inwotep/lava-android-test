@@ -29,7 +29,7 @@ if not len(sys.argv) == 1:
     command = '%s %s' % (command, sys.argv[1])
 
 pattern = "Time:"
-if not stop_at_pattern(command=command, pattern=pattern, timeout=36000):
+if not stop_at_pattern(command="bash %s" % command, pattern=pattern, timeout=36000):
     print "CTS test times out"
 
 sys.exit(0)
