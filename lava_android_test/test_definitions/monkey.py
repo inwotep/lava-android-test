@@ -28,12 +28,18 @@ monkey_sh_name = 'monkey.sh'
 monkey_sh_path = os.path.join(curdir, 'monkey', monkey_sh_name)
 monkey_sh_android_path = os.path.join(config.installdir_android,
                                       test_name, monkey_sh_name)
+monkey_blacklist_name = 'package_black_list'
+monkey_blacklist_path = os.path.join(curdir, test_name, monkey_blacklist_name)
+monkey_blacklist_android_path = os.path.join(config.installdir_android,
+                                      test_name, monkey_blacklist_name)
 
 INSTALL_STEPS_ADB_PRE = ['push %s %s ' % (monkey_sh_path,
                                           monkey_sh_android_path),
+                          'push %s %s ' % (monkey_blacklist_path,
+                                          monkey_blacklist_android_path),
                           'shell chmod 777 %s' % monkey_sh_android_path]
 
-ADB_SHELL_STEPS = [monkey_sh_android_path]
+ADB_SHELL_STEPS =  ['%s %s' % (monkey_sh_android_path, monkey_blacklist_android_path)]
 #PATTERN = "^(?P<test_case_id>\w+):\W+(?P<measurement>\d+\.\d+)"
 PATTERN = "## Network stats: elapsed time=(?P<measurement>\d+)ms"
 FAILURE_PATTERNS = []
