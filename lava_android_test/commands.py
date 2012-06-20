@@ -159,6 +159,8 @@ class AndroidCommand(Command):
                 return ''
             else:
                 return serial
+        else:
+            return self.args.serial
 
     def assertDeviceIsConnected(self):
         if not self.adb.isDeviceConnected():
@@ -169,7 +171,12 @@ class AndroidCommand(Command):
                 raise Exception("No device found")
 
     def invoke(self):
-        self.adb = ADB(self.args.serial)
+        serial = self.get_device_serial()
+        if not serial:
+            raise LavaCommandError("No device attached")
+        self.serial = serial
+        self.adb = ADB(self.serial)
+
         try:
             self.assertDeviceIsConnected()
         except Exception as err:
@@ -388,7 +395,6 @@ class run_custom(AndroidCommand):
 
     def invoke_sub(self):
 
-        config = get_config()
         test_name = 'custom'
         ADB_SHELL_STEPS = []
         STEPS_HOST_PRE = []
@@ -404,7 +410,7 @@ class run_custom(AndroidCommand):
             file_url = self.args.command_file
             urlpath = urlparse.urlsplit(file_url).path
             file_name = os.path.basename(urlpath)
-            target_path = os.path.join(config.installdir_android,
+            target_path = os.path.join(self.config.installdir_android,
                                      test_name, file_name)
             STEPS_HOST_PRE = ["wget %s -O %s" % (file_url, file_name)]
             STEPS_ADB_PRE = ["push %s %s" % (file_name, target_path)]
@@ -490,25 +496,13 @@ class run_monkeyrunner(AndroidCommand):
                                  " bundle and finally save the complete bundle"
                                  " to the  specified FILE."))
 
-    def invoke(self):
-        config = get_config()
-        if self.args.serial:
-            serial = self.args.serial
-        else:
-            serial = self.get_device_serial()
-            if not serial:
-                raise LavaCommandError("No device attached")
-        self.adb = ADB(serial)
-        try:
-            self.assertDeviceIsConnected()
-        except Exception as err:
-            raise LavaCommandError(err)
+    def invoke_sub(self):
 
         if not utils.check_command_exist('monkeyrunner'):
             raise LavaCommandError('The command monkeyrunner can not be found')
 
         if self.args.repo_type == 'git':
-            target_dir = mkdtemp(prefix='git_repo', dir=config.tempdir_host)
+            target_dir = mkdtemp(prefix='git_repo', dir=self.config.tempdir_host)
             os.chmod(target_dir, 0755)
             GitRepository(self.args.url).checkout(target_dir)
         else:
@@ -524,7 +518,7 @@ class run_monkeyrunner(AndroidCommand):
 
         tip_msg = ("Run monkeyrunner scripts in following url on device(%s):"
                        "\n\turl=%s") % (
-                       self.args.serial,
+                       self.serial,
                        self.args.url)
 
         self.say_begin(tip_msg)
@@ -537,7 +531,7 @@ class run_monkeyrunner(AndroidCommand):
             if len(test_case_id) > 50:
                 test_case_id = '%s...' % (test_case_id[:50])
             try:
-                sub_bundle = self.run_monkeyrunner_test(script, serial,
+                sub_bundle = self.run_monkeyrunner_test(script, self.serial,
                                                          test_case_id)
                 test_result = {"test_case_id": test_case_id,
                                "result": 'pass'}
@@ -570,7 +564,6 @@ class run_monkeyrunner(AndroidCommand):
         self.say_end(tip_msg)
 
     def run_monkeyrunner_test(self, script, serial, test_case_id=None):
-        config = get_config()
 
         inst = AndroidTestInstaller()
         run = AndroidTestRunner(steps_host_pre=[
@@ -590,11 +583,11 @@ class run_monkeyrunner(AndroidCommand):
         ##The png files here are generated to the host by the monkeyrunner
         ##monkeyrunner is run on host, not on the target
         bundle = {}
-        org_png_file_list = utils.find_files(config.tempdir_host,
+        org_png_file_list = utils.find_files(self.config.tempdir_host,
                                              '.%s' % 'png')
         result_id = test.run(quiet=self.args.quiet)
         if self.args.output:
-            cur_all_png_list = utils.find_files(config.tempdir_host,
+            cur_all_png_list = utils.find_files(self.config.tempdir_host,
                                                 '.%s' % 'png')
             new_png_list = set(cur_all_png_list).difference(org_png_file_list)
             test_id = 'monkeyrunner(%s)' % (test_case_id)
