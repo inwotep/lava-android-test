@@ -27,6 +27,7 @@ test_str='--plan CTS'
 #site_url="http://192.168.1.127/images/cts/"
 #test_str='--package android.admin'
 #test_str='--plan AppSecurity'
+#export http_proxy=http://localhost:3128
 
 cts_pkg_url="${site_url}${cts_pkg}"
 media_pkg_url="${site_url}${media_pkg}"
@@ -47,8 +48,8 @@ function download_unzip(){
     url="${1}"
     pkg="${2}"
     
-    echo "wget --connect-timeout=30 -S --progress=dot - e dotbytes=2M ${url} -O ${pkg}"
-    wget --connect-timeout=30 -S --progress=dot - e dotbytes=2M "${url}" -O ${pkg}
+    echo "wget --connect-timeout=30 -S --progress=dot -e dotbytes=2M ${url} -O ${pkg}"
+    wget -c -t 20 --connect-timeout=30 -S --progress=dot -e dotbytes=2M "${url}" -O ${pkg}
     if [ $? -ne 0 ]; then
         echo "Failed to get the package ${url}"
         exit 1
@@ -74,11 +75,15 @@ echo "copy_media.sh all ${ADB_OPTION}"
 #1. Your phone should be running a user build (Android 4.0 and later) from source.android.com
 #2. Please refer to this link on the Android developer site and set up your device accordingly.
 #3. Make sure that your device has been flashed with a user build (Android 4.0and later) before you run CTS.
+####Step 1~3 is done by deployment
+
 #4. You need to ensure the Text To Speech files are installed on the device. 
 #   You can check via Settings > Speech synthesis > Install voice data 
 #   before running CTS tests. 
 #   (Note that this assumes you have Android Market installed on the device, 
 #   if not you will need to install the files manually via adb)
+##TODO don't know how to do this yet
+
 #5. Make sure the device has a SD card plugged in and the card is empty. 
 #   Warning: CTS may modify/erase data on the SD card plugged in to the device.
 #6. Do a factory data reset on the device (Settings > SD Card & phone storage >Factory data reset). 
@@ -87,11 +92,21 @@ echo "copy_media.sh all ${ADB_OPTION}"
 #8. Make sure the "USB Debugging" development option is checked (Settings >Developer options > USB debugging).
 #9. Make sure Settings > Developer options > Stay Awake is checked
 #10. Make sure Settings > Developer options > Allow mock locations is checked
+####Step 5~10 is done by deployment
+
 #11. Make sure device is connected to a functioning Wi-Fi network (Settings > WiFi)
+adb ${ADB_OPTION} shell am start -a android.intent.action.MAIN -n com.android.settings/.Settings
+adb ${ADB_OPTION} shell service call wifi 13 s16 "true"
+sleep 5
+
 #12. Make sure the device is at the home screen at the start of CTS (Press the home button).
+adb ${ADB_OPTION} shell input keyevent 3
+sleep 3
+
 #13. While a device is running tests, it must not be used for any other tasks.
 #14. Do not press any keys on the device while CTS is running. 
-#   Pressing keys or touching the screen of a test device will interfere with the running tests and may lead to test failures.
+#    Pressing keys or touching the screen of a test device will interfere with the running tests and may lead to test failures.
+#####Steps 13~14 should be the confirmed.
 
 #15. Set up accessibility tests:
 echo "${ADB_CMD} install -r android-cts/repository/testcases/CtsDelegatingAccessibilityService.apk"
