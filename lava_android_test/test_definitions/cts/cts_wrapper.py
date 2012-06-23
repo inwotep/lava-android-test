@@ -107,8 +107,8 @@ def main():
     if not prepare_cts():
         sys.exit(1)
 
-    run_cts_with_plan(run_cts_continue)
-    run_cts_continue(run_cts_continue)
+    run_cts_with_plan(run_wrapper_cmd)
+    run_cts_continue(run_wrapper_cmd)
 
     sys.exit(0)
 
