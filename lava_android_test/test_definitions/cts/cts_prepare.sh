@@ -23,8 +23,8 @@
 cts_pkg="android-cts-4.0.3_r3-linux_x86-arm.zip"
 media_pkg="android-cts-media-1.0.zip"
 site_url="https://dl.google.com/dl/android/cts/"
-site_url="http://192.168.1.127/images/cts/"
-export http_proxy=http://localhost:3128
+#site_url="http://192.168.1.127/images/cts/"
+#export http_proxy=http://localhost:3128
 
 cts_pkg_url="${site_url}${cts_pkg}"
 media_pkg_url="${site_url}${media_pkg}"
