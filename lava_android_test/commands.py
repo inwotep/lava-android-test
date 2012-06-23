@@ -152,15 +152,7 @@ class AndroidCommand(Command):
         return self.adb.exists(test_dir)
 
     def get_device_serial(self):
-        if not self.args.serial:
-            serial_ary = ADB().run_cmd_host('adb get-serialno')[1]
-            serial = serial_ary[0].strip()
-            if not serial or serial == 'unknown':
-                return ''
-            else:
-                return serial
-        else:
-            return self.args.serial
+        return ADB(self.args.serial).get_serial()
 
     def assertDeviceIsConnected(self):
         if not self.adb.isDeviceConnected():

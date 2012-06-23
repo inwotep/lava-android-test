@@ -45,7 +45,21 @@ class ADB(object):
         if serial is not None:
             self.serial = serial
             self.adb = 'adb -s %s' % serial
+        else:
+            self.serial = self.get_serial()
+
         self.cmdExecutor = CommandExecutor(quiet)
+
+    def get_serial(self):
+        if not self.serial:
+            serial_ary = self.run_cmd_host('adb get-serialno')[1]
+            serial = serial_ary[0].strip()
+            if not serial or serial == 'unknown':
+                return ''
+            else:
+                return serial
+        else:
+            return self.serial
 
     def push(self, source=None, target=None):
         if source is None:
