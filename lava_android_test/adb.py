@@ -42,13 +42,13 @@ class ADB(object):
     target_dir = config.tempdir_android
 
     def __init__(self, serial=None, quiet=True):
+        self.cmdExecutor = CommandExecutor(quiet)
         if serial is not None:
             self.serial = serial
             self.adb = 'adb -s %s' % serial
         else:
             self.serial = self.get_serial()
 
-        self.cmdExecutor = CommandExecutor(quiet)
 
     def get_serial(self):
         if not self.serial:

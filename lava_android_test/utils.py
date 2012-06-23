@@ -200,13 +200,3 @@ def stop_at_pattern(command=None, pattern=None, timeout=-1):
         proc.sendline('')
 
     return result
-
-
-def get_pexpet_stdout(command=None, timeout=-1):
-    if not command:
-        return None
-
-    p = pexpect.spawn(command)
-    p.expect (pexpect.EOF, timeout=timeout)
-
-    return p.before

@@ -20,33 +20,34 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import re
 import sys
 from lava_android_test.adb import ADB
-from lava_android_test.utils import stop_at_pattern, get_pexpet_stdout
+from lava_android_test.utils import stop_at_pattern
 
 adb = ADB(sys.argv[1])
 curdir = os.path.realpath(os.path.dirname(__file__))
 
 
 def get_not_executed():
-    pattern = 'cts-tf >'
-    command = './android-cts/tools/cts-tradefed --serial %s' % adb.get_serial()
-    if not stop_at_pattern(command=command, pattern=pattern):
-        print ("Failed to get the cts prompt "
-                "when executed command(%s).") % command
-        return None
+    list_result_path = os.path.join(curdir, 'cts_list_result_wrapper.sh')
+    list_result_cmd = "bash %s" % list_result_path
 
-    command = 'list results'
-    output = get_pexpet_stdout(command=command)
-    if not output:
-        print ("Failed to get the output of "
-                "cts sub command(%s).") % command
-        return None
+    pattern = 'CTS          unknown'
+    if not stop_at_pattern(command=list_result_cmd,
+                            pattern=pattern, timeout=5):
+        print "Failed to list the cts result for device(%s)" % adb.get_serial()
 
-    command = 'exit'
-    get_pexpet_stdout(command=command)
-    return output
-
+    with open('cts_list_results.log') as fd:
+        #0        17237  126   0             2012.06.23_03.31.49  CTS        unknown         
+        pattern = "\s*\d+\s+\d+\s+\d+\s+(?P<no_executed>\d+)\s+.+CTS\s+unknown\s*$"
+        pat = re.compile(pattern)
+        for line in fd.readlines():
+            match = pat.search(line)
+            if not match:
+                continue
+            return match.groupdict()['no_executed']
+        return 0
 
 def prepare_cts():
     cts_prepare_path = os.path.join(curdir, 'cts_prepare.sh')
