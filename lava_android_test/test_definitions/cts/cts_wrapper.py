@@ -52,7 +52,7 @@ def get_not_executed():
 def prepare_cts():
     cts_prepare_path = os.path.join(curdir, 'cts_prepare.sh')
     cts_prepare_cmd = "bash %s" % cts_prepare_path
-    if not stop_at_pattern(command="%s %s" % (cts_prepare_cmd, adb.get_serial),
+    if not stop_at_pattern(command="%s %s" % (cts_prepare_cmd, adb.get_serial()),
                            timeout=18000):
         print "Preapration for CTS test times out"
         return False
