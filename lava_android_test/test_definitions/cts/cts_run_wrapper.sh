@@ -20,7 +20,7 @@
 
 #http://source.android.com/compatibility/downloads.html
 
-echo "$@"
-"$@" |tee -a cts_output.log
+echo ./android-cts/tools/cts-tradefed "$@"
+./android-cts/tools/cts-tradefed "$@" |tee -a cts_output.log
 
 exit 0
