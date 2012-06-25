@@ -17,6 +17,15 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+"""
+Tests the performance of libjpegturbo
+
+**URL:** http://sourceforge.net/projects/libjpeg-turbo/
+
+**Default options:** None
+"""
+
 import os
 import re
 import lava_android_test.testdef

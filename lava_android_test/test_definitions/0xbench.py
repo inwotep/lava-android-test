@@ -17,6 +17,16 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+"""
+0xbench integrates several popular benchmarks into a single Android
+app that can be run to get benchmark reports for a given device.
+
+**URL:** http://code.google.com/p/0xbench/
+
+**Default options:** None
+"""
+
 import os
 import json
 

@@ -17,6 +17,14 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+"""
+This test helps validating basic wifi functionality by executing the
+Android WifeTestRunner tests.
+
+**Default options:** None
+"""
+
 import re
 import lava_android_test.testdef
 

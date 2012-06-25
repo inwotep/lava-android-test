@@ -17,6 +17,15 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+"""
+Executes the glmark2 benchmark.
+
+**URL:** https://launchpad.net/glmark2
+
+**Default Options:** None
+"""
+
 import os
 import lava_android_test.testdef
 from lava_android_test.config import get_config

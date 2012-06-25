@@ -17,6 +17,16 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+"""
+Performs testing of Android Input Method Manager by listing the available
+input methods on the system.
+
+**URL:** http://android.git.linaro.org/gitweb?p=platform/frameworks/base.git;a=blob;f=cmds/ime/src/com/android/commands/ime/Ime.java
+
+**Default options:** None
+"""
+
 import os
 import lava_android_test.testdef
 from lava_android_test.config import get_config

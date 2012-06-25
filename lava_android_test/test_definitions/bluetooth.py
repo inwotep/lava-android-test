@@ -17,6 +17,16 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+"""
+This test helps validating basic bluetooth functionality by executing the
+Android BluetoothTestRunner tests.
+
+**URL:** http://android.git.linaro.org/gitweb?p=platform/frameworks/base.git;a=blob;f=core/tests/bluetoothtests/src/android/bluetooth/BluetoothTestRunner.java;
+
+**Default options:** None
+"""
+
 import re
 import lava_android_test.testdef
 

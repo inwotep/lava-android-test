@@ -18,6 +18,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+"""
+Drives big.LITTLE test scripts that are pre-intalled on Linaro Android
+builds of big.LITTLE
+
+**URL:** https://wiki.linaro.org/Platform/Android/AndroidOnFastModels
+
+**Default options:** None
+"""
+
 import lava_android_test.config
 import lava_android_test.testdef
 
