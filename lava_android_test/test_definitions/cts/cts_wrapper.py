@@ -117,7 +117,7 @@ def main():
     cmd_cat_kmsg = 'bash %s kmsg.log adb -s %s shell cat /proc/kmsg' % (
                                     os.path.join(curdir, 'cts_redirect.sh'),
                                     adb.get_serial())
-    pid_cat_kmsg = adb.run_cmd_host(cmd_cat_kmsg)[1]
+    cat_kmsg_stdout = adb.run_cmd_host(cmd_cat_kmsg)[1]
 
     if not prepare_cts():
         sys.exit(1)
@@ -125,7 +125,8 @@ def main():
     run_cts_with_plan(run_wrapper_cmd)
     run_cts_continue(run_wrapper_cmd)
 
-    if pid_cat_kmsg:
+    if cat_kmsg_stdout:
+        pid_cat_kmsg = cat_kmsg_stdout[0].strip()
         adb.run_cmd_host('kill -9 %s' % pid_cat_kmsg)
 
     print_log()

@@ -18,10 +18,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#http://source.android.com/compatibility/downloads.html
-
 output_file=${1} && shift
-echo "$@ &> ${output_file} &"
 "$@" &> ${output_file} &
-echo pid=$!
+echo $!
 exit 0
