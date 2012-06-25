@@ -64,6 +64,9 @@ function main(){
     download_unzip "${cts_pkg_url}" ${cts_pkg}
     download_unzip "${media_pkg_url}" ${media_pkg}
 
+    echo "${ADB_CMD} shell cat /proc/kmsg"
+    ${ADB_CMD} shell cat /proc/kmsg >kmsg.log & 
+    
     echo "${ADB_CMD} shell mkdir /mnt/sdcard/test"
     ${ADB_CMD} shell mkdir /mnt/sdcard/test
     chmod +x copy_media.sh

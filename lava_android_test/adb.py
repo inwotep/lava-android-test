@@ -17,11 +17,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-import threading
 import os
 import re
 import subprocess
 import tempfile
+import threading
+import time
 
 from Queue import Queue
 from lava_android_test.config import get_config
@@ -288,18 +289,19 @@ class ADB(object):
 
     def conncect(self):
         if self.serial:
-            status = self.run_cmd_host('adb connect %s' % self.serial)[0]
-            return status == 0
+            self.run_cmd_host('adb connect %s' % self.serial, quiet=False)
+            return self.isDeviceConnected()
         return False
 
     def disconncect(self):
-        if self.serial:
-            status = self.run_cmd_host('adb disconnect %s' % self.serial)[0]
-            return status == 0
+        if self.serial: 
+            self.run_cmd_host('adb disconnect %s' % self.serial, quiet=False)
+            return not self.isDeviceConnected()
         return False
 
     def reconnect(self):
         if self.disconncect():
+            time.sleep(3)
             return self.conncect()
         return False
 

@@ -59,6 +59,16 @@ def prepare_cts():
     return True
 
 
+def print_log():
+    cts_prepare_path = os.path.join(curdir, 'cts_printlog.sh')
+    cts_prepare_cmd = "bash %s" % cts_prepare_path
+    if not stop_at_pattern(command="%s %s" % (cts_prepare_cmd, adb.get_serial()),
+                           timeout=18000):
+        print "Print logs for CTS test times out"
+        return False
+    return True
+
+
 def run_cts_with_plan(cts_cmd=None):
     pattern = "Time:"
     plan_command = '--plan CTS'
@@ -104,11 +114,21 @@ def main():
     run_wrapper_cmd = '%s run cts --serial %s' % (run_wrapper_cmd,
                                                       adb.get_serial())
 
+    cmd_cat_kmsg = 'bash %s kmsg.log adb -s %s shell cat /proc/kmsg' % (
+                                    os.path.join(curdir, 'cts_redirect.sh'),
+                                    adb.get_serial())
+    pid_cat_kmsg = adb.run_cmd_host(cmd_cat_kmsg)[1]
+
     if not prepare_cts():
         sys.exit(1)
 
     run_cts_with_plan(run_wrapper_cmd)
     run_cts_continue(run_wrapper_cmd)
+
+    if pid_cat_kmsg:
+        adb.run_cmd_host('kill -9 %s' % pid_cat_kmsg)
+
+    print_log()
 
     sys.exit(0)
 
