@@ -17,6 +17,15 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+"""
+Runs the skia benchmark to test 2D graphics performance.
+
+**URL:** https://sites.google.com/site/skiadocs/
+
+**Default options:** None
+"""
+
 import re
 import lava_android_test.testdef
 

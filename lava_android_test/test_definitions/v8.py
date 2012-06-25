@@ -17,6 +17,16 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+"""
+Performs the v8 benchmark on Android and returns the metrics
+
+**URL:** http://v8.googlecode.com/svn/data/benchmarks/v5/run.html
+
+**Default options:** None
+"""
+
+
 import lava_android_test.config
 import lava_android_test.testdef
 

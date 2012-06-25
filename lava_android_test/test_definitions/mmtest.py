@@ -17,6 +17,16 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+"""
+Performs a test of multimedia functionality in Android by playing a variety
+of different multimedia formats on Android.
+
+**URL:** http://samplemedia.linaro.org/
+
+**Default options:** None
+"""
+
 import os
 import re
 import lava_android_test.testdef
