@@ -18,7 +18,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function print_logcat{
+function print_logcat(){
     echo "uncompress the logcat log" 
     unzip android-cts/repository/logs/*/device_logcat_*.zip
     
@@ -28,7 +28,7 @@ function print_logcat{
 }
 
 
-function print_kmsg{
+function print_kmsg(){
     echo "=========/proc/kmsg log starts=========>"
     cat kmsg.log
     echo "<=========/proc/kmsg ends========="
