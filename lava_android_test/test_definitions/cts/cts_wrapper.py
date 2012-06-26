@@ -39,8 +39,9 @@ def get_not_executed():
         print "Failed to list the cts result for device(%s)" % adb.get_serial()
 
     with open('cts_list_results.log') as fd:
-        #0        17237  126   0             2012.06.23_03.31.49  CTS        unknown         
-        pattern = "\s*\d+\s+\d+\s+\d+\s+(?P<no_executed>\d+)\s+.+CTS\s+unknown\s*$"
+        #0        17237  126   0     2012.06.23_03.31.49  CTS        unknown
+        pattern = ("\s*\d+\s+\d+\s+\d+\s+(?P<no_executed>\d+)"
+                   "\s+.+CTS\s+unknown\s*$")
         pat = re.compile(pattern)
         for line in fd.readlines():
             match = pat.search(line)
@@ -49,22 +50,14 @@ def get_not_executed():
             return match.groupdict()['no_executed']
         return 0
 
+
 def prepare_cts():
     cts_prepare_path = os.path.join(curdir, 'cts_prepare.sh')
     cts_prepare_cmd = "bash %s" % cts_prepare_path
-    if not stop_at_pattern(command="%s %s" % (cts_prepare_cmd, adb.get_serial()),
+    if not stop_at_pattern(command="%s %s" % (cts_prepare_cmd,
+                                              adb.get_serial()),
                            timeout=18000):
         print "Preapration for CTS test times out"
-        return False
-    return True
-
-
-def print_log():
-    cts_prepare_path = os.path.join(curdir, 'cts_printlog.sh')
-    cts_prepare_cmd = "bash %s" % cts_prepare_path
-    if not stop_at_pattern(command="%s %s" % (cts_prepare_cmd, adb.get_serial()),
-                           timeout=18000):
-        print "Print logs for CTS test times out"
         return False
     return True
 
@@ -81,6 +74,7 @@ def run_cts_with_plan(cts_cmd=None):
 
     return True
 
+
 def run_cts_continue(cts_cmd=None):
     pattern = "Time:"
     continue_command = '--continue-session 0'
@@ -93,7 +87,7 @@ def run_cts_continue(cts_cmd=None):
             print ('Reconnect the adb connection before continuing '
                    'the CTS on device(%s)') % adb.get_serial()
             if not adb.reconnect():
-                print "Faile to reconnect the adb connection for device(%s)" % (
+                print "Faile to reconnect the adb connection of device(%s)" % (
                                                              adb.get_serial())
                 break
 
@@ -108,27 +102,69 @@ def run_cts_continue(cts_cmd=None):
             break
 
 
+def collect_log(command=None, output_file=None):
+    if command and output_file:
+        print 'Redirect the output of command[%s] to file[%s]' % (command,
+                                                                  output_file)
+        cmd = 'bash %s %s %s' % (os.path.join(curdir, 'cts_redirect.sh'),
+                                 output_file, command)
+        stdout = adb.run_cmd_host(cmd)[1]
+        if stdout:
+            return stdout[0].strip()
+
+    return None
+
+
+def collect_logs():
+
+    kmsg = {'command':
+                    'adb -s %s shell cat /proc/kmsg' % (adb.get_serial()),
+            'output_file': 'kmsg.log'}
+
+    logcat = {'command':
+                'adb -s %s logcat -c;adb -s %s logcat -v time' % (
+                                    adb.get_serial(), adb.get_serial()),
+              'output_file': 'logcat.log'}
+
+    ## define all the logs need to be collected
+    logs = [kmsg, logcat]
+    for log in logs:
+        pid = collect_log(command=log.get['command'],
+                         output_file=log.get['output_file'])
+        if pid:
+            log['pid'] = pid
+    return logs
+
+
+def print_log(logs=[]):
+    for log in logs:
+        log_file = log.get('output_file')
+        if log_file:
+            with open(log_file) as log_fd:
+                print '=========Log file [%s] starts=========>>>>>' % log_file
+                print log_fd.readlines()
+                print '<<<<<=========Log file [%s] ends=========' % log_file
+
+
 def main():
     run_wrapper_path = os.path.join(curdir, 'cts_run_wrapper.sh')
     run_wrapper_cmd = "bash %s" % run_wrapper_path
     run_wrapper_cmd = '%s run cts --serial %s' % (run_wrapper_cmd,
                                                       adb.get_serial())
 
-    cmd_cat_kmsg = 'bash %s kmsg.log adb -s %s shell cat /proc/kmsg' % (
-                                    os.path.join(curdir, 'cts_redirect.sh'),
-                                    adb.get_serial())
-    cat_kmsg_stdout = adb.run_cmd_host(cmd_cat_kmsg)[1]
-
+    logs = collect_logs()
     if not prepare_cts():
         sys.exit(1)
     try:
         run_cts_with_plan(run_wrapper_cmd)
         run_cts_continue(run_wrapper_cmd)
     finally:
-        if cat_kmsg_stdout:
-            pid_cat_kmsg = cat_kmsg_stdout[0].strip()
-            adb.run_cmd_host('kill -9 %s' % pid_cat_kmsg)
-        print_log()
+        for log in logs:
+            pid = log.get('pid')
+            if pid:
+                adb.run_cmd_host('kill -9 %s' % pid)
+
+        print_log(logs)
 
     sys.exit(0)
 
