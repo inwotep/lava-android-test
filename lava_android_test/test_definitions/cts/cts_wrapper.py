@@ -129,8 +129,8 @@ def collect_logs():
     ## define all the logs need to be collected
     logs = [kmsg, logcat]
     for log in logs:
-        pid = collect_log(command=log.get['command'],
-                         output_file=log.get['output_file'])
+        pid = collect_log(command=log.get('command'),
+                         output_file=log.get('output_file'))
         if pid:
             log['pid'] = pid
     return logs
