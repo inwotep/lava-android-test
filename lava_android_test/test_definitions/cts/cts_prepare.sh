@@ -94,7 +94,7 @@ function main(){
 	
     #11. Make sure device is connected to a functioning Wi-Fi network (Settings > WiFi)
     ${ADB_CMD} shell am start -a android.intent.action.MAIN -n com.android.settings/.Settings
-    ${ADB_CMD} shell service call wifi 13 s16 "true"
+    ${ADB_CMD} shell service call wifi 13 i32 1
     sleep 5
 	
     #12. Make sure the device is at the home screen at the start of CTS (Press the home button).

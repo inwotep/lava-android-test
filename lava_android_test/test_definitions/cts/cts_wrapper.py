@@ -93,7 +93,7 @@ def run_cts_continue(cts_cmd=None):
             print ('Reconnect the adb connection before continuing '
                    'the CTS on device(%s)') % adb.get_serial()
             if not adb.reconnect():
-                print "Faile to reconnect the adb connection for device()" % (
+                print "Faile to reconnect the adb connection for device(%s)" % (
                                                              adb.get_serial())
                 break
 
@@ -121,15 +121,14 @@ def main():
 
     if not prepare_cts():
         sys.exit(1)
-
-    run_cts_with_plan(run_wrapper_cmd)
-    run_cts_continue(run_wrapper_cmd)
-
-    if cat_kmsg_stdout:
-        pid_cat_kmsg = cat_kmsg_stdout[0].strip()
-        adb.run_cmd_host('kill -9 %s' % pid_cat_kmsg)
-
-    print_log()
+    try:
+        run_cts_with_plan(run_wrapper_cmd)
+        run_cts_continue(run_wrapper_cmd)
+    finally:
+        if cat_kmsg_stdout:
+            pid_cat_kmsg = cat_kmsg_stdout[0].strip()
+            adb.run_cmd_host('kill -9 %s' % pid_cat_kmsg)
+        print_log()
 
     sys.exit(0)
 
