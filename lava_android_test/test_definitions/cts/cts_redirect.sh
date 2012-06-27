@@ -19,6 +19,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 output_file=${1} && shift
-"$@" &> ${output_file} &
+eval "$@" &> ${output_file} &
 echo $!
 exit 0

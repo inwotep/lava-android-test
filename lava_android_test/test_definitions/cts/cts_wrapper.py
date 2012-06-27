@@ -106,7 +106,7 @@ def collect_log(command=None, output_file=None):
     if command and output_file:
         print 'Redirect the output of command[%s] to file[%s]' % (command,
                                                                   output_file)
-        cmd = 'bash %s %s %s' % (os.path.join(curdir, 'cts_redirect.sh'),
+        cmd = 'bash %s %s "%s"' % (os.path.join(curdir, 'cts_redirect.sh'),
                                  output_file, command)
         stdout = adb.run_cmd_host(cmd)[1]
         if stdout:
@@ -122,7 +122,7 @@ def collect_logs():
             'output_file': 'kmsg.log'}
 
     logcat = {'command':
-                'adb -s %s logcat -c;adb -s %s logcat -v time' % (
+                'adb -s %s logcat -c; adb -s %s logcat -v time' % (
                                     adb.get_serial(), adb.get_serial()),
               'output_file': 'logcat.log'}
 
@@ -142,7 +142,8 @@ def print_log(logs=[]):
         if log_file:
             with open(log_file) as log_fd:
                 print '=========Log file [%s] starts=========>>>>>' % log_file
-                print log_fd.readlines()
+                for line in log_fd.readlines():
+                    print line
                 print '<<<<<=========Log file [%s] ends=========' % log_file
 
 
