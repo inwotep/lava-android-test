@@ -50,7 +50,6 @@ class ADB(object):
         else:
             self.serial = self.get_serial()
 
-
     def get_serial(self):
         if not self.serial:
             serial_ary = self.run_cmd_host('adb get-serialno')[1]
@@ -294,15 +293,20 @@ class ADB(object):
         return False
 
     def disconncect(self):
-        if self.serial: 
+        if self.serial:
             self.run_cmd_host('adb disconnect %s' % self.serial, quiet=False)
             return not self.isDeviceConnected()
         return False
 
     def reconnect(self):
-        if self.disconncect():
-            time.sleep(3)
-            return self.conncect()
+        for i in range(1, 5):
+            print "LAVA: try to reconnect the device(%s) %i/5 times" % (
+                                                               self.serial, i)
+            if self.disconncect():
+                time.sleep(5)
+                if self.conncect():
+                    return True
+            time.sleep(5)
         return False
 
 
