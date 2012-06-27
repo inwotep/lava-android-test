@@ -143,7 +143,7 @@ def print_log(logs=[]):
             with open(log_file) as log_fd:
                 print '=========Log file [%s] starts=========>>>>>' % log_file
                 for line in log_fd.readlines():
-                    print line
+                    print line.rstrip()
                 print '<<<<<=========Log file [%s] ends=========' % log_file
 
 
