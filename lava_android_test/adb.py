@@ -229,9 +229,13 @@ class ADB(object):
         return self.run_adb_cmd(cmd='shell %s' % cmd, quiet=True)
 
     def run_adb_cmd(self, cmd, quiet=True):
-        if self.reconnect():
-            return self.run_cmd_host(cmd='%s %s' % (self.adb, cmd), quiet=quiet)
-        raise Exception('Failed to connect the device(%s)' % self.get_serial())
+        if not self.isDeviceConnected():
+            print ("Reconnect adb connection of device(%s) "
+                   "for running command[%s]") % (self.get_serial(), cmd)
+            if not self.reconnect():
+                raise Exception('Failed to connect the device(%s)' % (
+                                                          self.get_serial()))
+        return self.run_cmd_host(cmd='%s %s' % (self.adb, cmd), quiet=quiet)
 
     def run_cmd_host(self, cmd, quiet=True):
         result = self.cmdExecutor.run(cmd, quiet)
@@ -302,7 +306,7 @@ class ADB(object):
             print "LAVA: try to reconnect the device(%s) %i/5 times" % (
                                                                self.serial, i)
             if self.disconncect():
-                time.sleep(5)
+                time.sleep(2)
                 if self.conncect():
                     return True
             time.sleep(5)
