@@ -17,6 +17,16 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+"""
+Ensures the gator daemon required by DS5 is up and running on the Android
+device.
+
+**URL:** https://wiki.linaro.org/Platform/Android/DebugAndroidUsingDS-5
+
+**Default Options:** None
+"""
+
 import os
 
 import lava_android_test.testdef

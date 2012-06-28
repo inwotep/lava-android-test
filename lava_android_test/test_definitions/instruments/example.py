@@ -1,4 +1,8 @@
-# Copyright (c) 2010, 2011 Linaro
+# copyright (C) 2012 Linaro Limited
+#
+# Author: Linaro Validation Team <linaro-dev@lists.linaro.org>
+#
+# This file is part of LAVA Android Test.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -12,5 +16,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-__version__ = (0, 8, 0, "dev", 0)
+cmd = ("am instrument -r -w "
+       "com.android.emulator.connectivity.test/"
+       "android.test.InstrumentationTestRunner")
+RUN_ADB_SHELL_STEPS = [cmd]

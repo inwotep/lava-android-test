@@ -17,6 +17,15 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+This test executes the Android Compatibility Test Suite (CTS) to verify if
+a given build meets all the criteria.
+
+**URL:** http://source.android.com/compatibility/cts-intro.html
+
+**Default Options:** None
+"""
+
 import os
 import lava_android_test.testdef
 

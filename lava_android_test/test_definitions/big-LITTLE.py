@@ -1,5 +1,5 @@
-# copyright (C) 2011-2012 Linaro Limited
-#
+# Copyright (c) 2012 Linaro
+
 # Author: Linaro Validation Team <linaro-dev@lists.linaro.org>
 #
 # This file is part of LAVA Android Test.
@@ -19,25 +19,29 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-This test helps validating basic wifi functionality by executing the
-Android WifeTestRunner tests.
+Drives big.LITTLE test scripts that are pre-intalled on Linaro Android
+builds of big.LITTLE
+
+**URL:** https://wiki.linaro.org/Platform/Android/AndroidOnFastModels
 
 **Default options:** None
 """
 
+import lava_android_test.config
 import lava_android_test.testdef
 
-test_name = 'wifi'
+test_name = 'big-LITTLE'
 
-cmd = ("am instrument -r -w "
-       "com.android.wifi.tests/android.wifi.WifiTestRunner")
-RUN_ADB_SHELL_STEPS = [cmd]
+INSTALL_STEPS_ADB_PRE = []
+ADB_SHELL_STEPS = ['run_stress_switcher_tests.sh -a']
+PATTERN = "(?P<test_case_id>.*-*)\s+:\s+(?P<result>(PASS|FAIL))"
 
-inst = lava_android_test.testdef.AndroidTestInstaller()
+inst = lava_android_test.testdef.AndroidTestInstaller(
+                                steps_adb_pre=INSTALL_STEPS_ADB_PRE)
 run = lava_android_test.testdef.AndroidTestRunner(
-                                adbshell_steps=RUN_ADB_SHELL_STEPS)
-parser = lava_android_test.testdef.AndroidInstrumentTestParser()
+                                    adbshell_steps=ADB_SHELL_STEPS)
+parser = lava_android_test.testdef.AndroidTestParser(PATTERN)
 testobj = lava_android_test.testdef.AndroidTest(testname=test_name,
-                                                installer=inst,
-                                                runner=run,
-                                                parser=parser)
+                                    installer=inst,
+                                    runner=run,
+                                    parser=parser)

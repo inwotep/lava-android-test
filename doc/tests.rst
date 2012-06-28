@@ -6,15 +6,21 @@ Supported Tests
 
 The following tests are currently supported in LAVA Android Test:
 
+ * `big-LITTLE`_
+ * `bluetooth`_
  * `busybox`_
- * `monkey`_
- * `0xbench`_
  * `cts`_
- * `glmark2`_
- * `skia`_
- * `v8`_
- * `mmtest`_
  * `gatortest`_
+ * `glmark2`_
+ * `ime`_
+ * `mmtest`_
+ * `monkey`_
+ * `skia`_
+ * `tjbench`_
+ * `usbhardware`_
+ * `v8`_
+ * `wifi`_
+ * `0xbench`_
 
 busybox
 +++++++
@@ -51,3 +57,7 @@ mmtest
 gatortest
 +++++++++
 .. automodule:: lava_android_test.test_definitions.gatortest
+
+big-LITTLE
+++++++++++
+.. automodule:: lava_android_test.test_definitions.big-little

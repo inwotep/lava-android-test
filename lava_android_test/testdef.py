@@ -21,7 +21,6 @@ import hashlib
 import os
 import re
 import string
-import sys
 import time
 import tempfile
 from datetime import datetime
@@ -57,7 +56,8 @@ class AndroidTest(ITest):
         return self.adb
 
     def __init__(self, testname, version="", installer=None, runner=None,
-                 parser=None, default_options=None, org_ouput_file='stdout.log'):
+                 parser=None, default_options=None,
+                 org_ouput_file='stdout.log'):
         self.testname = testname
         self.version = version
         self.installer = installer
@@ -317,6 +317,9 @@ class AndroidTestRunner(object):
             for cmd in self.adbshell_steps:
                 if option is not None:
                     cmd = cmd.replace('$(OPTIONS)', option)
+                else:
+                    cmd = cmd.replace('$(OPTIONS)', '')
+                cmd = cmd.strip()
                 ret_code = self.adb.run_adb_shell_for_test(cmd,
                                                            stdoutlog,
                                                             stderrlog)
@@ -340,7 +343,7 @@ class AndroidTestRunner(object):
                         option=run_options, resultsdir=resultsdir)
         _run_steps_adb(self.steps_adb_pre, self.adb.serial,
                         option=run_options, resultsdir=resultsdir)
-        self._run_steps_adbshell(resultsdir, option=run_options,)
+        self._run_steps_adbshell(resultsdir, option=run_options)
         _run_steps_adb(self.steps_adb_post, self.adb.serial,
                         option=run_options, resultsdir=resultsdir)
         _run_steps_host(self.steps_host_post, self.adb.serial,
@@ -536,6 +539,49 @@ class AndroidTestParser(object):
             self.SKIP_PATS = skip_pat
 
 
+class AndroidInstrumentTestParser(AndroidTestParser):
+
+    def parse(self, result_filename='stdout.log', output_filename='stdout.log',
+               test_name=''):
+        """Parser for Instrument test that run with the -r option
+        """
+        pat_test = re.compile(
+            r'^\s*INSTRUMENTATION_STATUS:\s*test=(?P<test_case_id>.+)\s*$')
+        pat_status_code = re.compile(
+            r'^\s*INSTRUMENTATION_STATUS_CODE:\s*(?P<status_code>[\d-]+)\s*$')
+        data = {}
+        with open(output_filename, 'r') as stream:
+            for lineno, line in enumerate(stream, 1):
+                match = pat_test.search(line)
+                if match:
+                    data['test_case_id'] = match.group('test_case_id')
+                    continue
+
+                match = pat_status_code.search(line)
+                if match:
+                    status_code = match.group('status_code')
+                    if status_code == '1':
+                        # test case started
+                        data = {}
+                    elif data['test_case_id']:
+                        if status_code == '0':
+                            data['result'] = 'pass'
+                        else:
+                            data['result'] = 'fail'
+                        data["log_filename"] = result_filename
+                        data["log_lineno"] = lineno
+                        self.results['test_results'].append(data)
+                        data = {}
+                    continue
+
+        if self.fixupdict:
+            self.fixresults(self.fixupdict)
+        if self.appendall:
+            self.appendtoall(self.appendall)
+        self.fixmeasurements()
+        self.fixids()
+
+
 def _run_steps_host(steps=[], serial=None, option=None, resultsdir=None):
     adb = ADB(serial)
     for cmd in steps:
@@ -545,6 +591,8 @@ def _run_steps_host(steps=[], serial=None, option=None, resultsdir=None):
             cmd = cmd.replace('$(SERIAL)', '')
         if option is not None:
             cmd = cmd.replace('$(OPTIONS)', option)
+        else:
+            cmd = cmd.replace('$(OPTIONS)', '')
         cmd = cmd.strip()
         rc, output = adb.run_cmd_host(cmd, quiet=False)
         if rc:
@@ -560,6 +608,9 @@ def _run_steps_adb(steps=[], serial=None, option=None, resultsdir=None):
     for cmd in steps:
         if option is not None:
             cmd = cmd.replace('$(OPTIONS)', option)
+        else:
+            cmd = cmd.replace('$(OPTIONS)', '')
+        cmd = cmd.strip()
         rc, output = adb.run_adb_cmd(cmd, quiet=False)
         if rc:
             raise RuntimeError(
@@ -567,26 +618,3 @@ def _run_steps_adb(steps=[], serial=None, option=None, resultsdir=None):
         if resultsdir is not None:
             stdoutlog = os.path.join(resultsdir, 'stdout.log')
             adb.push_stream_to_device(output, stdoutlog)
-
-
-def testloader(testname, serial=None):
-    """
-    Load the test definition, which can be either an individual
-    file, or a directory with an __init__.py
-    """
-    importpath = "lava_android_test.test_definitions.%s" % testname
-    try:
-        mod = __import__(importpath)
-    except ImportError:
-        print "unknown test '%s'" % testname
-        sys.exit(1)
-    for i in importpath.split('.')[1:]:
-        mod = getattr(mod, i)
-    try:
-        base = mod.testdir.testobj
-    except AttributeError:
-        base = mod.testobj
-
-    base.parser.results = {'test_results': []}
-    base.setadb(ADB(serial))
-    return base

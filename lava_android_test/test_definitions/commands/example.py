@@ -1,4 +1,9 @@
-# Copyright (c) 2010, 2011 Linaro
+# Copyright (c) 2012 Linaro
+
+# Author: Linaro Validation Team <linaro-dev@lists.linaro.org>
+#
+# This file is part of LAVA Android Test.
+#
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -13,4 +18,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-__version__ = (0, 8, 0, "dev", 0)
+RUN_ADB_SHELL_STEPS = ['tjunittest']
+PATTERN = ("^\s*(?P<test_case_id>.+)\s+\.\.\.\s+(?P<result>\w+)\."
+           "\s+(?P<measurement>[\d\.]+)\s+(?P<units>\w+)\s*$")

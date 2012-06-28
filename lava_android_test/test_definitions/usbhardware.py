@@ -17,6 +17,13 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+"""
+Ensures USB is enabled on the device by checking /sys entries
+
+**Default options:** None
+"""
+
 import os
 import lava_android_test.testdef
 from lava_android_test.config import get_config

@@ -18,13 +18,33 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+"""
+Performs testing of Android Input Method Manager by listing the available
+input methods on the system.
+
+**URL:** http://android.git.linaro.org/gitweb?p=platform/frameworks/base.git;a=blob;f=cmds/ime/src/com/android/commands/ime/Ime.java
+
+**Default options:** None
+"""
+
+import os
 import lava_android_test.testdef
+from lava_android_test.config import get_config
 
-test_name = 'memtester'
+test_name = 'ime'
+config = get_config()
+curdir = os.path.realpath(os.path.dirname(__file__))
+test_sh_name = 'ime_test.sh'
+test_sh_path = os.path.join(curdir, test_name, test_sh_name)
+test_sh_android_path = os.path.join(config.installdir_android,
+                                    test_name, test_sh_name)
 
-INSTALL_STEPS_ADB_PRE = []
-ADB_SHELL_STEPS = ['memtester 1M 1']
-PATTERN = "^\s*(?P<test_case_id>.*?)\s*:\s*(?P<result>\w+)\s*$"
+INSTALL_STEPS_ADB_PRE = ['push %s %s ' % (test_sh_path,
+                                          test_sh_android_path),
+                          'shell chmod 777 %s' % test_sh_android_path]
+
+ADB_SHELL_STEPS = [test_sh_android_path]
+PATTERN = "^\s*(?P<test_case_id>ime)=(?P<result>\w+)\s*$"
 
 inst = lava_android_test.testdef.AndroidTestInstaller(
                                 steps_adb_pre=INSTALL_STEPS_ADB_PRE)

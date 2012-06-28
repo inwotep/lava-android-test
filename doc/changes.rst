@@ -1,6 +1,23 @@
 Version History
 ***************
 
+.. _version_0_8:
+
+Version 0.8
+===========
+* Unreleased
+
+.. _version_0_7:
+
+Version 0.7
+===========
+
+* add a test to disable android wallpaper
+* input method service test
+* monkey runner updates
+* pm-qa test support
+* big-LITTLE test support
+
 .. _version_0_6:
 
 Version 0.6
