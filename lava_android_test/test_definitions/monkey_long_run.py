@@ -39,7 +39,8 @@ INSTALL_STEPS_ADB_PRE = ['push %s %s ' % (monkey_sh_path,
                                           monkey_blacklist_android_path),
                           'shell chmod 777 %s' % monkey_sh_android_path]
 
-ADB_SHELL_STEPS =  ['%s %s' % (monkey_sh_android_path, monkey_blacklist_android_path)]
+ADB_SHELL_STEPS = ['%s %s' % (monkey_sh_android_path,
+                               monkey_blacklist_android_path)]
 #PATTERN = "^(?P<test_case_id>\w+):\W+(?P<measurement>\d+\.\d+)"
 PATTERN = "## Network stats: elapsed time=(?P<measurement>\d+)ms"
 FAILURE_PATTERNS = []

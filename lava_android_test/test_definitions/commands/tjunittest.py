@@ -18,20 +18,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import lava_android_test.testdef
-
-test_name = 'memtester'
-
-INSTALL_STEPS_ADB_PRE = []
-ADB_SHELL_STEPS = ['memtester 1M 1']
-PATTERN = "^\s*(?P<test_case_id>.*?)\s*:\s*(?P<result>\w+)\s*$"
-
-inst = lava_android_test.testdef.AndroidTestInstaller(
-                                steps_adb_pre=INSTALL_STEPS_ADB_PRE)
-run = lava_android_test.testdef.AndroidTestRunner(
-                                    adbshell_steps=ADB_SHELL_STEPS)
-parser = lava_android_test.testdef.AndroidTestParser(PATTERN)
-testobj = lava_android_test.testdef.AndroidTest(testname=test_name,
-                                    installer=inst,
-                                    runner=run,
-                                    parser=parser)
+ADB_SHELL_STEPS = ['tjunittest']
+PATTERN = ("^\s*(?P<test_case_id>.+)\s+\.\.\.\s+(?P<result>\w+)\."
+           "\s+(?P<measurement>[\d\.]+)\s+(?P<units>\w+)\s*$")

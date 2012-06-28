@@ -23,7 +23,7 @@ import lava_android_test.testdef
 
 test_name = 'sleep'
 
-DEFAULT_OPTIONS='10'
+DEFAULT_OPTIONS = '10'
 
 INSTALL_STEPS_ADB_PRE = []
 ADB_SHELL_STEPS = ['sleep $(OPTIONS); echo sleep_$(OPTIONS): PASS']

@@ -11,3 +11,5 @@ include lava_android_test/test_definitions/gatortest/*
 include lava_android_test/test_definitions/usbhardware/*
 include lava_android_test/test_definitions/ime/*
 include lava_android_test/test_definitions/pm-qa/*
+include lava_android_test/test_definitions/shells/*
+

@@ -24,7 +24,8 @@ import lava_android_test.testdef
 test_name = 'install_prep_4bench'
 
 INSTALL_STEPS_ADB_PRE = []
-ADB_SHELL_STEPS = ['rm /data/system/wallpaper_info.xml', "echo install_prep_4bench.wallpaper: PASS"]
+ADB_SHELL_STEPS = ['rm /data/system/wallpaper_info.xml',
+                   "echo install_prep_4bench.wallpaper: PASS"]
 PATTERN = "^\s*(?P<test_case_id>[^:]+?):\s+(?P<result>(PASS|FAIL)?)\s*$"
 
 inst = lava_android_test.testdef.AndroidTestInstaller(

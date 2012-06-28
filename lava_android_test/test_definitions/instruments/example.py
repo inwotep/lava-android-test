@@ -1,9 +1,8 @@
-# copyright (C) 2011-2012 Linaro Limited
+# copyright (C) 2012 Linaro Limited
 #
 # Author: Linaro Validation Team <linaro-dev@lists.linaro.org>
 #
 # This file is part of LAVA Android Test.
-#
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,27 +16,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-"""
-This test helps validating basic wifi functionality by executing the
-Android WifeTestRunner tests.
-
-**Default options:** None
-"""
-
-import lava_android_test.testdef
-
-test_name = 'wifi'
-
 cmd = ("am instrument -r -w "
-       "com.android.wifi.tests/android.wifi.WifiTestRunner")
+       "com.android.emulator.connectivity.test/"
+       "android.test.InstrumentationTestRunner")
 RUN_ADB_SHELL_STEPS = [cmd]
-
-inst = lava_android_test.testdef.AndroidTestInstaller()
-run = lava_android_test.testdef.AndroidTestRunner(
-                                adbshell_steps=RUN_ADB_SHELL_STEPS)
-parser = lava_android_test.testdef.AndroidInstrumentTestParser()
-testobj = lava_android_test.testdef.AndroidTest(testname=test_name,
-                                                installer=inst,
-                                                runner=run,
-                                                parser=parser)
