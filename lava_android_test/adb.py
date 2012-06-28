@@ -226,30 +226,25 @@ class ADB(object):
     def get_shellcmdoutput(self, cmd=None):
         if cmd is None:
             return None
-        cmd = '%s shell %s' % (self.adb, cmd)
-        return self.run_cmd_host(cmd)
+        return self.run_adb_cmd('shell %s' % cmd)
+
+    def run_adb_cmd(self, cmd, quiet=True):
+        if self.reconnect():
+            return self.run_cmd_host('%s %s' % (self.adb, cmd), quiet)
+        raise Exception('Failed to connect the device(%s)' % self.get_serial())
 
     def run_cmd_host(self, cmd, quiet=True):
         result = self.cmdExecutor.run(cmd, quiet)
-        return (result.returncode, result.stdout)
-
-    def run_adb_cmd(self, cmd, quiet=True):
-        cmd = '%s %s' % (self.adb, cmd)
-        result = self.cmdExecutor.run(cmd, quiet)
-        return (result.returncode, result.stdout)
-
-    def devices(self):
-        return self.run_cmd_host('%s devices' % self.adb)
+        return (result.returncode, result.stdout, result.stderr)
 
     def run_adb_shell_for_test(self, cmd, stdoutlog=None,
                                stderrlog=None, quiet=False):
-        cmd = '%s shell %s' % (self.adb, cmd)
-        result = self.cmdExecutor.run(cmd, quiet)
-        if result.returncode != 0:
-            return result.returncode
-        self.push_stream_to_device(result.stdout, stdoutlog)
-        self.push_stream_to_device(result.stderr, stderrlog)
-        return result.returncode
+        (ret_code, stdout, stderr) = self.get_shellcmdoutput(cmd)
+        if ret_code != 0:
+            return ret_code
+        self.push_stream_to_device(stdout, stdoutlog)
+        self.push_stream_to_device(stderr, stderrlog)
+        return ret_code
 
     def push_stream_to_device(self, stream_lines, path):
         if self.serial:
@@ -278,6 +273,9 @@ class ADB(object):
             raise Exception(
                     'Failed to pull file(%s) to %s' % (path, android_info))
         os.remove(tmp_path)
+
+    def devices(self):
+        return self.run_cmd_host('%s devices' % self.adb)
 
     def isDeviceConnected(self):
         lines = self.run_cmd_host('%s get-state' % self.adb)[1]
