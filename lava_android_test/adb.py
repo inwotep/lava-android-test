@@ -223,14 +223,14 @@ class ADB(object):
             os.remove(tmpfile_name)
         return data
 
-    def get_shellcmdoutput(self, cmd=None):
+    def get_shellcmdoutput(self, cmd=None, quiet=True):
         if cmd is None:
             return None
-        return self.run_adb_cmd('shell %s' % cmd)
+        return self.run_adb_cmd(cmd='shell %s' % cmd, quiet=True)
 
     def run_adb_cmd(self, cmd, quiet=True):
         if self.reconnect():
-            return self.run_cmd_host('%s %s' % (self.adb, cmd), quiet)
+            return self.run_cmd_host(cmd='%s %s' % (self.adb, cmd), quiet=quiet)
         raise Exception('Failed to connect the device(%s)' % self.get_serial())
 
     def run_cmd_host(self, cmd, quiet=True):
@@ -239,7 +239,8 @@ class ADB(object):
 
     def run_adb_shell_for_test(self, cmd, stdoutlog=None,
                                stderrlog=None, quiet=False):
-        (ret_code, stdout, stderr) = self.get_shellcmdoutput(cmd)
+        (ret_code, stdout, stderr) = self.get_shellcmdoutput(cmd=cmd,
+                                                             quiet=quiet)
         if ret_code != 0:
             return ret_code
         self.push_stream_to_device(stdout, stdoutlog)
