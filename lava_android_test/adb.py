@@ -224,26 +224,37 @@ class ADB(object):
         return data
 
     def get_shellcmdoutput(self, cmd=None, quiet=True):
-        if cmd is None:
-            return None
-        return self.run_adb_cmd(cmd='shell %s' % cmd, quiet=True)
+        return self.get_shellcmdoutput_with_stderr(cmd=cmd, quiet=True)[0:2]
 
     def run_adb_cmd(self, cmd, quiet=True):
+        return self.run_adb_cmd_with_stderr(cmd=cmd, quiet=quiet)[0:2]
+
+    def run_cmd_host(self, cmd, quiet=True):
+        return self.run_cmd_host_with_stderr(cmd, quiet=quiet)[0:2]
+
+    def get_shellcmdoutput_with_stderr(self, cmd=None, quiet=True):
+        if cmd is None:
+            return None
+        return self.run_adb_cmd_with_stderr(cmd='shell %s' % cmd, quiet=quiet)
+
+    def run_adb_cmd_with_stderr(self, cmd, quiet=True):
         if not self.isDeviceConnected():
             print ("Reconnect adb connection of device(%s) "
                    "for running command[%s]") % (self.get_serial(), cmd)
             if not self.reconnect():
                 raise Exception('Failed to connect the device(%s)' % (
                                                           self.get_serial()))
-        return self.run_cmd_host(cmd='%s %s' % (self.adb, cmd), quiet=quiet)
+        return self.run_cmd_host_with_stderr(cmd='%s %s' % (self.adb, cmd),
+                                              quiet=quiet)
 
-    def run_cmd_host(self, cmd, quiet=True):
-        result = self.cmdExecutor.run(cmd, quiet)
+    def run_cmd_host_with_stderr(self, cmd, quiet=True):
+        result = self.cmdExecutor.run(cmd, quiet=quiet)
         return (result.returncode, result.stdout, result.stderr)
 
     def run_adb_shell_for_test(self, cmd, stdoutlog=None,
                                stderrlog=None, quiet=False):
-        (ret_code, stdout, stderr) = self.get_shellcmdoutput(cmd=cmd,
+        (ret_code, stdout, stderr) = self.get_shellcmdoutput_with_stderr(
+                                                             cmd=cmd,
                                                              quiet=quiet)
         if ret_code != 0:
             return ret_code
