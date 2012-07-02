@@ -300,13 +300,13 @@ class ADB(object):
                 return True
         return False
 
-    def conncect(self):
+    def connect(self):
         if self.serial:
             self.run_cmd_host('adb connect %s' % self.serial, quiet=False)
             return self.isDeviceConnected()
         return False
 
-    def disconncect(self):
+    def disconnect(self):
         if self.serial:
             self.run_cmd_host('adb disconnect %s' % self.serial, quiet=False)
             return not self.isDeviceConnected()
@@ -316,9 +316,9 @@ class ADB(object):
         for i in range(1, 5):
             print "LAVA: try to reconnect the device(%s) %i/5 times" % (
                                                                self.serial, i)
-            if self.disconncect():
+            if self.disconnect():
                 time.sleep(2)
-                if self.conncect():
+                if self.connect():
                     return True
             time.sleep(5)
         return False
