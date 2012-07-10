@@ -149,9 +149,8 @@ function main(){
     echo "Will use ${wifi_dev_conf} as the configuration file for wifi if exists"
     if [ -f "${wifi_dev_conf}" ]; then
         . "${wifi_dev_conf}"
-    else
-        parse_argv "$@"
     fi
+    parse_argv "$@"
 
     if [ -z "${SSID}" ]; then
         show_usage
