@@ -6,7 +6,7 @@ Supported Tests
 
 The following tests are currently supported in LAVA Android Test:
 
- * `big-LITTLE`_
+ * `big_LITTLE`_
  * `bluetooth`_
  * `busybox`_
  * `cts`_
@@ -21,7 +21,11 @@ The following tests are currently supported in LAVA Android Test:
  * `v8`_
  * `wifi`_
  * `0xbench`_
-
+ * `commands`_
+ * `instruments`_
+ * `hostshells`_
+ * `shells`_
+ 
 busybox
 +++++++
 .. automodule:: lava_android_test.test_definitions.busybox
@@ -58,6 +62,42 @@ gatortest
 +++++++++
 .. automodule:: lava_android_test.test_definitions.gatortest
 
-big-LITTLE
+big_LITTLE
 ++++++++++
-.. automodule:: lava_android_test.test_definitions.big-little
+.. automodule:: lava_android_test.test_definitions.big_LITTLE
+
+bluetooth
++++++++++
+.. automodule:: lava_android_test.test_definitions.bluetooth
+
+tjbench
++++++++
+.. automodule:: lava_android_test.test_definitions.tjbench
+
+ime
++++
+.. automodule:: lava_android_test.test_definitions.ime
+
+usbhardware
++++++++++++
+.. automodule:: lava_android_test.test_definitions.usbhardware
+
+wifi
+++++
+.. automodule:: lava_android_test.test_definitions.wifi
+
+commands
+++++++++
+.. automodule:: lava_android_test.test_definitions.commands
+
+hostshells
+++++++++++
+.. automodule:: lava_android_test.test_definitions.hostshells
+
+instruments
++++++++++++
+.. automodule:: lava_android_test.test_definitions.instruments
+
+shells
+++++++
+.. automodule:: lava_android_test.test_definitions.shells

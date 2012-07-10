@@ -144,7 +144,7 @@ If the test tools are just command that can be run on android system,
 and the output is well formatted, then congratulations, you can go
 directly to step 6. You don't need to wrap script again.
 
-3. Three types simple test
+3. Four types simple test
 
   1. Instrumentation test, run like "adb shell am instrument ..."
   
@@ -176,6 +176,17 @@ directly to step 6. You don't need to wrap script again.
 
     echo "test_case_fail=fail"
     echo "test_case_pass=pass"
+    
+  4. Host shell test, need to write a shell and run like "bash script.sh"
+
+  create a file like lava_android_test/test_definitions/hostshells/example.sh
+  and put it under lava_android_test/test_definitions/shells::
+    
+    #!/bin/bash
+    echo "hostshells-example-fail=fail"
+    echo "hostshells-example-pass=pass"
+    
+  this shell script will be passed "-s $(SERIAL) $(OPTIONS)" as arguments
 
 4. About test scripts/tools
 

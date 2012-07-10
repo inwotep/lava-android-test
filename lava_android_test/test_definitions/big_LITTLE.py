@@ -27,10 +27,9 @@ builds of big.LITTLE
 **Default options:** None
 """
 
-import lava_android_test.config
 import lava_android_test.testdef
 
-test_name = 'big-LITTLE'
+test_name = 'big_LITTLE'
 
 INSTALL_STEPS_ADB_PRE = []
 ADB_SHELL_STEPS = ['run_stress_switcher_tests.sh -a']
