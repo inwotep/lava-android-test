@@ -146,6 +146,7 @@ function main(){
         wifi_dev_conf="${WIFI_DEV_CONF}"
     fi
 
+    echo "Will use ${wifi_dev_conf} as the configuration file for wifi if exists"
     if [ -f "${wifi_dev_conf}" ]; then
         . "${wifi_dev_conf}"
     else
