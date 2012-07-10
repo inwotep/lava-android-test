@@ -141,7 +141,7 @@ function show_usage(){
 
 function main(){
     if [ -z "${WIFI_DEV_CONF}" ]; then
-        wifi_dev_conf="/etc/lava/devices/wifi"
+        wifi_dev_conf="/etc/lava/devices/wifi.conf"
     else
         wifi_dev_conf="${WIFI_DEV_CONF}"
     fi
