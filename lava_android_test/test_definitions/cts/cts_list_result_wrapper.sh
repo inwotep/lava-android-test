@@ -1,11 +1,9 @@
-#!/usr/bin/python
-
-# Copyright (c) 2011 Linaro
+#!/bin/bash
+# Copyright (C) 2012 Linaro Limited
 
 # Author: Linaro Validation Team <linaro-dev@lists.linaro.org>
 #
 # This file is part of LAVA Android Test.
-#
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,22 +17,10 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-import sys
-import time
 
-from lava_android_test.utils import stop_at_pattern
+#http://source.android.com/compatibility/downloads.html
 
-if len(sys.argv) == 1:
-    adb_cmd = "adb"
-else:
-    adb_cmd = "adb -s %s" % (sys.argv[1])
+echo "./android-cts/tools/cts-tradefed l r"
+./android-cts/tools/cts-tradefed l r |tee cts_list_results.log
 
-logcat_cmd = '%s logcat' % (adb_cmd)
-pattern = "Displayed org.zeroxlab.zeroxbenchmark/.Report"
-
-if not stop_at_pattern(command=logcat_cmd, pattern=pattern, timeout=2400):
-    print "0xbench Test: TIMEOUT Fail"
-    sys.exit(1)
-
-time.sleep(3)
-sys.exit(0)
+exit 0

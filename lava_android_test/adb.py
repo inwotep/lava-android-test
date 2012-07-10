@@ -17,11 +17,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-import threading
 import os
 import re
 import subprocess
 import tempfile
+import threading
+import time
 
 from Queue import Queue
 from lava_android_test.config import get_config
@@ -42,10 +43,23 @@ class ADB(object):
     target_dir = config.tempdir_android
 
     def __init__(self, serial=None, quiet=True):
+        self.cmdExecutor = CommandExecutor(quiet)
         if serial is not None:
             self.serial = serial
             self.adb = 'adb -s %s' % serial
-        self.cmdExecutor = CommandExecutor(quiet)
+        else:
+            self.serial = self.get_serial()
+
+    def get_serial(self):
+        if not self.serial:
+            serial_ary = self.run_cmd_host('adb get-serialno')[1]
+            serial = serial_ary[0].strip()
+            if not serial or serial == 'unknown':
+                return ''
+            else:
+                return serial
+        else:
+            return self.serial
 
     def push(self, source=None, target=None):
         if source is None:
@@ -209,56 +223,104 @@ class ADB(object):
             os.remove(tmpfile_name)
         return data
 
-    def get_shellcmdoutput(self, cmd=None):
-        if cmd is None:
-            return None
-        cmd = '%s shell %s' % (self.adb, cmd)
-        return self.run_cmd_host(cmd)
-
-    def run_cmd_host(self, cmd, quiet=True):
-        result = self.cmdExecutor.run(cmd, quiet)
-        return (result.returncode, result.stdout)
+    def get_shellcmdoutput(self, cmd=None, quiet=True):
+        return self.get_shellcmdoutput_with_stderr(cmd=cmd, quiet=True)[0:2]
 
     def run_adb_cmd(self, cmd, quiet=True):
-        cmd = '%s %s' % (self.adb, cmd)
-        result = self.cmdExecutor.run(cmd, quiet)
-        return (result.returncode, result.stdout)
+        return self.run_adb_cmd_with_stderr(cmd=cmd, quiet=quiet)[0:2]
 
-    def devices(self):
-        return self.run_cmd_host('%s devices' % self.adb)
+    def run_cmd_host(self, cmd, quiet=True):
+        return self.run_cmd_host_with_stderr(cmd, quiet=quiet)[0:2]
+
+    def get_shellcmdoutput_with_stderr(self, cmd=None, quiet=True):
+        if cmd is None:
+            return None
+        return self.run_adb_cmd_with_stderr(cmd='shell %s' % cmd, quiet=quiet)
+
+    def run_adb_cmd_with_stderr(self, cmd, quiet=True):
+        if not self.isDeviceConnected():
+            print ("Reconnect adb connection of device(%s) "
+                   "for running command[%s]") % (self.get_serial(), cmd)
+            if not self.reconnect():
+                raise Exception('Failed to connect the device(%s)' % (
+                                                          self.get_serial()))
+        return self.run_cmd_host_with_stderr(cmd='%s %s' % (self.adb, cmd),
+                                              quiet=quiet)
+
+    def run_cmd_host_with_stderr(self, cmd, quiet=True):
+        result = self.cmdExecutor.run(cmd, quiet=quiet)
+        return (result.returncode, result.stdout, result.stderr)
 
     def run_adb_shell_for_test(self, cmd, stdoutlog=None,
                                stderrlog=None, quiet=False):
-        cmd = '%s shell %s' % (self.adb, cmd)
-        result = self.cmdExecutor.run(cmd, quiet)
-        if result.returncode != 0:
-            return result.returncode
-        self.push_stream_to_device(result.stdout, stdoutlog)
-        self.push_stream_to_device(result.stderr, stderrlog)
-        return result.returncode
+        (ret_code, stdout, stderr) = self.get_shellcmdoutput_with_stderr(
+                                                             cmd=cmd,
+                                                             quiet=quiet)
+        if ret_code != 0:
+            return ret_code
+        self.push_stream_to_device(stdout, stdoutlog)
+        self.push_stream_to_device(stderr, stderrlog)
+        return ret_code
 
     def push_stream_to_device(self, stream_lines, path):
+        if self.serial:
+            android_info = 'android(%s)' % self.serial
+        else:
+            android_info = 'android'
+
+        if not self.isDeviceConnected():
+            if not self.reconnect():
+                raise Exception('Failed to pull file(%s) to %s, '
+                                'because the device is not connected' % (
+                                                         path, android_info))
         basename = os.path.basename(path)
         tmp_path = os.path.join(config.tempdir_host, basename)
         if self.exists(path):
             retcode = self.pull(path, tmp_path)
             if retcode != 0:
                 raise Exception(
-                    'Failed to pull file(%s)stdout to android %s' % path)
+                    'Failed to pull file(%s) to %s' % (path, android_info))
 
         with open(tmp_path, 'a') as tmp_fd:
             tmp_fd.writelines(stream_lines)
             tmp_fd.close()
 
         if self.push(tmp_path, path)[1] is None:
-            raise Exception('Failed to push stdout to android %s' % path)
+            raise Exception(
+                    'Failed to pull file(%s) to %s' % (path, android_info))
         os.remove(tmp_path)
 
+    def devices(self):
+        return self.run_cmd_host('%s devices' % self.adb)
+
     def isDeviceConnected(self):
-        status, lines = self.run_cmd_host('%s get-state' % self.adb)
+        lines = self.run_cmd_host('%s get-state' % self.adb)[1]
         for line in lines:
             if 'device' in line:
                 return True
+        return False
+
+    def connect(self):
+        if self.serial:
+            self.run_cmd_host('adb connect %s' % self.serial, quiet=False)
+            return self.isDeviceConnected()
+        return False
+
+    def disconnect(self):
+        if self.serial:
+            self.run_cmd_host('adb disconnect %s' % self.serial, quiet=False)
+            return not self.isDeviceConnected()
+        return False
+
+    def reconnect(self):
+        for i in range(1, 5):
+            print "LAVA: try to reconnect the device(%s) %i/5 times" % (
+                                                               self.serial, i)
+            if self.disconnect():
+                time.sleep(2)
+                if self.connect():
+                    return True
+            time.sleep(5)
         return False
 
 
