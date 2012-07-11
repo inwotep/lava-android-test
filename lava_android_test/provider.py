@@ -224,7 +224,7 @@ class ShellTestProvider(TestProvider):
                      'shell chmod 777 %s' % test_sh_android_path]
 
         ADB_SHELL_STEPS = ['%s $(OPTIONS)' % test_sh_android_path]
-        PATTERN = ("^\s*(?P<test_case_id>\w+)="
+        PATTERN = ("^\s*(?P<test_case_id>\S+)="
                    "(?P<result>(pass|fail|ok|ng|true|false|skip|done))\s*$")
 
         testobj = self.gen_testobj(
@@ -236,3 +236,45 @@ class ShellTestProvider(TestProvider):
                     parser=testdef.AndroidTestParser(PATTERN),
                     adb=ADB(serial))
         return testobj
+
+
+class HostShellTestProvider(TestProvider):
+
+    test_prefix = 'hostshell'
+    config = get_config()
+    dotext = '.sh'
+
+    def list_test(self):
+        dotext = '.sh'
+        mod = self.import_mod("lava_android_test.test_definitions.hostshells")
+        sh_files = find_files(mod.curdir, dotext)
+        test_list = []
+        for f in sh_files:
+            ##Assume that the file name only has one '.sh'
+            f_name_no_dotext = os.path.basename(f).replace(dotext, '')
+            test_list.append('%s-%s' % (self.test_prefix, f_name_no_dotext))
+        return test_list
+
+    def load_test(self, test_name=None, serial=None):
+        if not test_name.startswith('%s-' % self.test_prefix):
+            raise UnfoundTest('The test(%s) is not found!' % test_name)
+        f_name_no_prefix = test_name.replace('%s-' % self.test_prefix, '', 1)
+
+        mod = self.import_mod("lava_android_test.test_definitions.%ss" %
+                            self.test_prefix)
+        f_name = '%s%s' % (f_name_no_prefix, self.dotext)
+        test_sh_path = '%s/%s' % (mod.curdir, f_name)
+
+        HOST_SHELL_STEPS = ['bash %s -s $(SERIAL) $(OPTIONS)' % test_sh_path]
+        PATTERN = ("^\s*(?P<test_case_id>\S+)="
+                   "(?P<result>(pass|fail|ok|ng|true|false|skip|done))\s*$")
+
+        testobj = self.gen_testobj(
+                    testname=test_name,
+                    installer=testdef.AndroidTestInstaller(),
+                    runner=testdef.AndroidTestRunner(
+                                    steps_host_pre=HOST_SHELL_STEPS),
+                    parser=testdef.AndroidTestParser(PATTERN),
+                    adb=ADB(serial))
+        return testobj
+
