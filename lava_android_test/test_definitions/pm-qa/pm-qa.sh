@@ -35,7 +35,7 @@ test_func(){
    pwd=$PWD
    echo $pwd
    tests_dirs="cpuidle cpufreq cpuhotplug sched_mc suspend thermal utils"
-   files=`find cpuidle cpufreq cpuhotplug sched_mc suspend thermal utils -name "*.sh"`
+   files=`find cpuidle cpufreq cpuhotplug sched_mc suspend -name "*.sh"`
 
    for dir in $tests_dirs
    do
