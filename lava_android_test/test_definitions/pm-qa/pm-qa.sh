@@ -24,6 +24,10 @@ test_func(){
    busybox ln -s -f /system/bin/busybox printf
    busybox ln -s -f /system/bin/busybox wc
 
+   busybox ln -s -f /system/bin/fake_command command
+   busybox ln -s -f /system/bin/fake_sudo sudo
+   busybox ln -s -f /system/bin/fake_udevadm udevadm
+
    export PATH=/data/bin:$PATH
 
    cd /system/xbin/pm-qa
@@ -31,7 +35,7 @@ test_func(){
    pwd=$PWD
    echo $pwd
    tests_dirs="cpuidle cpufreq cpuhotplug sched_mc suspend thermal utils"
-   files=`find cpuidle cpufreq cpuhotplug sched_mc suspend thermal utils -name "*.sh"`
+   files=`find cpuidle cpufreq cpuhotplug sched_mc suspend -name "*.sh"`
 
    for dir in $tests_dirs
    do
