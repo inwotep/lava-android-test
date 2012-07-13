@@ -5,7 +5,10 @@ Version History
 
 Version 0.8
 ===========
-* Unreleased
+* added a test wrapper to make it easier to add shell script type tests
+* updated CTS to use latest Google version
+* added wifi connection test
+* updates to pm-qa
 
 .. _version_0_7:
 
