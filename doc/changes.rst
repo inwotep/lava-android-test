@@ -1,6 +1,12 @@
 Version History
 ***************
 
+.. _version_0_9:
+
+Version 0.9
+===========
+* Unreleased
+
 .. _version_0_8:
 
 Version 0.8
