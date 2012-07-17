@@ -38,7 +38,7 @@ config = get_config()
 site = 'http://samplemedia.linaro.org/'
 local_name = get_local_name(site)
 RUN_STEPS_HOST_PRE = [
-        'wget -r -np -l 10 -R csv,txt,css,html,gif,pdf %s -P %s' % (site,
+        'wget --progress=dot -e dotbytes=1M -r -np -l 10 -R csv,txt,css,html,gif,pdf %s -P %s' % (site,
                                                            local_name),
         r'find  %s -type f -name "index*" -exec rm -f \{\} \;' % local_name,
         r'find  %s -type f -name "README" -exec rm -f \{\} \;' % local_name]
