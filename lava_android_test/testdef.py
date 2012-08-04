@@ -319,6 +319,10 @@ class AndroidTestRunner(object):
                     cmd = cmd.replace('$(OPTIONS)', option)
                 else:
                     cmd = cmd.replace('$(OPTIONS)', '')
+                if resultsdir is not None:
+                    cmd = cmd.replace('$(RESULTDIR)', resultsdir)
+                else:
+                    cmd = cmd.replace('$(RESULTDIR)', '')
                 cmd = cmd.strip()
                 ret_code = self.adb.run_adb_shell_for_test(cmd,
                                                            stdoutlog,
@@ -410,6 +414,25 @@ class AndroidTestParser(object):
         Results are then stored in self.results.  If a fixupdict was supplied
         it is used to convert test result strings to a standard format.
         """
+
+        self.real_parse(result_filename=result_filename,
+              output_filename=output_filename, test_name=test_name)
+
+        self.fixresults(self.fixupdict)
+        if self.appendall:
+            self.appendtoall(self.appendall)
+        self.fixmeasurements()
+        self.fixids(test_name=test_name)
+
+    def real_parse(self, result_filename='stdout.log',
+              output_filename='stdout.log', test_name=''):
+        """Parse test output to gather results
+
+        Use the pattern specified when the class was instantiated to look
+        through the results line-by-line and find lines that match it.
+        Results are then stored in self.results.  If a fixupdict was supplied
+        it is used to convert test result strings to a standard format.
+        """
         if not self.pattern:
             return
 
@@ -448,11 +471,6 @@ class AndroidTestParser(object):
                 if data.get('result') is None:
                     data['result'] = test_ok and 'pass' or 'fail'
                 self.results['test_results'].append(data)
-        self.fixresults(self.fixupdict)
-        if self.appendall:
-            self.appendtoall(self.appendall)
-        self.fixmeasurements()
-        self.fixids(test_name=test_name)
 
     def append(self, testid, entry):
         """Appends a dict to the test_results entry for a specified testid
@@ -593,6 +611,11 @@ def _run_steps_host(steps=[], serial=None, option=None, resultsdir=None):
             cmd = cmd.replace('$(OPTIONS)', option)
         else:
             cmd = cmd.replace('$(OPTIONS)', '')
+        if resultsdir is not None:
+            cmd = cmd.replace('$(RESULTDIR)', resultsdir)
+        else:
+            cmd = cmd.replace('$(RESULTDIR)', '')
+
         cmd = cmd.strip()
         rc, output = adb.run_cmd_host(cmd, quiet=False)
         if rc:
@@ -610,6 +633,10 @@ def _run_steps_adb(steps=[], serial=None, option=None, resultsdir=None):
             cmd = cmd.replace('$(OPTIONS)', option)
         else:
             cmd = cmd.replace('$(OPTIONS)', '')
+        if resultsdir is not None:
+            cmd = cmd.replace('$(RESULTDIR)', resultsdir)
+        else:
+            cmd = cmd.replace('$(RESULTDIR)', '')
         cmd = cmd.strip()
         rc, output = adb.run_adb_cmd(cmd, quiet=False)
         if rc:

@@ -1,21 +1,63 @@
 #!/bin/bash
+# Copyright (c) 2012 Linaro
 
+# Author: Linaro Validation Team <linaro-dev@lists.linaro.org>
+#
+# This file is part of LAVA Android Test.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#android_dir="/sdcard/methanol"
-#methanol_url="file://${android_dir}"
-webpages_url="http://192.168.1.127/images/"
-webpages_dir="/var/www/images"
+# group1: if we need to copy the test web pages to the webpage directory 
+#        of local web server, or copy the cgi script for report to the 
+#        cgi directory of local web server via this script, 
+#        then we should specify the following variables of group1. 
+#        and the variables of #group2 will be set by this script automatically,
+#        therefor no need to define them.
+# webpages_url and webpages_dir:
+#        when copie the cloned methanol directory to ${webpages_dir}, 
+#        we should be able to access it via ${webpages_url}/methanol from android
+# cgi_url and cgi_dir:
+#        when copied the cgi script(e.g. save_methanol_data.py) for reporting 
+#        result to ${cgi_dir}, 
+#        we should be able to access it via ${cgi_url}/save_methanol_data.py from android
+webpages_url="http://192.168.1.127/"
+webpages_dir="/var/www/"
 cgi_url="http://192.168.1.127/cgi-bin/"
 cgi_dir="/usr/lib/cgi-bin/"
+
+# group2: if we have the fixed url for report_url and webpage url
+#        then we can only define the following variables.
+#        no need to define the above #group1 variables
+# methanol_url: the url to access the webpages. like:
+#           methanol_url="http://127.0.0.1/methanol"
+#           methanol_url="file:///sdcard/methanol"
+# report_url: the url to report result data. like:
+#           report_url="http://127.0.0.1/cgi-bin/save_methanol_data.py"
+methanol_url=""
+report_url=""
+
 ########################################################
 ######        NOT MODIFY SOURCE OF BELOW           #####
 ########################################################
+#android_dir="/sdcard/methanol"
 #methanol_git="git://gitorious.org/methanol/methanol.git"
+server_settings_file="/etc/lava/web_server/settings.conf"
 methanol_git="git@gitorious.org:~liuyq0307/methanol/liuyq0307s-methanol.git"
+result_dir_android="/data/local/methanol"
+declare -a RESULTS=();
 target_web_dir=""
 target_cgiscript_path=""
-methanol_url=""
-report_url=""
 
 SERIAL=${1-""}
 ADB_OPTION=""
@@ -54,11 +96,14 @@ function deploy(){
         exit 1
     fi
 
+    #patch just because some test can not be run on android
     patch_sources "${target_dir}"
 
     if [ -n "${webpages_dir}" ]; then
         target_web_dir=`mktemp -u --tmpdir=${webpages_dir} methanol-XXX`
-        cp -r "${target_dir}" "${target_web_dir}"
+        target_web_dir_basename=`basename ${target_web_dir}`
+        sudo cp -r "${target_dir}" "${target_web_dir}"
+        sudo chmod -R +r "${target_web_dir}/${target_web_dir_basename}"
         target_web_dir_basename=`basename ${target_web_dir}`
         methanol_url="${webpages_url}/${target_web_dir_basename}"
     else
@@ -132,7 +177,7 @@ function test_methanol(){
 
     mkdir -p /tmp/methanol/
     sudo chmod -R 777 /tmp/methanol
-    result_file=`mktemp -u --tmpdir=/tmp/methanol res${test_type}-XXX.json`
+    result_file=`mktemp -u --tmpdir=/tmp/methanol fire${test_type}-XXX.json`
     res_basename=`basename ${result_file}`
     test_url="${methanol_url}/fire${test_type}.html"
     if [ -n "${report_url}" ]; then
@@ -146,6 +191,8 @@ function test_methanol(){
         cur_path=`pwd`
         cp -uvf ${result_file}  ${cur_path}/${res_basename}
         echo "result_file=${cur_path}/${res_basename}"
+        RESULTS[${#RESULTS[@]}]="${cur_path}/${res_basename}"
+        
         rm -f ${result_file}
     else
         echo "Failed to get the test result of fire${test_type}.html"
@@ -154,10 +201,11 @@ function test_methanol(){
 }
 
 function cleanup(){
-    if [ -n "" ]; then
+    sudo rm -fr methanol_result.json "${RESULTS[@]}"
+    if [ -n "${webpages_dir}" ]; then
         sudo rm -fr "${target_web_dir}"
     fi
-    if [ -n "" ]; then
+    if [ -n "${cgi_dir}" ]; then
         sudo rm -fr "${target_cgiscript_path}"
     fi
 }
@@ -165,13 +213,35 @@ function cleanup(){
 function main(){
     trap cleanup EXIT
 
+    if [ -n "${WEB_SERVER_SEETINGS_CONF}" ]; then
+        server_settings_file="${WIFI_DEV_CONF}"
+    fi
+
+    echo "Will use ${server_settings_file} as the configuration file for web server"
+    if [ -f "${server_settings_file}" ]; then
+        . "${server_settings_file}"
+    fi
+
     deploy
 
     check_url
     test_methanol "" 1
     test_methanol "svg" 5
-    test_methanol "smp" 20
-
-    exit 0
+    #test_methanol "smp" 20
+    
+    echo "Merge results of file: ${RESULTS[@]}"
+    `dirname $0`/methanol_merge_results.py methanol_result.json "${RESULTS[@]}"
+    if [ $? -eq 0 ]; then
+        adb ${ADB_OPTION} shell mkdir ${result_dir_android}
+        adb ${ADB_OPTION} push methanol_result.json "${result_dir_android}/methanol_result.json"
+        for f in "${RESULTS[@]}"; do
+            adb ${ADB_OPTION} push "${f}" "${result_dir_android}"
+        done
+        echo "The result is also push to android: ${result_dir_android}/${res_basename}"
+    else
+        echo "Failed to merege the results"
+        exit 1
+    fi
+    cleanup
 }
 main "$@"

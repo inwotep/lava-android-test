@@ -1,4 +1,4 @@
-# Copyright (c) 2011 Linaro
+# Copyright (c) 2012 Linaro
 
 # Author: Linaro Validation Team <linaro-dev@lists.linaro.org>
 #
@@ -33,27 +33,17 @@ import json
 
 import lava_android_test.testdef
 
+from lava_android_test.config import get_config
+
 curdir = os.path.realpath(os.path.dirname(__file__))
+config = get_config()
 
-INSTALL_STEPS_HOST_POST = [
-        ("python %s/android-0xbenchmark/android_0xbenchmark_modify_path.py"
-         " $(SERIAL)") % curdir]
-
-RUN_STEPS_HOST_PRE = [
-        ("python %s/android-0xbenchmark/android_0xbenchmark_kill.py"
-         " $(SERIAL)") % curdir]
-RUN_STEPS_ADB_SHELL = ['logcat -c',
-        ("am start -n org.zeroxlab.zeroxbenchmark/"
-         "org.zeroxlab.zeroxbenchmark.Benchmark --ez math true"
-         " --ez 2d true --ez 3d true --ez vm true --ez autorun true")]
-RUN_STEPS_HOST_POST = [
-        'python %s/android-0xbenchmark/android_0xbenchmark_wait.py $(SERIAL)' %
-         curdir]
-
+result_dir = config.resultsdir_android
+RUN_STEPS_HOST_PRE = ["bash %s/methanol/methanol.sh $(SERIAL)" % curdir]
 
 class MethanolTestParser(lava_android_test.testdef.AndroidTestParser):
 
-    def parse(self, result_filename=None, output_filename='stdout.log',
+    def real_parse(self, result_filename=None, output_filename='methanol_result.json',
                test_name=''):
         """Parse test output to gather results
         Use the pattern specified when the class was instantiated to look
@@ -64,23 +54,12 @@ class MethanolTestParser(lava_android_test.testdef.AndroidTestParser):
         with open(output_filename) as stream:
             test_results_data = stream.read()
             test_results_json = json.loads(test_results_data)
-            self.results['test_results'] = test_results_json[
-                                                'test_runs'][0]['test_results']
-        if self.fixupdict:
-            self.fixresults(self.fixupdict)
-        if self.appendall:
-            self.appendtoall(self.appendall)
-        self.fixmeasurements()
-        self.fixids()
+            self.results['test_results'] = test_results_json
 
-save_dir = '/data/data/org.zeroxlab.zeroxbenchmark/files'
-inst = lava_android_test.testdef.AndroidTestInstaller(
-                                    steps_host_post=INSTALL_STEPS_HOST_POST)
-run = lava_android_test.testdef.AndroidTestRunner(
-                                    steps_host_pre=RUN_STEPS_HOST_PRE,
-                                    adbshell_steps=RUN_STEPS_ADB_SHELL,
-                                    steps_host_post=RUN_STEPS_HOST_POST)
+
+inst = lava_android_test.testdef.AndroidTestInstaller()
+run = lava_android_test.testdef.AndroidTestRunner(steps_host_pre=RUN_STEPS_HOST_PRE)
 parser = MethanolTestParser()
 testobj = lava_android_test.testdef.AndroidTest(testname="methanol",
             installer=inst, runner=run, parser=parser,
-             org_ouput_file=os.path.join(save_dir, '0xBenchmark.bundle'))
+            org_ouput_file='/data/local/methanol/methanol_result.json')
