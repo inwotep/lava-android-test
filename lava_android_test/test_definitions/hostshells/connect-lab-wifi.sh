@@ -83,13 +83,15 @@ function enable_wifi(){
     adb ${ADB_OPTION} shell chmod 660 /data/misc/wifi/wpa_supplicant.conf
     adb ${ADB_OPTION} shell ls -l /data/misc/wifi/wpa_supplicant.conf
     adb ${ADB_OPTION} shell service call wifi 13 i32 1
-    sleep 30
+    #extend the wait time because the time to turn wifi on some devices(like
+    #Origen) will take a little one
+    sleep 60
     for i in {1..30}; do
         adb ${ADB_OPTION} shell wpa_cli list_networks|grep -E "^\s*[[:digit:]]+\s+${ssid}\s+any\s+\[CURRENT\]"
         if [ $? -eq 0 ];then
             break
         fi
-        sleep 2
+        sleep 5
     done
 
     if [ $i -eq 30 ]; then
