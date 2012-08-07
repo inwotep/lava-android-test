@@ -34,7 +34,7 @@
 local_server_ip='192.168.1.10'
 webpages_url="http://%s/images/" % ip
 webpages_dir="/linaro/images/"
-cgi_url="http://%s/cgi-bin/" % ip
+cgi_url="/cgi-bin/"
 cgi_dir="/usr/lib/cgi-bin/"
 
 # group2: if we have the fixed url for report_url and webpage url
@@ -52,9 +52,8 @@ report_url=""
 ######        NOT MODIFY SOURCE OF BELOW           #####
 ########################################################
 #android_dir="/sdcard/methanol"
-#methanol_git="git://gitorious.org/methanol/methanol.git"
+methanol_git="git://gitorious.org/methanol/methanol.git"
 server_settings_file="/etc/lava/web_server/settings.conf"
-methanol_git="git@gitorious.org:~liuyq0307/methanol/liuyq0307s-methanol.git"
 result_dir_android="/data/local/methanol"
 declare -a RESULTS=();
 target_web_dir=""
