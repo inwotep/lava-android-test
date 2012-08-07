@@ -31,8 +31,8 @@
 #        when copied the cgi script(e.g. save_methanol_data.py) for reporting 
 #        result to ${cgi_dir}, 
 #        we should be able to access it via ${cgi_url}/save_methanol_data.py from android
-local_server_ip='192.168.1.10'
-webpages_url="http://%s/images/" % ip
+domain_protocol='http://192.168.1.10/'
+webpages_url="/images/"
 webpages_dir="/linaro/images/"
 cgi_url="/cgi-bin/"
 cgi_dir="/usr/lib/cgi-bin/"
@@ -93,6 +93,7 @@ function deploy(){
     git clone "${methanol_git}" "${target_dir}"
     if [ $? -ne 0 ];then
         echo "Faile to clone the methanol source from ${methanol_git}"
+        cleanup
         exit 1
     fi
 
@@ -103,7 +104,7 @@ function deploy(){
         target_web_dir=`mktemp -u --tmpdir=${webpages_dir} methanol-XXX`
         target_web_dir_basename=`basename ${target_web_dir}`
         sudo cp -r "${target_dir}" "${target_web_dir}"
-        sudo chmod -R +r "${target_web_dir}/${target_web_dir_basename}"
+        sudo chmod -R +r "${target_web_dir}"
         target_web_dir_basename=`basename ${target_web_dir}`
         methanol_url="${webpages_url}/${target_web_dir_basename}"
     else
@@ -124,27 +125,30 @@ function deploy(){
 
 function check_url(){
     if [ -n "${report_url}" ]; then
-        wget -q "${report_url}" -O /dev/null
+        wget -q "${domain_protocol}/${report_url}" -O /dev/null
         if [ $? -ne 0 ]; then
-            echo "The report url(${report_url}) cannot be accessed"
+            echo "The report url(${domain_protocol}/${report_url}) cannot be accessed"
             echo "Please put the save_methanol_data.py to the cgi-bin directory"
             echo "of your web server, and make sure it is accessible."
+            cleanup
             exit 1
         fi
     fi
 
     if [ -n "${methanol_url}" ]; then
-        wget -q "${methanol_url}" -O /dev/null
+        wget -q "${domain_protocol}/${methanol_url}" -O /dev/null
         if [ $? -ne 0 ]; then
-            echo "The url(${methanol_url}) cannot be accessed"
+            echo "The url(${domain_protocol}/${methanol_url}) cannot be accessed"
             echo "Please clone the methanol directory to local via following command"
             echo "    git clone ${methanol_git}"
             echo "and copy the entire directory to some place of your web server"
             echo "and make sure it is accessible."
+            cleanup
             exit 1
         fi
     else
         echo "Please speecify the methanol url that will be used for test."
+        cleanup
         exit 1
     fi
 }
@@ -179,7 +183,7 @@ function test_methanol(){
     sudo chmod -R 777 /tmp/methanol
     result_file=`mktemp -u --tmpdir=/tmp/methanol fire${test_type}-XXX.json`
     res_basename=`basename ${result_file}`
-    test_url="${methanol_url}/fire${test_type}.html"
+    test_url="${domain_protocol}/${methanol_url}/fire${test_type}.html"
     if [ -n "${report_url}" ]; then
         test_url="${test_url}?reportToUrl=${report_url}%3Fsave2file=${res_basename}"
     fi
@@ -192,10 +196,11 @@ function test_methanol(){
         cp -uvf ${result_file}  ${cur_path}/${res_basename}
         echo "result_file=${cur_path}/${res_basename}"
         RESULTS[${#RESULTS[@]}]="${cur_path}/${res_basename}"
-        
+
         rm -f ${result_file}
     else
         echo "Failed to get the test result of fire${test_type}.html"
+        cleanup
         exit 1
     fi
 }
@@ -225,10 +230,10 @@ function main(){
     deploy
 
     check_url
-    test_methanol "" 1
-    test_methanol "svg" 5
-    #test_methanol "smp" 20
-    
+    test_methanol "" 20
+    test_methanol "svg" 20
+    test_methanol "smp" 20
+
     echo "Merge results of file: ${RESULTS[@]}"
     `dirname $0`/methanol_merge_results.py methanol_result.json "${RESULTS[@]}"
     if [ $? -eq 0 ]; then
@@ -240,6 +245,7 @@ function main(){
         echo "The result is also push to android: ${result_dir_android}/${res_basename}"
     else
         echo "Failed to merege the results"
+        cleanup
         exit 1
     fi
     cleanup
