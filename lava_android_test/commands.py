@@ -94,7 +94,7 @@ class extract_attachments(Command):
 
         if not os.path.exists(self.args.result_file):
             raise  LavaCommandError("The specified result file(%s) "
-                                    "is not existed." % self.args.result_file)
+                                    "does not exist." % self.args.result_file)
         msg = "extract attachment file from result bundle file(%s)" % (
                                                        self.args.result_file)
         self.say_begin(msg)
@@ -115,7 +115,7 @@ class extract_attachments(Command):
                     file_name = os.path.basename(pathname)
                     content_decoded = base64.standard_b64decode(
                                                         attach.get("content"))
-                    with open(os.path.join(target_dir, file_name), 'a') as fd:
+                    with open(os.path.join(target_dir, file_name), 'w') as fd:
                         fd.write(content_decoded)
             self.say("All attachment files are put under directory(%s)" %
                      (attachment_dir))
