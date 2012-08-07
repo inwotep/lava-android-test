@@ -31,9 +31,10 @@
 #        when copied the cgi script(e.g. save_methanol_data.py) for reporting 
 #        result to ${cgi_dir}, 
 #        we should be able to access it via ${cgi_url}/save_methanol_data.py from android
-webpages_url="http://192.168.1.127/"
-webpages_dir="/var/www/"
-cgi_url="http://192.168.1.127/cgi-bin/"
+local_server_ip='192.168.1.10'
+webpages_url="http://%s/images/" % ip
+webpages_dir="/linaro/images/"
+cgi_url="http://%s/cgi-bin/" % ip
 cgi_dir="/usr/lib/cgi-bin/"
 
 # group2: if we have the fixed url for report_url and webpage url
