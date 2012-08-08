@@ -48,6 +48,7 @@ setup(
     show=lava_android_test.commands:show
     rename=lava_android_test.commands:rename
     remove=lava_android_test.commands:remove
+    extract-attachments=lava_android_test.commands:extract_attachments
     """,
     classifiers=[
         "Development Status :: 3 - Alpha",
