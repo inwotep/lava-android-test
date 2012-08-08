@@ -222,9 +222,11 @@ function main(){
         server_settings_file="${WIFI_DEV_CONF}"
     fi
 
-    echo "Will use ${server_settings_file} as the configuration file for web server"
     if [ -f "${server_settings_file}" ]; then
+        echo "Will use ${server_settings_file} as the configuration file for web server"
         . "${server_settings_file}"
+    else
+        echo "Will use default value as the configuration of web server"
     fi
 
     deploy
