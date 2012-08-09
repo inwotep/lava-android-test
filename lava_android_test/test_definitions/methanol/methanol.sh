@@ -18,35 +18,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# group1: if we need to copy the test web pages to the webpage directory 
-#        of local web server, or copy the cgi script for report to the 
-#        cgi directory of local web server via this script, 
-#        then we should specify the following variables of group1. 
-#        and the variables of #group2 will be set by this script automatically,
-#        therefor no need to define them.
-# webpages_url and webpages_dir:
-#        when copie the cloned methanol directory to ${webpages_dir}, 
-#        we should be able to access it via ${webpages_url}/methanol from android
-# cgi_url and cgi_dir:
-#        when copied the cgi script(e.g. save_methanol_data.py) for reporting 
-#        result to ${cgi_dir}, 
-#        we should be able to access it via ${cgi_url}/save_methanol_data.py from android
-domain_protocol='http://192.168.1.10/'
-webpages_url="/images/"
-webpages_dir="/linaro/images/"
-cgi_url="/cgi-bin/"
-cgi_dir="/usr/lib/cgi-bin/"
-
-# group2: if we have the fixed url for report_url and webpage url
-#        then we can only define the following variables.
-#        no need to define the above #group1 variables
-# methanol_url: the url to access the webpages. like:
-#           methanol_url="http://127.0.0.1/methanol"
-#           methanol_url="file:///sdcard/methanol"
-# report_url: the url to report result data. like:
-#           report_url="http://127.0.0.1/cgi-bin/save_methanol_data.py"
-methanol_url=""
-report_url=""
+#the default ip or domain used by the client to access the server
+domain_ip='192.168.1.10'
 
 ########################################################
 ######        NOT MODIFY SOURCE OF BELOW           #####
@@ -56,8 +29,10 @@ methanol_git="git://gitorious.org/methanol/methanol.git"
 server_settings_file="/etc/lava/web_server/settings.conf"
 result_dir_android="/data/local/methanol"
 declare -a RESULTS=();
-target_web_dir=""
-target_cgiscript_path=""
+methanol_url="/"
+report_url="/cgi/save_methanol_data.py"
+target_dir=""
+server_pid=""
 
 SERIAL=${1-""}
 ADB_OPTION=""
@@ -76,6 +51,8 @@ function patch_sources(){
     fi
 
     ## The following test case cannot be on android browser, so comment them out
+    ## Patch the engine.js
+    sed -i "s% + results;% + results.replace\(new RegExp('/','gm'), '_'\);%" ${src_root_dir}/engine.js
 
     ##Patch svg.js
     sed -i s%\"svg/anim/earth.svg\",%\"svg/anim/earth.svg\"/*,%    ${src_root_dir}/svg.js
@@ -100,27 +77,17 @@ function deploy(){
     #patch just because some test can not be run on android
     patch_sources "${target_dir}"
 
-    if [ -n "${webpages_dir}" ]; then
-        target_web_dir=`mktemp -u --tmpdir=${webpages_dir} methanol-XXX`
-        target_web_dir_basename=`basename ${target_web_dir}`
-        sudo cp -r "${target_dir}" "${target_web_dir}"
-        sudo chmod -R +r "${target_web_dir}"
-        target_web_dir_basename=`basename ${target_web_dir}`
-        methanol_url="${webpages_url}/${target_web_dir_basename}"
-    else
-        adb ${ADB_OPTION} push "${target_dir}" "${android_dir}"
+    url_file=`mktemp -u --tmpdir=${cur_path} url-XXX`
+    nohup python `dirname $0`/start_server.py "${domain_ip}" "${target_dir}" "${url_file}" 2>1 1>/dev/null &
+    server_pid=$!
+    sleep 5
+    domain_protocol=`cat ${url_file}`
+    if [ -z "${domain_protocol}" ]; then
+        echo "Cannot get the url of the temporary created server."
+        echo "Failed to deploy the temporary server"
+        cleanup
+        exit 1
     fi
-
-    #copy the file to the cgi-bin directory
-    if [ -n "${cgi_dir}" ]; then
-        target_cgiscript_path=`mktemp -u ${cgi_dir}/save_methanol_data_XXX.py`
-        sudo cp -uvf "${target_dir}/cgi/save_methanol_data.py" "${target_cgiscript_path}"
-        sudo chmod +x ${target_cgiscript_path}
-        script_basename=`basename ${target_cgiscript_path}`
-        report_url="${cgi_url}/${script_basename}"
-    fi
-
-    rm -fr ${target_dir}
 }
 
 function check_url(){
@@ -206,12 +173,12 @@ function test_methanol(){
 }
 
 function cleanup(){
-    sudo rm -fr methanol_result.json "${RESULTS[@]}"
-    if [ -n "${webpages_dir}" ]; then
-        sudo rm -fr "${target_web_dir}"
+    rm -fr methanol_result.json "${RESULTS[@]}"
+    if [ -n "${server_pid}" ]; then
+        kill -9 ${server_pid}
     fi
-    if [ -n "${cgi_dir}" ]; then
-        sudo rm -fr "${target_cgiscript_path}"
+    if [ -n "${target_dir}" ]; then
+        rm -fr "${target_dir}"
     fi
 }
 
