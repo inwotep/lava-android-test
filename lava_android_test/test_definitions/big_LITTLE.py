@@ -31,8 +31,10 @@ import lava_android_test.testdef
 
 test_name = 'big_LITTLE'
 
+DEFAULT_OPTIONS='-a'
+
 INSTALL_STEPS_ADB_PRE = []
-ADB_SHELL_STEPS = ['run_stress_switcher_tests.sh -a']
+ADB_SHELL_STEPS = ['run_stress_switcher_tests.sh $(OPTIONS)']
 PATTERN = "(?P<test_case_id>.*-*)\s+:\s+(?P<result>(PASS|FAIL))"
 
 inst = lava_android_test.testdef.AndroidTestInstaller(
@@ -43,4 +45,5 @@ parser = lava_android_test.testdef.AndroidTestParser(PATTERN)
 testobj = lava_android_test.testdef.AndroidTest(testname=test_name,
                                     installer=inst,
                                     runner=run,
-                                    parser=parser)
+                                    parser=parser,
+                                    default_options=DEFAULT_OPTIONS)
