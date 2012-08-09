@@ -167,8 +167,8 @@ function test_methanol(){
         rm -f ${result_file}
     else
         echo "Failed to get the test result of fire${test_type}.html"
-        cleanup
-        exit 1
+        #cleanup
+        #exit 1
     fi
 }
 
@@ -199,9 +199,13 @@ function main(){
     deploy
 
     check_url
-    test_methanol "" 20
-    test_methanol "svg" 20
-    test_methanol "smp" 20
+    echo `date`: starts to test fire.html
+    test_methanol "" 100
+    echo `date`: starts to test fire-svg.html
+    test_methanol "svg" 100
+    echo `date`: starts to test fire-smp.html
+    test_methanol "smp" 100
+    echo `date`: all tests completed
 
     echo "Merge results of file: ${RESULTS[@]}"
     `dirname $0`/methanol_merge_results.py methanol_result.json "${RESULTS[@]}"
@@ -214,8 +218,8 @@ function main(){
         echo "The result is also push to android: ${result_dir_android}/${res_basename}"
     else
         echo "Failed to merege the results"
-        cleanup
-        exit 1
+        #cleanup
+        #exit 1
     fi
     cleanup
 }
