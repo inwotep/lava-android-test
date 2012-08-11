@@ -30,6 +30,7 @@ result_dir_android="/data/local/methanol"
 declare -a RESULTS=();
 methanol_url="/"
 report_url="/cgi/save_methanol_data.py"
+report_res_dir="/tmp/methanol"
 target_dir=""
 server_pid=""
 
@@ -145,9 +146,7 @@ function test_methanol(){
 
     wait_minutes=${2-1}
 
-    mkdir -p /tmp/methanol/
-    sudo chmod -R 777 /tmp/methanol
-    result_file=`mktemp -u --tmpdir=/tmp/methanol fire${test_type}-XXX.json`
+    result_file=`mktemp -u --tmpdir=${report_res_dir} fire${test_type}-XXX.json`
     res_basename=`basename ${result_file}`
     test_url="${domain_protocol}/${methanol_url}/fire${test_type}.html"
     if [ -n "${report_url}" ]; then
