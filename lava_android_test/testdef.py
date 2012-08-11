@@ -426,12 +426,10 @@ class AndroidTestParser(object):
 
     def real_parse(self, result_filename='stdout.log',
               output_filename='stdout.log', test_name=''):
-        """Parse test output to gather results
-
-        Use the pattern specified when the class was instantiated to look
-        through the results line-by-line and find lines that match it.
-        Results are then stored in self.results.  If a fixupdict was supplied
-        it is used to convert test result strings to a standard format.
+        """Using the pattern to do the real parse operation
+        
+        generate the test_results elements from the result file by parsing 
+        with the pattern specified.
         """
         if not self.pattern:
             return

@@ -24,7 +24,6 @@ domain_ip='192.168.1.10'
 ########################################################
 ######        NOT MODIFY SOURCE OF BELOW           #####
 ########################################################
-#android_dir="/sdcard/methanol"
 methanol_git="git://gitorious.org/methanol/methanol.git"
 server_settings_file="/etc/lava/web_server/settings.conf"
 result_dir_android="/data/local/methanol"
@@ -69,7 +68,7 @@ function deploy(){
     target_dir=`mktemp -u --tmpdir=${cur_path} methanol-XXX`
     git clone "${methanol_git}" "${target_dir}"
     if [ $? -ne 0 ];then
-        echo "Faile to clone the methanol source from ${methanol_git}"
+        echo "Failed to clone the methanol source from ${methanol_git}"
         cleanup
         exit 1
     fi
