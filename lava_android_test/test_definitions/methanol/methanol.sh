@@ -25,6 +25,7 @@ domain_ip='192.168.1.10'
 ######        NOT MODIFY SOURCE OF BELOW           #####
 ########################################################
 methanol_git="git://gitorious.org/methanol/methanol.git"
+chrome_apk_url="http://testdata.validation.linaro.org/chrome/Chrome-latest.apk"
 server_settings_file="/etc/lava/web_server/settings.conf"
 result_dir_android="/data/local/methanol"
 declare -a RESULTS=();
@@ -39,6 +40,11 @@ ADB_OPTION=""
 if [ -n "${SERIAL}" ]; then
     ADB_OPTION="-s ${SERIAL}"
 fi
+
+## use which browser to test
+##  DEFAULT: the android default stock browser 
+##  CHROME: the chrome browser
+BROWSER=${2-""}
 
 function patch_sources(){
     src_root_dir=${1}
@@ -65,6 +71,35 @@ function patch_sources(){
 }
 
 function deploy(){
+
+    if [ "${BROWSER}" = "CHROME" ]; then
+        echo "wget --progress=dot -e dotbytes=1M -np -l 10 --no-check-certificate ${chrome_apk_url} -O ./Chrome-latest.apk"
+        wget --progress=dot -e dotbytes=1M -np -l 10 --no-check-certificate ${chrome_apk_url} -O ./Chrome-latest.apk
+        if [ $? -ne 0 ]; then 
+            echo "Failed to download the chrome apk file from ${chrome_apk_url}."
+            cleanup
+            exit 1
+        fi
+        
+        adb ${ADB_OPTION} uninstall com.android.chrome
+
+        echo "adb ${ADB_OPTION} install ./Chrome-latest.apk"
+        adb ${ADB_OPTION} install ./Chrome-latest.apk
+        if [ $? -ne 0 ]; then 
+            echo "Failed to install the Chrome browser application."
+            cleanup
+            rm -f ./Chrome-latest.apk
+            exit 1
+        fi
+        rm -f ./Chrome-latest.apk
+        adb ${ADB_OPTION} shell am start com.android.chrome/com.google.android.apps.chrome.Main
+        sleep 10
+        adb ${ADB_OPTION} shell input keyevent 20
+        sleep 2
+        adb ${ADB_OPTION} shell input keyevent 66
+        sleep 2
+    fi
+
     cur_path=`pwd`
     target_dir=`mktemp -u --tmpdir=${cur_path} methanol-XXX`
     git clone "${methanol_git}" "${target_dir}"
@@ -152,9 +187,16 @@ function test_methanol(){
     if [ -n "${report_url}" ]; then
         test_url="${test_url}?reportToUrl=${report_url}%3Fsave2file=${res_basename}"
     fi
-
-    echo "adb ${ADB_OPTION} shell am start -a android.intent.action.VIEW -d ${test_url}"
-    adb ${ADB_OPTION} shell "am start -a android.intent.action.VIEW -d ${test_url}"
+    
+    component_default="com.android.browser/.BrowserActivity"
+    component_chrome=" com.android.chrome/com.google.android.apps.chrome.Main"
+    if [ "${BROWSER}" = "CHROME" ]; then
+        component=${component_chrome}
+    else
+        component=${component_default}
+    fi
+    echo "adb ${ADB_OPTION} shell am start -a android.intent.action.VIEW -d ${test_url} -n ${component}"
+    adb ${ADB_OPTION} shell "am start -a android.intent.action.VIEW -d ${test_url} -n ${component}"
     wait_result "${result_file}" ${wait_minutes}
     if [ $? -eq 0 ]; then
         cur_path=`pwd`
@@ -177,6 +219,9 @@ function cleanup(){
     fi
     if [ -n "${target_dir}" ]; then
         rm -fr "${target_dir}"
+    fi
+    if [ "${BROWSER}" = "CHROME" ]; then
+        adb ${ADB_OPTION} uninstall com.android.chrome
     fi
 }
 
