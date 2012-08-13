@@ -94,10 +94,12 @@ function deploy(){
         rm -f ./Chrome-latest.apk
         adb ${ADB_OPTION} shell am start com.android.chrome/com.google.android.apps.chrome.Main
         sleep 10
-        adb ${ADB_OPTION} shell input keyevent 20
-        sleep 2
+        adb ${ADB_OPTION} shell input keyevent 61
+        sleep 5
+        adb ${ADB_OPTION} shell input keyevent 61
+        sleep 5
         adb ${ADB_OPTION} shell input keyevent 66
-        sleep 2
+        sleep 5
     fi
 
     cur_path=`pwd`
@@ -113,7 +115,7 @@ function deploy(){
     patch_sources "${target_dir}"
 
     url_file=`mktemp -u --tmpdir=${cur_path} url-XXX`
-    nohup python `dirname $0`/start_server.py "${domain_ip}" "${target_dir}" "${url_file}" 2>&1 >server.log &
+    nohup python `dirname $0`/start_server.py "${domain_ip}" "${target_dir}" "${url_file}" &>server.log &
     server_pid=$!
     sleep 5
     domain_protocol=`cat ${url_file}`
@@ -243,9 +245,9 @@ function main(){
 
     check_url
     echo `date`: starts to test fire.html
-    test_methanol "" 100
+    test_methanol "" 10
     echo `date`: starts to test fire-svg.html
-    test_methanol "svg" 100
+    test_methanol "svg" 30
     echo `date`: starts to test fire-smp.html
     test_methanol "smp" 100
     echo `date`: all tests completed
