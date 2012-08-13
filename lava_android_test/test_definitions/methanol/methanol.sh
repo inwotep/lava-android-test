@@ -113,7 +113,7 @@ function deploy(){
     patch_sources "${target_dir}"
 
     url_file=`mktemp -u --tmpdir=${cur_path} url-XXX`
-    nohup python `dirname $0`/start_server.py "${domain_ip}" "${target_dir}" "${url_file}" 2>1 1>/dev/null &
+    nohup python `dirname $0`/start_server.py "${domain_ip}" "${target_dir}" "${url_file}" 2>&1 >server.log &
     server_pid=$!
     sleep 5
     domain_protocol=`cat ${url_file}`
