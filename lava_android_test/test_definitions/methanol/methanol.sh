@@ -19,11 +19,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #the default ip or domain used by the client to access the server
-domain_ip='192.168.1.10'
+DEFAULT_DOMAIN_IP='192.168.1.10'
+DEFAULT_BROWSER='DEFAULT'
 
 ########################################################
 ######        NOT MODIFY SOURCE OF BELOW           #####
 ########################################################
+THIS_FILE="$0"
 methanol_git="git://gitorious.org/methanol/methanol.git"
 chrome_apk_url="http://testdata.validation.linaro.org/chrome/Chrome-latest.apk"
 server_settings_file="/etc/lava/web_server/settings.conf"
@@ -35,16 +37,59 @@ report_res_dir="/tmp/methanol"
 target_dir=""
 server_pid=""
 
-SERIAL=${1-""}
 ADB_OPTION=""
-if [ -n "${SERIAL}" ]; then
-    ADB_OPTION="-s ${SERIAL}"
-fi
+domain_ip="${DEFAULT_DOMAIN_IP}"
+browser="${DEFAULT_BROWSER}"
 
-## use which browser to test
-##  DEFAULT: the android default stock browser 
-##  CHROME: the chrome browser
-BROWSER=${2-""}
+function parse_arg(){
+    serial=""
+    while test -n "$1"; do
+        case "$1" in
+            --browser|-b)
+                if [ "x$2" = "x" ]; then
+                    echo "Error: $1 requires an argument which should be DEFAULT or CHROME"
+                    exit 1
+                fi
+                browser="$2"
+                if [ "X${browser}" != "XDEFAULT" ] && [ "X${browser}" != "XCHROME" ]; then
+                    echo "Error: $1 requires an argument  which should be DEFAULT or CHROME"
+                    exit 1
+                fi
+                shift 2
+                ;;
+            --domain|-d)
+                if [ "x$2" = "x" ]; then
+                    echo "Error: $1 requires an argument"
+                    exit 1
+                fi
+                domain_ip="$2"
+                shift 2
+                ;;
+            --help|-h)
+                show_usage
+                exit 0
+                ;;
+            *)
+                if [ -n "${serial}" ]; then
+                    show_usage
+                    echo "Too many arguments, see --help for details"
+                    exit 1
+                else
+                    serial="$1"
+                    shift
+                fi
+                ;;
+        esac
+    done
+
+    if [ -n "${serial}" ]; then
+        ADB_OPTION="-s ${serial}"
+    fi
+}
+
+function show_usage(){
+    echo `basename ${THIS_FILE}` [serial_no] [-b DEFAULT|CHROME] [-d domain_ip]
+}
 
 function patch_sources(){
     src_root_dir=${1}
@@ -72,7 +117,7 @@ function patch_sources(){
 
 function deploy(){
 
-    if [ "${BROWSER}" = "CHROME" ]; then
+    if [ "${browser}" = "CHROME" ]; then
         echo "wget --progress=dot -e dotbytes=1M -np -l 10 --no-check-certificate ${chrome_apk_url} -O ./Chrome-latest.apk"
         wget --progress=dot -e dotbytes=1M -np -l 10 --no-check-certificate ${chrome_apk_url} -O ./Chrome-latest.apk
         if [ $? -ne 0 ]; then 
@@ -192,7 +237,7 @@ function test_methanol(){
     
     component_default="com.android.browser/.BrowserActivity"
     component_chrome=" com.android.chrome/com.google.android.apps.chrome.Main"
-    if [ "${BROWSER}" = "CHROME" ]; then
+    if [ "${browser}" = "CHROME" ]; then
         component=${component_chrome}
     else
         component=${component_default}
@@ -222,24 +267,15 @@ function cleanup(){
     if [ -n "${target_dir}" ]; then
         rm -fr "${target_dir}"
     fi
-    if [ "${BROWSER}" = "CHROME" ]; then
+    if [ "${browser}" = "CHROME" ]; then
         adb ${ADB_OPTION} uninstall com.android.chrome
     fi
 }
 
 function main(){
+    parse_arg "$@"
+    
     trap cleanup EXIT
-
-    if [ -n "${WEB_SERVER_SEETINGS_CONF}" ]; then
-        server_settings_file="${WIFI_DEV_CONF}"
-    fi
-
-    if [ -f "${server_settings_file}" ]; then
-        echo "Will use ${server_settings_file} as the configuration file for web server"
-        . "${server_settings_file}"
-    else
-        echo "Will use default value as the configuration of web server"
-    fi
 
     deploy
 
