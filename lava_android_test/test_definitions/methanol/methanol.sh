@@ -137,6 +137,8 @@ function deploy(){
             exit 1
         fi
         rm -f ./Chrome-latest.apk
+        adb ${ADB_OPTION} shell am start com.android.chrome/com.google.android.apps.chrome.Main
+        sleep 10
         f_preferences='/data/data/com.android.chrome/shared_prefs/com.android.chrome_preferences.xml'
         f_preferences_base=`basename ${f_preferences}`
         owner_grp=`adb ${ADB_OPTION} shell ls -l ${f_preferences}|cut -d \  -f2`
@@ -149,7 +151,11 @@ function deploy(){
         adb ${ADB_OPTION} pull ${f_preferences} ./${f_preferences_base}
         sed -i '/<map>/ a\<boolean name="first_run_flow" value="true" />' ./${f_preferences_base}
         adb ${ADB_OPTION} push ./${f_preferences_base} ${f_preferences}
-        adb ${ADB_OPTION} chown ${owner_grp}:${owner_grp} ${f_preferences}
+        adb ${ADB_OPTION} shell chown ${owner_grp}:${owner_grp} ${f_preferences}
+        chrome_pid=`adb ${ADB_OPTION} shell ps |grep -P 'chrome\s*$'|tr -s ' '|cut -d \  -f2`
+        if [ -n "${chrome_pid}" ]; then
+            adb ${ADB_OPTION} shell kill ${chrome_pid}
+        fi
         rm -f ./${f_preferences_base}
     fi
 
@@ -266,6 +272,7 @@ function test_methanol(){
 }
 
 function cleanup(){
+    echo "DO CLEAN UP"
     rm -fr methanol_result.json "${RESULTS[@]}"
     if [ -n "${server_pid}" ]; then
         kill -9 ${server_pid}
@@ -305,9 +312,6 @@ function main(){
         echo "The result is also push to android: ${result_dir_android}/${res_basename}"
     else
         echo "Failed to merege the results"
-        #cleanup
-        #exit 1
     fi
-    cleanup
 }
 main "$@"
