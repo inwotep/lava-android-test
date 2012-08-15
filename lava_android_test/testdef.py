@@ -131,7 +131,7 @@ class AndroidTest(ITest):
             output = self.adb.run_adb_cmd('shell cat %s' % optionfile)[1]
             bundle['test_runs'][0]['attributes']['install_options'] = output[0]
 
-    def _savetestdata(self, analyzer_assigned_uuid):
+    def _savetestdata(self, analyzer_assigned_uuid, run_options=""):
         config = get_config()
         TIMEFORMAT = '%Y-%m-%dT%H:%M:%SZ'
         bundle = {
@@ -142,7 +142,7 @@ class AndroidTest(ITest):
                 'analyzer_assigned_date':
                         self.runner.starttime.strftime(TIMEFORMAT),
                 'time_check_performed': False,
-                'attributes':{},
+                'attributes':{'run_options': run_options},
                 'test_id': self.testname,
                 'test_results':[],
                 'attachments':[],
@@ -176,7 +176,7 @@ class AndroidTest(ITest):
         self.runner.run(self.resultsdir, run_options=run_options)
         self._copyorgoutputfile(self.resultsdir)
         self._screencap(self.resultsdir)
-        self._savetestdata(str(uuid4()))
+        self._savetestdata(str(uuid4()), run_options=run_options)
         result_id = os.path.basename(self.resultsdir)
         print("ANDROID TEST RUN COMPLETE: Result id is '%s'" % result_id)
         os.chdir(self.origdir)

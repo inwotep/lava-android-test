@@ -687,6 +687,14 @@ def generate_bundle(serial=None, result_id=None, test=None,
                                              serial)
     if test_id:
         bundle['test_runs'][0]['test_id'] = test_id
+    else:
+        attrs = bundle['test_runs'][0].get('attributes')
+        if attrs:
+            run_options = attrs.get('run_options')
+            if run_options:
+                test_id = '%s(%s)' % (bundle['test_runs'][0]['test_id'],
+                                      run_options)
+                bundle['test_runs'][0]['test_id'] = test_id
 
     test_tmp.parse(result_id)
     stdout_text = adb.read_file(os.path.join(resultdir,

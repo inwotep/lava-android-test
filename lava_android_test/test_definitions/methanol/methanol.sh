@@ -137,14 +137,20 @@ function deploy(){
             exit 1
         fi
         rm -f ./Chrome-latest.apk
-        adb ${ADB_OPTION} shell am start com.android.chrome/com.google.android.apps.chrome.Main
-        sleep 10
-        adb ${ADB_OPTION} shell input keyevent 61
-        sleep 5
-        adb ${ADB_OPTION} shell input keyevent 61
-        sleep 5
-        adb ${ADB_OPTION} shell input keyevent 66
-        sleep 5
+        f_preferences='/data/data/com.android.chrome/shared_prefs/com.android.chrome_preferences.xml'
+        f_preferences_base=`basename ${f_preferences}`
+        owner_grp=`adb ${ADB_OPTION} shell ls -l ${f_preferences}|cut -d \  -f2`
+        if [ -z "${owner_grp}" ]; then
+            echo "Failed to get the user/group infromation of chrome preferences file."
+            cleanup
+            rm -f ./Chrome-latest.apk
+            exit 1
+        fi
+        adb ${ADB_OPTION} pull ${f_preferences} ./${f_preferences_base}
+        sed -i '/<map>/ a\<boolean name="first_run_flow" value="true" />' ./${f_preferences_base}
+        adb ${ADB_OPTION} push ./${f_preferences_base} ${f_preferences}
+        adb ${ADB_OPTION} chown ${owner_grp}:${owner_grp} ${f_preferences}
+        rm -f ./${f_preferences_base}
     fi
 
     cur_path=`pwd`
