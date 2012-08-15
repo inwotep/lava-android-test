@@ -63,4 +63,4 @@ parser = MethanolTestParser()
 testobj = lava_android_test.testdef.AndroidTest(testname="methanol",
             installer=inst, runner=run, parser=parser,
             org_ouput_file='/data/local/methanol/methanol_result.json',
-            default_options='DEFAULT')
+            default_options='-b DEFAULT -d 192.168.1.10')

@@ -88,7 +88,7 @@ function parse_arg(){
 }
 
 function show_usage(){
-    echo `basename ${THIS_FILE}` [serial_no] [-b DEFAULT|CHROME] [-d domain_ip]
+    echo "`basename ${THIS_FILE}` [serial_no] [-b DEFAULT|CHROME] [-d domain_ip]"
 }
 
 function patch_sources(){
