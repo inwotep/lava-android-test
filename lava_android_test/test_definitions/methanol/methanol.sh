@@ -294,9 +294,9 @@ function main(){
 
     check_url
     echo `date`: starts to test fire.html
-    test_methanol "" 10
+    test_methanol "" 30 
     echo `date`: starts to test fire-svg.html
-    test_methanol "svg" 30
+    test_methanol "svg" 150
     echo `date`: starts to test fire-smp.html
     test_methanol "smp" 100
     echo `date`: all tests completed
@@ -311,7 +311,7 @@ function main(){
         done
         echo "The result is also push to android: ${result_dir_android}/${res_basename}"
     else
-        echo "Failed to merege the results"
+        echo "Failed to merge the results"
     fi
 }
 main "$@"
