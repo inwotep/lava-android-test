@@ -1,11 +1,11 @@
 Version History
 ***************
 
-.. _version_0_10:
+.. _version_0_9_1:
 
-Version 0.10
-============
-* Unreleased.
+Version 0.9.1
+=============
+* Fix bug 1037936 caused by revno 189.3.18
 
 .. _version_0_9:
 
