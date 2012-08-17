@@ -131,7 +131,7 @@ class AndroidTest(ITest):
             output = self.adb.run_adb_cmd('shell cat %s' % optionfile)[1]
             bundle['test_runs'][0]['attributes']['install_options'] = output[0]
 
-    def _savetestdata(self, analyzer_assigned_uuid):
+    def _savetestdata(self, analyzer_assigned_uuid, run_options=""):
         config = get_config()
         TIMEFORMAT = '%Y-%m-%dT%H:%M:%SZ'
         bundle = {
@@ -142,7 +142,7 @@ class AndroidTest(ITest):
                 'analyzer_assigned_date':
                         self.runner.starttime.strftime(TIMEFORMAT),
                 'time_check_performed': False,
-                'attributes':{},
+                'attributes':{'run_options': run_options},
                 'test_id': self.testname,
                 'test_results':[],
                 'attachments':[],
@@ -176,7 +176,7 @@ class AndroidTest(ITest):
         self.runner.run(self.resultsdir, run_options=run_options)
         self._copyorgoutputfile(self.resultsdir)
         self._screencap(self.resultsdir)
-        self._savetestdata(str(uuid4()))
+        self._savetestdata(str(uuid4()), run_options=run_options)
         result_id = os.path.basename(self.resultsdir)
         print("ANDROID TEST RUN COMPLETE: Result id is '%s'" % result_id)
         os.chdir(self.origdir)
@@ -319,6 +319,10 @@ class AndroidTestRunner(object):
                     cmd = cmd.replace('$(OPTIONS)', option)
                 else:
                     cmd = cmd.replace('$(OPTIONS)', '')
+                if resultsdir is not None:
+                    cmd = cmd.replace('$(RESULTDIR)', resultsdir)
+                else:
+                    cmd = cmd.replace('$(RESULTDIR)', '')
                 cmd = cmd.strip()
                 ret_code = self.adb.run_adb_shell_for_test(cmd,
                                                            stdoutlog,
@@ -410,6 +414,23 @@ class AndroidTestParser(object):
         Results are then stored in self.results.  If a fixupdict was supplied
         it is used to convert test result strings to a standard format.
         """
+
+        self.real_parse(result_filename=result_filename,
+              output_filename=output_filename, test_name=test_name)
+
+        self.fixresults(self.fixupdict)
+        if self.appendall:
+            self.appendtoall(self.appendall)
+        self.fixmeasurements()
+        self.fixids(test_name=test_name)
+
+    def real_parse(self, result_filename='stdout.log',
+              output_filename='stdout.log', test_name=''):
+        """Using the pattern to do the real parse operation
+        
+        generate the test_results elements from the result file by parsing 
+        with the pattern specified.
+        """
         if not self.pattern:
             return
 
@@ -448,11 +469,6 @@ class AndroidTestParser(object):
                 if data.get('result') is None:
                     data['result'] = test_ok and 'pass' or 'fail'
                 self.results['test_results'].append(data)
-        self.fixresults(self.fixupdict)
-        if self.appendall:
-            self.appendtoall(self.appendall)
-        self.fixmeasurements()
-        self.fixids(test_name=test_name)
 
     def append(self, testid, entry):
         """Appends a dict to the test_results entry for a specified testid
@@ -593,6 +609,11 @@ def _run_steps_host(steps=[], serial=None, option=None, resultsdir=None):
             cmd = cmd.replace('$(OPTIONS)', option)
         else:
             cmd = cmd.replace('$(OPTIONS)', '')
+        if resultsdir is not None:
+            cmd = cmd.replace('$(RESULTDIR)', resultsdir)
+        else:
+            cmd = cmd.replace('$(RESULTDIR)', '')
+
         cmd = cmd.strip()
         rc, output = adb.run_cmd_host(cmd, quiet=False)
         if rc:
@@ -610,6 +631,10 @@ def _run_steps_adb(steps=[], serial=None, option=None, resultsdir=None):
             cmd = cmd.replace('$(OPTIONS)', option)
         else:
             cmd = cmd.replace('$(OPTIONS)', '')
+        if resultsdir is not None:
+            cmd = cmd.replace('$(RESULTDIR)', resultsdir)
+        else:
+            cmd = cmd.replace('$(RESULTDIR)', '')
         cmd = cmd.strip()
         rc, output = adb.run_adb_cmd(cmd, quiet=False)
         if rc:
