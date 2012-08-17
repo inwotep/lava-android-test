@@ -5,7 +5,11 @@ Version History
 
 Version 0.9
 ===========
-* Unreleased
+* Make mmtest logs less verbose.
+* Wait longer for wifi to turn off.
+* add extract-attachments sub command
+* big_LITTLE: add support for selecting testsuite through $(OPTIONS)
+* add methanol test
 
 .. _version_0_8:
 
