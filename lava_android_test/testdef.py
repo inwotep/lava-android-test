@@ -142,7 +142,7 @@ class AndroidTest(ITest):
                 'analyzer_assigned_date':
                         self.runner.starttime.strftime(TIMEFORMAT),
                 'time_check_performed': False,
-                'attributes':{'run_options': run_options},
+                'attributes':{},
                 'test_id': self.testname,
                 'test_results':[],
                 'attachments':[],
@@ -151,6 +151,8 @@ class AndroidTest(ITest):
                 }
             ]
         }
+        if run_options:
+             bundle['test_runs'][0]['attributes']['run_options'] = run_options
         self._add_install_options(bundle, config)
         filename_host = os.path.join(config.tempdir_host, 'testdata.json')
         write_file(DocumentIO.dumps(bundle), filename_host)
