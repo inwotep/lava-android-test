@@ -624,7 +624,7 @@ class run_monkeyrunner(AndroidCommand):
         inst = AndroidTestInstaller()
         run = AndroidTestRunner(steps_host_pre=[
                                 'monkeyrunner %s %s' % (script, serial)])
-        parser = AndroidTestParser()
+        parser = MonkeyrunnerTestParser()
         parser.monkeyrunner_result = os.path.join(os.path.dirname(script),
                                                   'results.txt')
         test = AndroidTest(testname='monkeyrunner',
