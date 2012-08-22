@@ -60,8 +60,9 @@ setup(
     ],
     install_requires=[
         'lava-tool >= 0.2',
-        'versiontools >= 1.4',
         'linaro_dashboard_bundle',
+        'pexpect',
+        'versiontools >= 1.4',
     ],
     setup_requires=[
         'versiontools >= 1.4'
