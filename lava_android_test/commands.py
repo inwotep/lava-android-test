@@ -580,6 +580,8 @@ class run_monkeyrunner(AndroidCommand):
         self.say_begin(tip_msg)
         bundles = []
         for script in script_list:
+            if "monkeycommon.py" == os.path.basename(script):
+                continue
             sub_bundle = {}
             from datetime import datetime
             starttime = datetime.utcnow()
