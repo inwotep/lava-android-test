@@ -580,6 +580,8 @@ class run_monkeyrunner(AndroidCommand):
         self.say_begin(tip_msg)
         bundles = []
         for script in script_list:
+            if "monkeycommon.py" == os.path.basename(script):
+                continue
             sub_bundle = {}
             from datetime import datetime
             starttime = datetime.utcnow()
@@ -624,7 +626,9 @@ class run_monkeyrunner(AndroidCommand):
         inst = AndroidTestInstaller()
         run = AndroidTestRunner(steps_host_pre=[
                                 'monkeyrunner %s %s' % (script, serial)])
-        parser = AndroidTestParser()
+        parser = MonkeyrunnerTestParser()
+        parser.monkeyrunner_result = os.path.join(os.path.dirname(script),
+                                                  'results.txt')
         test = AndroidTest(testname='monkeyrunner',
                             installer=inst, runner=run, parser=parser)
         test.parser.results = {'test_results': []}
@@ -654,6 +658,40 @@ class run_monkeyrunner(AndroidCommand):
             utils.delete_files(new_png_list)
 
         return bundle
+
+
+class MonkeyrunnerTestParser(AndroidTestParser):
+    '''
+        Before this method is called, self.monkeyrunner_result must be set 
+        to the right value
+    '''
+
+
+    def real_parse(self, result_filename=None, output_filename=None,
+           test_name=''):
+        self.pattern = ("^\s*(?P<test_case_id>.*?)\s*="
+                        "\s*(?P<measure_units>.+)\s*$")
+
+        pat = re.compile(self.pattern)
+
+        if not os.path.exists(self.monkeyrunner_result):
+            return
+        with open(self.monkeyrunner_result) as stream:
+            for lineno, line in enumerate(stream, 1):
+                match = pat.search(line)
+                if not match:
+                    continue
+                data = match.groupdict()
+                data["log_filename"] = result_filename
+                data["log_lineno"] = lineno
+                if data.get('result') is None:
+                    data['result'] = 'pass'
+                measure_units = data["measure_units"].strip().split()
+                data["measurement"] = measure_units[0]
+                if len(measure_units) >= 2:
+                    data['units'] = measure_units[1]
+                del(data["measure_units"])
+                self.results['test_results'].append(data)
 
 
 class parse(AndroidResultsCommand):
