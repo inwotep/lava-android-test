@@ -139,30 +139,9 @@ class AdbMixIn(object):
 
     adb = None
 
-    def _fix_adb_object(self):
-        """
-        The ADB class provided by lava-android-test is somewhat crappy as it
-        depends on system configuration both on the host and the target to
-        operate properly. Without that configuration it will fail badly and
-        give incorrect results.
-
-        While I could attempt fixing the core problem it is beyond the scope
-        of my hacking today.
-
-        Instead this method gets called the first time the adb object is
-        assigned with the setadb() method (part of the API required by
-        lava-android-test). The actions it performed were loosely copied
-        from lava_android_test.testdef.AndroidTest.install().
-        """
-        config = get_config()
-        logging.warning("Fixing lava-android-test ADB() initialization")
-        if not os.path.exists(config.tempdir_host):
-            os.makedirs(config.tempdir_host)
-
     @warnoncall
     def setadb(self, adb=None):
         if self.adb is None and adb is not None:
-            # self._fix_adb_object()
             self.adb = adb
         else:
             self.adb = adb
