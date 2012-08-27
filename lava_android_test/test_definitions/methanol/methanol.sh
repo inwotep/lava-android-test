@@ -302,7 +302,7 @@ function main(){
 
     page_suffix='${test_target}'
     if [ -n "${page_suffix}" ]; then
-        page_suffix='-${test_target}'
+        page_suffix="-${test_target}"
     fi
     echo `date`: starts to test fire${page_suffix}.html
     test_methanol "${test_target}"
