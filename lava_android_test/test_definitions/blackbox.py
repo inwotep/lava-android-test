@@ -1,4 +1,4 @@
-# Copyright (c) 2012 Linaro Limited 
+# Copyright (c) 2012 Linaro Limited
 
 # Author: Zygmunt Krynicki <zygmunt.krynicki@linaro.org>
 #
@@ -23,10 +23,12 @@ Bridge for the black-box testing implemented by android-lava-wrapper.
 See: https://github.com/zyga/android-lava-wrapper
 """
 
+import datetime
 import functools
 import logging
 import os
 import pdb
+import shutil
 import subprocess
 import tempfile
 
@@ -34,22 +36,6 @@ from linaro_dashboard_bundle.evolution import DocumentEvolution
 from linaro_dashboard_bundle.io import DocumentIO
 
 from lava_android_test.config import get_config
-
-
-def warnoncall(func):
-    @functools.wraps(func)
-    def waroncall_decorator(*args, **kwargs):
-        parts = []
-        parts.append(func.__name__)
-        parts.append('(')
-        parts.append(", ".join([
-            repr(arg) for arg in args]))
-        parts.append(", ".join([
-            "%s=%r" % (name, value) for name, value in kwargs.iteritems()]))
-        parts.append(")")
-        logging.warning("function called: %s", ''.join(parts))
-        return func(*args, **kwargs)
-    return waroncall_decorator
 
 
 def debuggable_real(func):
@@ -113,12 +99,15 @@ class SuperAdb(object):
         subsequent lines instead of returning a big lump of text for the
         developer to parse. Also, instead of using 'ls' on the target it
         uses the special 'ls' command built into adb.
+
+        The two special entries, . and .., are omitted
         """
         for line in self(['ls', dirname]).splitlines():
             # a, b and c are various pieces of stat data
             # but we don't need that here.
             a, b, c, pathname = line.split(' ', 3)
-            yield pathname
+            if pathname not in ('.', '..'):
+                yield pathname
 
 
 class AdbMixIn(object):
@@ -139,7 +128,6 @@ class AdbMixIn(object):
 
     adb = None
 
-    @warnoncall
     def setadb(self, adb=None):
         if self.adb is None and adb is not None:
             self.adb = adb
@@ -147,7 +135,6 @@ class AdbMixIn(object):
             self.adb = adb
         self.super_adb = SuperAdb(adb)
 
-    @warnoncall
     def getadb(self):
         return self.adb
 
@@ -160,11 +147,9 @@ class Sponge(object):
     logged.
     """
 
-    @warnoncall
     def __getattr__(self, attr):
         return super(Sponge, self).__getattr__(attr)
 
-    @warnoncall
     def __setattr__(self, attr, value):
         super(Sponge, self).__setattr__(attr, value)
 
@@ -215,15 +200,19 @@ class BlackBoxTestBridge(AdbMixIn):
         # any values.
         self.parser = Sponge()
 
-    @warnoncall
     def install(self, install_options=None):
         """
-        Black box tests cannot be installed  they must be pre-baked into the
+        "Install" blackbox on the test device.
+
+        Black box tests cannot be installed, they must be pre-baked into the
         image. To conform to the 'protocol' used by lava-android-test we will
         perform a fake 'installation' of the black box tests by creating a
         directory that lava-android-test is checking for. We do that only if
-        the lava-wrapper executable, which is the entry point to black box
+        the lava-blackbox executable, which is the entry point to black box
         tests exists in the image.
+
+        ..note::
+            This method is part of the lava-android-test framework API.
         """
         if not self.adb.exists(self._blackbox_pathname):
             # Sadly lava-android-test has no exception hierarchy that we can
@@ -236,34 +225,45 @@ class BlackBoxTestBridge(AdbMixIn):
         else:
             self.adb.makedirs(self._fake_install_path)
 
-    @warnoncall
     def uninstall(self):
         """
         Conformance method to keep up with the API required by
         lava-android-test. It un-does what install() did by removing the
         _fake_install_path directory from the device.
+
+        ..note::
+            This method is part of the lava-android-test framework API.
         """
         if self.adb.exists(self._fake_install_path):
             self.adb.rmtree(self._fake_install_path)
 
     @debuggable
-    @warnoncall
     def run(self, quiet=False, run_options=None):
         """
-        Use ADB to run the black-box executable on the device
-        Wait for all the tests to finish then collect the results
+        Run the black-box test on the target device.
+
+        Use ADB to run the black-box executable on the device. Keep the results
+        in the place that lava-android-test expects us to use.
+
+        ..note::
+            This method is part of the lava-android-test framework API.
         """
-        # Spool dir, technically this is the same as used by the black box
-        # executable but it can change in the future so we just pass whatever
-        # we want, to know where to find the results later.
-        spool_dir = '/sdcard/LAVA'
+        # The blackbox test runner will create a directory each time it is
+        # started. All of those directories will be created relative to a so
+        # called spool directory. Instead of using the default spool directory
+        # (which can also change) we will use the directory where
+        # lava-android-test keeps all of the results.
+        spool_dir = get_config().resultsdir_android
+        logging.debug("Using spool directory for black-box testing: %r", spool_dir)
         stuff_before = frozenset(self.super_adb.listdir(spool_dir))
         blackbox_command = [
             'shell', self._blackbox_pathname,
             '--spool', spool_dir,
             '--run-all-tests']
         # Let's run the blackbox executable via ADB
+        logging.debug("Starting black-box tests...")
         self.super_adb(blackbox_command, stdout=None)
+        logging.debug("Black-box tests have finished!")
         stuff_after = frozenset(self.super_adb.listdir(spool_dir))
         # Check what got added to the spool directory
         new_entries = stuff_after - stuff_before
@@ -271,21 +271,89 @@ class BlackBoxTestBridge(AdbMixIn):
             raise RuntimeError("Nothing got added to the spool directory")
         elif len(new_entries) > 1:
             raise RuntimeError("Multiple items added to the spool directory")
-        new_dir = list(new_entries)[0]
-        # Do all the heavy lifting to collect and combine all the bundles
-        # together. TODO: perhaps save all the bundles (as they are)
-        # and actually combine them later in parse()
-        remote_bundle_dir = os.path.join(spool_dir, new_dir)
-        bundle = self._collect_and_combine_bundles(remote_bundle_dir)
-        # XXX: temporary hack
-        with open('blackbox.json', 'wt') as stream:
-            DocumentIO.dump(stream, bundle)
+        result_id = list(new_entries)[0]
+        print "The blackbox test have finished running, the result id is %r" % result_id
+        return result_id
 
-    def _collect_and_combine_bundles(self, remote_bundle_dir):
+    def parse(self, result_id):
         """
-        Collect bundles from the specified folder on the device.
-        This is somewhat tricky. Each bundle we coalesce may be generated by
-        a different, separate programs and may, thus, use different formats.
+        UNIMPLEMENTED METHOD
+
+        Sadly this method is never called as lava-android-test crashes before
+        it gets to realize it is processing blackbox results and load this
+        class. This crash _may_ be avoided by hiding the real results of
+        blackbox and instead populating the results directory with dummy test
+        results that only let LAVA figure out that blackbox is the test to
+        load. Then we could monkey patch other parts and it could be
+        implemented.
+
+        ONCE THIS IS FIXED THE FOLLOWING DESCRIPTION SHOULD APPLY
+
+        Parse and save results of previous test run.
+
+        The result_id is a name of a directory on the Android device (
+        relative to the resultsdir_android configuration option).
+
+        ..note::
+            This method is part of the lava-android-test framework API.
+        """
+        # Sadly since the goal is integration with lava lab I don't have the
+        # time to do it. In the lab we use lava-android-test run -o anyway.
+        raise NotImplementedError()
+
+    def _get_combined_bundle(self, result_id):
+        """
+        Compute the combined bundle of a past run and return it
+        """
+        config = get_config()
+        temp_dir = tempfile.mkdtemp()
+        remote_bundle_dir = os.path.join(config.resultsdir_android, result_id)
+        try:
+            self._copy_all_bundles(remote_bundle_dir, temp_dir)
+            bundle = self._combine_bundles(temp_dir)
+        finally:
+            shutil.rmtree(temp_dir)
+        return bundle
+
+    # Desired format name, used in a few methods below
+    _desired_format = "Dashboard Bundle Format 1.3"
+
+    def _copy_all_bundles(self, android_src, host_dest):
+        """
+        Use adb pull to copy all the files from android_src (android
+        fileystem) to host_dest (host filesystem).
+        """
+        logging.debug("Saving bundles from %s to %s", android_src, host_dest)
+        for name in self.super_adb.listdir(android_src):
+            logging.debug("Considering file %s", name)
+            # NOTE: We employ simple filtering for '.json' files. This prevents
+            # spurious JSON parsing errors if the result directory has
+            # additional files of any kind.
+            #
+            # We _might_ want to lessen that eventually restriction but at this
+            # time blackbox is really designed to be self-sufficient so there
+            # is no point of additional files.
+            if not name.endswith('.json'):
+                continue
+            remote_pathname = os.path.join(android_src, name)
+            local_pathname = os.path.join(host_dest, name)
+            try:
+                logging.debug(
+                    "Copying %s to %s", remote_pathname, local_pathname)
+                self.adb.pull(remote_pathname, local_pathname)
+            except:
+                logging.exception("Unable to copy bundle %s", name)
+
+    def _combine_bundles(self, dirname):
+        """
+        Combine all bundles from a previous test run into one bundle.
+
+        Returns the aggregated bundle object
+
+        Load, parse and validate each bundle from the specified directory and
+        combine them into one larger bundle. This is somewhat tricky. Each
+        bundle we coalesce may be generated by a different, separate programs
+        and may, thus, use different formats.
 
         To combine them all correctly we need to take two precautions:
         1) All bundles must be updated to a single, common format
@@ -304,38 +372,18 @@ class BlackBoxTestBridge(AdbMixIn):
             '"format": "' + self._desired_format + '",\n'
             '"test_runs": []\n'
             '}\n')[1]
-        temp_dir = tempfile.mkdtemp()
-        try:
-            for name in self.super_adb.listdir(remote_bundle_dir):
-                # XXX: Simple filtering for '.json' files, prevents
-                # spurious errors if the result directory has additional
-                # files of any kind.
-                if not name.endswith('.json'):
-                    continue
-                remote_pathname = os.path.join(remote_bundle_dir, name)
-                local_pathname = os.path.join(temp_dir, name)
-                try:
-                    # Copy across adb...
-                    self.adb.pull(remote_pathname, local_pathname)
-                    # ...then deserialize, convert and combine the bundle
-                    format, bundle = self._load_bundle(local_pathname)
-                    self._convert_to_common_format(format, bundle)
-                    self._combine_with_aggregated(aggregated_bundle, bundle)
-                except:
-                    logging.exception(
-                        "Unable to process bundle %s", name)
-                finally:
-                    # Make sure we got rid of the local copy
-                    os.unlink(local_pathname)
-        finally:
+        # Iterate over all files there
+        for name in os.listdir(dirname):
+            bundle_pathname = os.path.join(dirname, name)
+            # Process bundle one by one
             try:
-                os.rmdir(temp_dir)
+                format, bundle = self._load_bundle(bundle_pathname)
+                self._convert_to_common_format(format, bundle)
+                self._combine_with_aggregated(aggregated_bundle, bundle)
             except:
-                logging.exception("Unable to remove temporary directory")
+                logging.exception("Unable to process bundle %s", name)
+        # Return the aggregated bundle
         return aggregated_bundle
-
-    # Desired format name, used in two methods below
-    _desired_format = "Dashboard Bundle Format 1.3"
 
     def _load_bundle(self, local_pathname):
         """
@@ -360,7 +408,6 @@ class BlackBoxTestBridge(AdbMixIn):
         changed and the code reviewed for any possible changes
         required to support the more recent format.
         """
-
         while True:
             # Break conditions, encoded separately for clarity
             if format == self._desired_format:
@@ -390,10 +437,6 @@ class BlackBoxTestBridge(AdbMixIn):
         assert aggregated_bundle["format"] == self._desired_format
         aggregated_bundle["test_runs"].extend(bundle.get("test_runs", []))
 
-    @warnoncall
-    def parse(self, resultname):
-        pass
-
     @property
     def _blackbox_pathname(self):
         """
@@ -412,5 +455,35 @@ class BlackBoxTestBridge(AdbMixIn):
         config = get_config()
         return os.path.join(config.installdir_android, self.testname)
 
+    def _monkey_patch_lava(self):
+        """
+        Monkey patch the implementation of
+        lava_android_test.commands.generate_bundle
 
+        This change is irreversible but given the one-off nature of
+        lava-android-test this is okay. It should be safe to do this since
+        LAVA will only load the blackbox test module if we explicitly request
+        to run it. At that time no other tests will run in the same process.
+
+        This method should not be used once lava-android-test grows a better
+        API to allow us to control how bundles are generated.
+        """
+        from lava_android_test import commands
+        def _phony_generate_bundle(serial=None, result_id=None,
+                   test=None, test_id=None, attachments=[]):
+            if result_id is None:
+                raise NotImplementedError
+            return self._get_combined_bundle(result_id)
+        commands.generate_bundle = _phony_generate_bundle 
+        logging.warning(
+            "The 'blackbox' test definition has monkey-patched the function"
+            " lava_android_test.commands.generate_bundle() if you are _not_"
+            " running the blackbox test or are experiencing odd problems/crashes"
+            " below please look at this method first")
+
+
+# initialize the blackbox test definition object
 testobj = BlackBoxTestBridge()
+
+# Then monkey patch lava-android-test so that parse keeps working
+testobj._monkey_patch_lava()
