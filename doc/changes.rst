@@ -1,6 +1,13 @@
 Version History
 ***************
 
+.. _version_0_10:
+
+Version 0.10
+============
+* update to methanol
+* add MonkeyRunner Parser
+
 .. _version_0_9_1:
 
 Version 0.9.1
