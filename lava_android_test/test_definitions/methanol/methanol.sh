@@ -294,6 +294,9 @@ function cleanup(){
 function main(){
     parse_arg "$@"
 
+    ## delete the test result for last time
+    adb ${ADB_OPTION} shell rm "${result_dir_android}/methanol_result.json"
+
     trap cleanup EXIT
 
     deploy
