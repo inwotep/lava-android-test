@@ -40,6 +40,7 @@ server_pid=""
 ADB_OPTION=""
 domain_ip="${DEFAULT_DOMAIN_IP}"
 browser="${DEFAULT_BROWSER}"
+test_target=""
 
 function parse_arg(){
     serial=""
@@ -63,6 +64,14 @@ function parse_arg(){
                     exit 1
                 fi
                 domain_ip="$2"
+                shift 2
+                ;;
+            --target|-t)
+                if [ "x$2" = "x" ]; then
+                    echo "Error: $1 requires an argument"
+                    exit 1
+                fi
+                test_target="$2"
                 shift 2
                 ;;
             --help|-h)
@@ -125,7 +134,7 @@ function deploy(){
             cleanup
             exit 1
         fi
-        
+
         adb ${ADB_OPTION} uninstall com.android.chrome
 
         echo "adb ${ADB_OPTION} install ./Chrome-latest.apk"
@@ -220,10 +229,9 @@ function wait_result(){
     else
         return 0
     fi
-    wait_minutes=${2-1}
 
-    for (( i=1; i<=${wait_minutes}; i++ )); do
-        sleep 60
+    for (( i=1; ; i++ )); do
+        sleep 300
         if [ -f "${file_path}" ]; then
             return 0
         fi
@@ -238,15 +246,13 @@ function test_methanol(){
         test_type=""
     fi
 
-    wait_minutes=${2-1}
-
     result_file=`mktemp -u --tmpdir=${report_res_dir} fire${test_type}-XXX.json`
     res_basename=`basename ${result_file}`
     test_url="${domain_protocol}/${methanol_url}/fire${test_type}.html"
     if [ -n "${report_url}" ]; then
         test_url="${test_url}?reportToUrl=${report_url}%3Fsave2file=${res_basename}"
     fi
-    
+
     component_default="com.android.browser/.BrowserActivity"
     component_chrome=" com.android.chrome/com.google.android.apps.chrome.Main"
     if [ "${browser}" = "CHROME" ]; then
@@ -256,7 +262,7 @@ function test_methanol(){
     fi
     echo "adb ${ADB_OPTION} shell am start -a android.intent.action.VIEW -d ${test_url} -n ${component}"
     adb ${ADB_OPTION} shell "am start -a android.intent.action.VIEW -d ${test_url} -n ${component}"
-    wait_result "${result_file}" ${wait_minutes}
+    wait_result "${result_file}"
     if [ $? -eq 0 ]; then
         cur_path=`pwd`
         cp -uvf ${result_file}  ${cur_path}/${res_basename}
@@ -287,18 +293,22 @@ function cleanup(){
 
 function main(){
     parse_arg "$@"
-    
+
+    ## delete the test result for last time
+    adb ${ADB_OPTION} shell rm "${result_dir_android}/methanol_result.json"
+
     trap cleanup EXIT
 
     deploy
 
     check_url
-    echo `date`: starts to test fire.html
-    test_methanol "" 30 
-    echo `date`: starts to test fire-svg.html
-    test_methanol "svg" 150
-    echo `date`: starts to test fire-smp.html
-    test_methanol "smp" 100
+
+    page_suffix='${test_target}'
+    if [ -n "${page_suffix}" ]; then
+        page_suffix="-${test_target}"
+    fi
+    echo `date`: starts to test fire${page_suffix}.html
+    test_methanol "${test_target}"
     echo `date`: all tests completed
 
     echo "Merge results of file: ${RESULTS[@]}"
