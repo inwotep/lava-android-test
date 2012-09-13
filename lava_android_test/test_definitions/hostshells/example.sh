@@ -48,8 +48,8 @@ function parse_argv() {
 
 function show_usage(){
     # Display the usage line
-    echo "Usage $0 [--serial|-s serial] other-option"
-    echo "Usage $0 [--help|-h]"
+    echo "Usage $(basename $0) [--serial|-s serial] other-option"
+    echo "Usage $(basename $0) [--help|-h]"
 }
 
 function main(){
