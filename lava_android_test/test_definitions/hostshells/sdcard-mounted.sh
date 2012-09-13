@@ -27,7 +27,8 @@ function parse_argv() {
                 if [ -n "${SERIAL}" ]; then
                     shift 2
                 else
-                    shift 1
+                    show_usage
+                    exit 1
                 fi
                 ;;
             --help|-h)
@@ -43,7 +44,7 @@ function parse_argv() {
 
 function show_usage(){
     # Display the usage line
-    echo "Usage $(basename $0) [--serial|-s serial]"
+    echo "Usage $(basename $0) [--serial <serial>|-s <serial>]"
     echo "Usage $(basename $0) [--help|-h]"
 }
 
