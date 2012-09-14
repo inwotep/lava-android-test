@@ -5,7 +5,8 @@ Version History
 
 Version 0.11
 ============
-* Unreleased
+* methanol test fix
+* add support the android black box harness
 
 .. _version_0_10:
 
