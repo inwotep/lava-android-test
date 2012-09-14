@@ -36,11 +36,6 @@ function parse_argv() {
                 exit 1
                 ;;
             *)
-                if [ -n "${OPTIONS}" ]; then
-                    OPTIONS="${OPTIONS} $1"
-                else
-                    OPTIONS="$1"
-                fi
                 shift
                 ;;
         esac
@@ -49,14 +44,22 @@ function parse_argv() {
 
 function show_usage(){
     # Display the usage line
-    echo "Usage $(basename $0) [--serial <serial>|-s <serial>] <other-option>"
+    echo "Usage $(basename $0) [--serial <serial>|-s <serial>]"
     echo "Usage $(basename $0) [--help|-h]"
 }
 
 function main(){
     parse_argv "$@"
-    echo "hostshells-example-fail=fail"
-    echo "hostshells-example-pass=pass"
+    ADB_OPTION=''
+    if [ -n "${SERIAL}" ]; then
+        ADB_OPTION="-s ${SERIAL}"
+    fi
+    adb ${ADB_OPTION} shell mount |grep 'sdcard '
+    if [ $? -eq 0 ]; then
+        echo "sdcard-mounted=pass"
+    else
+        echo "sdcard-mounted=fail"
+    fi
 }
 
 main "$@"
