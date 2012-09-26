@@ -8,6 +8,7 @@ Version 0.12
 * Unreleased
 
 * add sched_tests.py
+* add task_placement test
 
 .. _version_0_11:
 

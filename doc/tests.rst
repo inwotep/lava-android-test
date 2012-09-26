@@ -106,3 +106,7 @@ shells
 sched_tests
 ++++++++++
 .. automodule:: lava_android_test.test_definitions.sched_tests
+
+task_placement
+++++++++++++++
+.. automodule:: lava_android_test.test_definitions.task_placement
