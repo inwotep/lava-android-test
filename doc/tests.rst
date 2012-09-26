@@ -101,3 +101,7 @@ instruments
 shells
 ++++++
 .. automodule:: lava_android_test.test_definitions.shells
+
+task_placement
+++++++++++++++
+.. automodule:: lava_android_test.test_definitions.task_placement
