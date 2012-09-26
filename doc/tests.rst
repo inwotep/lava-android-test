@@ -6,6 +6,7 @@ Supported Tests
 
 The following tests are currently supported in LAVA Android Test:
 
+ * `sched_tests`_
  * `big_LITTLE`_
  * `bluetooth`_
  * `busybox`_
@@ -101,3 +102,7 @@ instruments
 shells
 ++++++
 .. automodule:: lava_android_test.test_definitions.shells
+
+sched_tests
+++++++++++
+.. automodule:: lava_android_test.test_definitions.sched_tests
