@@ -7,6 +7,8 @@ Version 0.12
 ============
 * Unreleased
 
+* add sched_tests.py
+
 .. _version_0_11:
 
 Version 0.11
