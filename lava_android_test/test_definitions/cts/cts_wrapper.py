@@ -22,6 +22,7 @@
 import os
 import re
 import sys
+import xml.dom.minidom
 from lava_android_test.adb import ADB
 from lava_android_test.utils import stop_at_pattern
 
@@ -68,6 +69,21 @@ def run_cts_with_plan(cts_cmd=None):
     if cts_cmd:
         plan_command = "%s %s" % (cts_cmd, plan_command)
     if not stop_at_pattern(command=plan_command, pattern=pattern,
+                            timeout=36000):
+        print "CTS test times out"
+        return False
+
+    return True
+
+
+def run_cts_with_package(cts_cmd=None, package=None):
+    pattern = "I/CommandScheduler: All done"
+    if not package:
+        return False
+    package_command = '--package %s' % package
+    if cts_cmd:
+        cts_command = "%s %s" % (cts_cmd, package_command)
+    if not stop_at_pattern(command=cts_command, pattern=pattern,
                             timeout=36000):
         print "CTS test times out"
         return False
@@ -147,6 +163,26 @@ def print_log(logs=[]):
                 print '<<<<<=========Log file [%s] ends=========' % log_file
 
 
+def get_all_packages(plan_file=None):
+    if not plan_file:
+        return []
+    if not os.path.exists(plan_file):
+        print "file(%s) does not exist" % plan_file
+        return []
+
+    package_list = []
+    try:
+        dom = xml.dom.minidom.parse(plan_file)
+        test_plan = dom.getElementsByTagName("TestPlan")[0]
+        for entry in test_plan.getElementsByTagName("Entry"):
+            package_list.append(entry.attributes.get('uri').value)
+    except Exception as e:
+        print "Has exception to parse the xml file"
+        print "Exception: %s" % e
+    finally:
+        return package_list
+
+
 def main():
     run_wrapper_path = os.path.join(curdir, 'cts_run_wrapper.sh')
     run_wrapper_cmd = "bash %s" % run_wrapper_path
@@ -156,9 +192,13 @@ def main():
     logs = collect_logs()
     if not prepare_cts():
         sys.exit(1)
+
+    cts_plan = './android-cts/repository/plans/CTS.xml'
+    pkg_list = get_all_packages(plan_file=cts_plan)
     try:
-        run_cts_with_plan(run_wrapper_cmd)
-        run_cts_continue(run_wrapper_cmd)
+        for pkg in pkg_list:
+            if not run_cts_with_package(cts_cmd=run_wrapper_cmd, package=pkg):
+                run_cts_continue(run_wrapper_cmd)
     finally:
         for log in logs:
             pid = log.get('pid')
