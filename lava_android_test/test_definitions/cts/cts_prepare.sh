@@ -20,9 +20,9 @@
 
 #http://source.android.com/compatibility/downloads.html
 
-cts_pkg="android-cts-4.0.3_r3-linux_x86-arm.zip"
-media_pkg="android-cts-media-1.0.zip"
-site_url="https://dl.google.com/dl/android/cts/"
+cts_pkg="android-cts-linux_x86-arm-latest.zip"
+media_pkg="android-cts-media-latest.zip"
+site_url="http://testdata.validation.linaro.org/cts/"
 #site_url="http://192.168.1.127/images/cts/"
 #export http_proxy=http://localhost:3128
 
