@@ -669,28 +669,35 @@ class MonkeyrunnerTestParser(AndroidTestParser):
 
     def real_parse(self, result_filename=None, output_filename=None,
            test_name=''):
-        self.pattern = ("^\s*(?P<test_case_id>.*?)\s*="
-                        "\s*(?P<measure_units>.+)\s*$")
+        self.res_pattern = ("^\s*(?P<test_case_id>.*?)\s*="
+                        "\s*(?P<result>(true|false))\s*$")
+        self.measurement_pattern = ("^\s*(?P<test_case_id>.*?)\s*="
+                        "\s*(?P<measurement>[\.\d]+)\s*$")
+        self.measurement_units_pattern = ("^\s*(?P<test_case_id>.*?)\s*="
+                        "\s*(?P<measurement>[\.\d]+)\s+(?P<units>\S+)\s*$")
 
-        pat = re.compile(self.pattern)
+        res_pat = re.compile(self.res_pattern)
+        measurement_pat = re.compile(self.measurement_pattern)
+        measurement_units_pat = re.compile(self.measurement_units_pattern)
+
 
         if not os.path.exists(self.monkeyrunner_result):
             return
         with open(self.monkeyrunner_result) as stream:
             for lineno, line in enumerate(stream, 1):
-                match = pat.search(line)
+                match = res_pat.search(line)
                 if not match:
-                    continue
+                    match = measurement_pat.search(line)
+                    if not match:
+                        match = measurement_units_pat.search(line)
+                        if not match:
+                            continue
                 data = match.groupdict()
                 data["log_filename"] = result_filename
                 data["log_lineno"] = lineno
                 if data.get('result') is None:
                     data['result'] = 'pass'
-                measure_units = data["measure_units"].strip().split()
-                data["measurement"] = measure_units[0]
-                if len(measure_units) >= 2:
-                    data['units'] = measure_units[1]
-                del(data["measure_units"])
+
                 self.results['test_results'].append(data)
 
 
