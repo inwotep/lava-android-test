@@ -26,7 +26,7 @@ DEFAULT_BROWSER='DEFAULT'
 ######        NOT MODIFY SOURCE OF BELOW           #####
 ########################################################
 THIS_FILE="$0"
-methanol_git="git://gitorious.org/methanol/methanol.git"
+methanol_git="git://github.com/szeged/methanol.git"
 chrome_apk_url="http://testdata.validation.linaro.org/chrome/Chrome-latest.apk"
 server_settings_file="/etc/lava/web_server/settings.conf"
 result_dir_android="/data/local/methanol"
