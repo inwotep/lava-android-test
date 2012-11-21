@@ -62,14 +62,7 @@ function download_unzip(){
 function main(){
     rm -fr ${cts_pkg} ${media_pkg} android-cts
     download_unzip "${cts_pkg_url}" ${cts_pkg}
-    download_unzip "${media_pkg_url}" ${media_pkg}
 
-    echo "${ADB_CMD} shell mkdir /mnt/sdcard/test"
-    ${ADB_CMD} shell mkdir /mnt/sdcard/test
-    chmod +x copy_media.sh
-    echo "copy_media.sh all ${ADB_OPTION}"
-    /bin/bash ./copy_media.sh all ${ADB_OPTION}
-	
     #1. Your phone should be running a user build (Android 4.0 and later) from source.android.com
     #2. Please refer to this link on the Android developer site and set up your device accordingly.
     #3. Make sure that your device has been flashed with a user build (Android 4.0and later) before you run CTS.
