@@ -5,7 +5,8 @@ Version History
 
 Version 0.13
 ============
-* Unreleased
+* update git URL for methanol
+* delete the copy media files source because this is done with the android_install_cts_medias action
 
 .. _version_0_12:
 
