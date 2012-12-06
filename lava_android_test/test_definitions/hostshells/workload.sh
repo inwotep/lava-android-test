@@ -31,6 +31,15 @@ function parse_argv() {
                     exit 1
                 fi
                 ;;
+            --config|-c)
+                CONFIG="$2"
+                if [ -n "${CONFIG}" ]; then
+                    shift 2
+                else
+                    show_usage
+                    exit 1
+                fi
+                ;;
             --help|-h)
                 show_usage
                 exit 1
@@ -49,7 +58,7 @@ function parse_argv() {
 
 function show_usage(){
     # Display the usage line
-    echo "Usage $(basename $0) [--serial <serial>|-s <serial>] <other-option>"
+    echo "Usage $(basename $0) [--serial <serial>|-s <serial>] [--config <config_file>|-c <config_file>] <other-option>"
     echo "Usage $(basename $0) [--help|-h]"
 }
 
@@ -84,6 +93,12 @@ function main(){
     result="${outputdir}/result.csv"
 
     parse_argv "$@"
+
+    config_file="config.csv"
+    if [ -n "${CONFIG}" ]; then
+        config_file="${CONFIG}"
+    fi
+
     git clone "${git_url}" -b iks
     if [ $? -ne 0 ]; then
         echo "Failed to clone git repository: ${git_url}"
@@ -93,7 +108,8 @@ function main(){
 
     #update the ip address and patch config.csv file
     sed -i "s/192.168.1.38/${ip}/g" workload_config.py
-    sed -i "s/,1200000//g" config.csv
+    sed -i "s/,1200000//g" "${config_file}" #for config_a15.csv and config.csv
+    sed -i "s/,1000000//g" "${config_file}" #for config_a7.csv
 
     python workload_setup_dependencies.py
     if [ $? -ne 0 ]; then
@@ -102,7 +118,7 @@ function main(){
     fi
 
     rm -fr ${outputdir}
-    python workload.py config.csv ${outputdir}/
+    python workload.py ${config_file} ${outputdir}/
     if [ $? -ne 0 ]; then
         echo "Failed to run workload.py config.csv outputdir/"
         exit 1
