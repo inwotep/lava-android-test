@@ -429,8 +429,8 @@ class AndroidTestParser(object):
     def real_parse(self, result_filename='stdout.log',
               output_filename='stdout.log', test_name=''):
         """Using the pattern to do the real parse operation
-        
-        generate the test_results elements from the result file by parsing 
+
+        generate the test_results elements from the result file by parsing
         with the pattern specified.
         """
         if not self.pattern:
@@ -598,6 +598,38 @@ class AndroidInstrumentTestParser(AndroidTestParser):
             self.appendtoall(self.appendall)
         self.fixmeasurements()
         self.fixids()
+
+class AndroidSimpleTestParser(AndroidTestParser):
+
+    def real_parse(self, result_filename='stdout.log',
+              output_filename='stdout.log', test_name=''):
+        self.res_pattern = ("^\s*(?P<test_case_id>.+?)\s*="
+                   "\s*(?P<result>(pass|fail|ok|ng|true|false|skip|done))\s*$")
+        self.measurement_pattern = ("^\s*(?P<test_case_id>.+?)\s*="
+                        "\s*(?P<measurement>[\.\d]+)\s*$")
+        self.measurement_units_pattern = ("^\s*(?P<test_case_id>.+?)\s*="
+                        "\s*(?P<measurement>[\.\d]+)\s+(?P<units>\S+)\s*$")
+
+        res_pat = re.compile(self.res_pattern)
+        measurement_pat = re.compile(self.measurement_pattern)
+        measurement_units_pat = re.compile(self.measurement_units_pattern)
+
+        with open(output_filename, 'r') as stream:
+            for lineno, line in enumerate(stream, 1):
+                match = res_pat.search(line)
+                if not match:
+                    match = measurement_pat.search(line)
+                    if not match:
+                        match = measurement_units_pat.search(line)
+                        if not match:
+                            continue
+                data = match.groupdict()
+                data["log_filename"] = result_filename
+                data["log_lineno"] = lineno
+                if data.get('result') is None:
+                    data['result'] = 'pass'
+
+                self.results['test_results'].append(data)
 
 
 def _run_steps_host(steps=[], serial=None, option=None, resultsdir=None):
