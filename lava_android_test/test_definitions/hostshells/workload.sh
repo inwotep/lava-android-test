@@ -65,8 +65,8 @@ function parse_output_result(){
     keys=`head -n 1 ${file_tmp}`
     values=`tail -n 1 ${file_tmp}`
     for ((i=1; i<21; i++)); do
-        key=`echo ${keys}|cut -d , -f ${i}`
-        value=`echo ${values}|cut -d , -f ${i}`
+        key=`echo ${keys}|cut -d , -f ${i}|sed 's/\r//'`
+        value=`echo ${values}|cut -d , -f ${i}|sed 's/\r//'`
 
        echo ${value}|grep -P '^[.\d]+$' &>/dev/null
        if [ $? -ne 0 ]; then
