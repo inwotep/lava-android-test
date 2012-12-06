@@ -84,7 +84,7 @@ function main(){
     result="${outputdir}/result.csv"
 
     parse_argv "$@"
-    git clone "${git_url}"
+    git clone "${git_url}" -b iks
     if [ $? -ne 0 ]; then
         echo "Failed to clone git repository: ${git_url}"
     fi
