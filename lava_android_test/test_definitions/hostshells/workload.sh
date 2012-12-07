@@ -88,7 +88,8 @@ function parse_output_result(){
 }
 
 function main(){
-    git_url="ssh://yongqinliu@linaro-private.git.linaro.org/srv/linaro-private.git.linaro.org/people/bhoj/workload-automation.git"
+    git_url="ssh://linaro-private.git.linaro.org/srv/linaro-private.git.linaro.org/people/bhoj/workload-automation.git"
+    branch="lava"
     outputdir="outputdir"
     result="${outputdir}/result.csv"
 
@@ -99,7 +100,7 @@ function main(){
         config_file="${CONFIG}"
     fi
 
-    git clone "${git_url}" -b iks
+    git clone "${git_url}" -b ${branch}
     if [ $? -ne 0 ]; then
         echo "Failed to clone git repository: ${git_url}"
     fi
