@@ -40,6 +40,15 @@ function parse_argv() {
                     exit 1
                 fi
                 ;;
+            --git|-g)
+                GIT_URL="$2"
+                if [ -n "${GIT_URL}" ]; then
+                    shift 2
+                else
+                    show_usage
+                    exit 1
+                fi
+                ;;
             --help|-h)
                 show_usage
                 exit 1
@@ -58,7 +67,7 @@ function parse_argv() {
 
 function show_usage(){
     # Display the usage line
-    echo "Usage $(basename $0) [--serial <serial>|-s <serial>] [--config <config_file>|-c <config_file>] <other-option>"
+    echo "Usage $(basename $0) [--serial|-s <serial>] [--config|-c <config_file>] [--git|g <git-url>] <other-option>"
     echo "Usage $(basename $0) [--help|-h]"
 }
 
@@ -88,7 +97,11 @@ function parse_output_result(){
 }
 
 function main(){
-    git_url="ssh://linaro-private.git.linaro.org/srv/linaro-private.git.linaro.org/people/bhoj/workload-automation.git"
+    if [ -n "${GIT_URL}" ]; then
+        git_url="${GIT_URL}"
+    else
+        git_url="file:///home/bhoj/workload-automation.git"
+    fi
     branch="lava"
     outputdir="outputdir"
     result="${outputdir}/result.csv"
