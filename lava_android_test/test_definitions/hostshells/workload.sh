@@ -97,11 +97,7 @@ function parse_output_result(){
 }
 
 function main(){
-    if [ -n "${GIT_URL}" ]; then
-        git_url="${GIT_URL}"
-    else
-        git_url="file:///home/bhoj/workload-automation.git"
-    fi
+    local_git="file:///home/bhoj/workload-automation.git"
     branch="lava"
     outputdir="outputdir"
     result="${outputdir}/result.csv"
@@ -113,9 +109,16 @@ function main(){
         config_file="${CONFIG}"
     fi
 
+    if [ -n "${GIT_URL}" ]; then
+        git_url="${GIT_URL}"
+    else
+        git_url="${local_git}"
+    fi
+
     git clone "${git_url}" -b ${branch}
     if [ $? -ne 0 ]; then
         echo "Failed to clone git repository: ${git_url}"
+        exit 1
     fi
     ip=`echo ${SERIAL}|sed 's/:5555//'`
     cd "workload-automation"
