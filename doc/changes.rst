@@ -5,7 +5,7 @@ Version History
 
 Version 0.14
 ============
-* Unreleased
+* added private test support for bigLITTLE workload suite
 
 .. _version_0_13:
 
