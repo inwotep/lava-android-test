@@ -266,15 +266,13 @@ class HostShellTestProvider(TestProvider):
         test_sh_path = '%s/%s' % (mod.curdir, f_name)
 
         HOST_SHELL_STEPS = ['bash %s -s $(SERIAL) $(OPTIONS)' % test_sh_path]
-        PATTERN = ("^\s*(?P<test_case_id>\S+)="
-                   "(?P<result>(pass|fail|ok|ng|true|false|skip|done))\s*$")
 
         testobj = self.gen_testobj(
                     testname=test_name,
                     installer=testdef.AndroidTestInstaller(),
                     runner=testdef.AndroidTestRunner(
                                     steps_host_pre=HOST_SHELL_STEPS),
-                    parser=testdef.AndroidTestParser(PATTERN),
+                    parser=testdef.AndroidSimpleTestParser(),
                     adb=ADB(serial))
         return testobj
 
