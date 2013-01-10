@@ -53,16 +53,21 @@ for f in sys.argv[2:]:
             test_case_id = res.get('test_case_id')
             average = res.get('average')
             avg_dev = res.get('average_deviate')
+            units = res.get('units')
             if file_id and test_case_id == 'summary':
                 test_case_id = '%s-summary' % file_id
             test_case_id = test_case_id.replace('/', '_')
             badchars = "[^a-zA-Z0-9\._-]"
             test_case_id = re.sub(badchars, "", test_case_id.replace(" ", "_"))
+            if not units:
+                units = 'ms'
             test_results.append({'test_case_id': '%s_avg' % test_case_id,
                                  'result': 'pass',
                                  'measurement': average,
-                                 'units': 'ms'})
-            test_results.append({'test_case_id': '%s_avg_dev' % test_case_id,
+                                 'units': units})
+            if avg_dev:
+                test_results.append({
+                                 'test_case_id': '%s_avg_dev' % test_case_id,
                                  'result': 'pass',
                                  'measurement': avg_dev,
                                  'units': '%'})
