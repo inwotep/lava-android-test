@@ -125,8 +125,6 @@ function main(){
 
     #update the ip address and patch config.csv file
     sed -i "s/192.168.1.38/${ip}/g" workload_config.py
-    sed -i "s/,1200000//g" "${config_file}" #for config_a15.csv and config.csv
-    sed -i "s/,1000000//g" "${config_file}" #for config_a7.csv
 
     python workload_setup_dependencies.py
     if [ $? -ne 0 ]; then
