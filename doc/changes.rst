@@ -5,7 +5,8 @@ Version History
 
 Version 0.15
 ============
-* Unreleased
+* Add support for canvas test in methanol
+* fix hostshell-workload test for upstream builds
 
 .. _version_0_14:
 
