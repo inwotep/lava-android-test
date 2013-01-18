@@ -22,6 +22,7 @@ The following tests are currently supported in LAVA Android Test:
  * `v8`_
  * `wifi`_
  * `0xbench`_
+ * `ashmemtest`_
  * `commands`_
  * `instruments`_
  * `hostshells`_
@@ -86,6 +87,10 @@ usbhardware
 wifi
 ++++
 .. automodule:: lava_android_test.test_definitions.wifi
+
+ashmemtest
+++++++++
+.. automodule:: lava_android_test.test_definitions.commands.ashmemtest
 
 commands
 ++++++++
