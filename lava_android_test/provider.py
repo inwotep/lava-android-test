@@ -224,8 +224,6 @@ class ShellTestProvider(TestProvider):
                      'shell chmod 777 %s' % test_sh_android_path]
 
         ADB_SHELL_STEPS = ['%s $(OPTIONS)' % test_sh_android_path]
-        PATTERN = ("^\s*(?P<test_case_id>\S+)="
-                   "(?P<result>(pass|fail|ok|ng|true|false|skip|done))\s*$")
 
         testobj = self.gen_testobj(
                     testname=test_name,
@@ -233,7 +231,7 @@ class ShellTestProvider(TestProvider):
                                 steps_adb_pre=INSTALL_STEPS_ADB_PRE),
                     runner=testdef.AndroidTestRunner(
                                     adbshell_steps=ADB_SHELL_STEPS),
-                    parser=testdef.AndroidTestParser(PATTERN),
+                    parser=testdef.AndroidSimpleTestParser(PATTERN),
                     adb=ADB(serial))
         return testobj
 

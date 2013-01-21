@@ -27,7 +27,7 @@ The following tests are currently supported in LAVA Android Test:
  * `instruments`_
  * `hostshells`_
  * `shells`_
- 
+
 busybox
 +++++++
 .. automodule:: lava_android_test.test_definitions.busybox
@@ -107,6 +107,10 @@ instruments
 shells
 ++++++
 .. automodule:: lava_android_test.test_definitions.shells
+
+binder
+~~~~~~
+Checks if the "binderAddInts" test passes or fails
 
 sched_tests
 ++++++++++

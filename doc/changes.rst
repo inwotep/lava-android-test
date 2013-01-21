@@ -6,6 +6,7 @@ Version History
 Version 0.16
 ============
 * Added ashmem test
+* Added binder test
 
 .. _version_0_15:
 
