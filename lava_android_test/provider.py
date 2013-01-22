@@ -113,21 +113,7 @@ class TestProvider(object):
 class CommonTestProvider(TestProvider):
 
     def list_test(self):
-        providers = self.get_test_provider_list()
-        avoid_dirs = []
-        for provider in providers:
-            test_prefix = provider.test_prefix
-            if test_prefix:
-                avoid_dirs.append('%ss' % test_prefix)
-        test_list = self.list_mod(test_definitions.__path__)
-        if not avoid_dirs:
-            return test_list
-        else:
-            ret_list = []
-            for test_id in test_list:
-                if not test_id in avoid_dirs:
-                    ret_list.append(test_id)
-            return ret_list
+        return self.list_mod(test_definitions.__path__)
 
     def load_test(self, test_name=None, serial=None):
         importpath = "lava_android_test.test_definitions.%s" % test_name
@@ -245,7 +231,7 @@ class ShellTestProvider(TestProvider):
                                 steps_adb_pre=INSTALL_STEPS_ADB_PRE),
                     runner=testdef.AndroidTestRunner(
                                     adbshell_steps=ADB_SHELL_STEPS),
-                    parser=testdef.AndroidSimpleTestParser(),
+                    parser=testdef.AndroidSimpleTestParser(PATTERN),
                     adb=ADB(serial))
         return testobj
 
@@ -287,3 +273,4 @@ class HostShellTestProvider(TestProvider):
                     parser=testdef.AndroidSimpleTestParser(),
                     adb=ADB(serial))
         return testobj
+
