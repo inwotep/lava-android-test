@@ -34,6 +34,9 @@ import lava_android_test.testdef
 
 curdir = os.path.realpath(os.path.dirname(__file__))
 
+# "-timeout timeout" must be specified with at least one test
+# can not only specified the "-timeout timeout" as option
+DEFAULT_OPTIONS = '--ez math true --ez 2d true --ez 3d true --ez vm true'
 INSTALL_STEPS_HOST_POST = [
         ("python %s/android-0xbenchmark/android_0xbenchmark_modify_path.py"
          " $(SERIAL)") % curdir]
@@ -43,11 +46,10 @@ RUN_STEPS_HOST_PRE = [
          " $(SERIAL)") % curdir]
 RUN_STEPS_ADB_SHELL = ['logcat -c',
         ("am start -n org.zeroxlab.zeroxbenchmark/"
-         "org.zeroxlab.zeroxbenchmark.Benchmark --ez math true"
-         " --ez 2d true --ez 3d true --ez vm true --ez autorun true")]
+         "org.zeroxlab.zeroxbenchmark.Benchmark --ez autorun true $(OPTIONS)")]
 RUN_STEPS_HOST_POST = [
-        'python %s/android-0xbenchmark/android_0xbenchmark_wait.py $(SERIAL)' %
-         curdir]
+        'python %s/android-0xbenchmark/android_0xbenchmark_wait.py '
+        '$(SERIAL) $(OPTIONS)' % curdir]
 
 
 class ZeroXBenchmarkTestParser(lava_android_test.testdef.AndroidTestParser):
@@ -82,4 +84,5 @@ run = lava_android_test.testdef.AndroidTestRunner(
 parser = ZeroXBenchmarkTestParser()
 testobj = lava_android_test.testdef.AndroidTest(testname="0xbench",
             installer=inst, runner=run, parser=parser,
-             org_ouput_file=os.path.join(save_dir, '0xBenchmark.bundle'))
+            org_ouput_file=os.path.join(save_dir, '0xBenchmark.bundle'),
+            default_options=DEFAULT_OPTIONS)

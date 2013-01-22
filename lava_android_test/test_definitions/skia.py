@@ -31,13 +31,15 @@ import lava_android_test.testdef
 
 test_name = 'skia'
 
+DEFAULT_OPTIONS = '1000'
+
 INSTALL_STEPS_ADB_PRE = []
 # Skia can do many more benchmarks, but it becomes almost too much data
 # to make a nice chart for. The -match limits the ones we run
 ADB_SHELL_STEPS = ['logcat -c',
-                 'skia_bench -repeat 1000 -timers w -config 565 -match bitmap',
-                 'skia_bench -repeat 1000 -timers w -config 565 -match rects',
-                 'skia_bench -repeat 1000 -timers w -config 565 -match repeat',
+                 'skia_bench -repeat $(OPTIONS) -timers w -config 565 -match bitmap',
+                 'skia_bench -repeat $(OPTIONS) -timers w -config 565 -match rects',
+                 'skia_bench -repeat $(OPTIONS) -timers w -config 565 -match repeat',
                   'logcat -d -s "skia:*"']
 
 
@@ -83,4 +85,5 @@ parser = SkiaTestParser()
 testobj = lava_android_test.testdef.AndroidTest(testname=test_name,
                                     installer=inst,
                                     runner=run,
-                                    parser=parser)
+                                    parser=parser,
+                                    default_options=DEFAULT_OPTIONS)

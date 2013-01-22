@@ -24,15 +24,29 @@ import time
 
 from lava_android_test.utils import stop_at_pattern
 
-if len(sys.argv) == 1:
-    adb_cmd = "adb"
-else:
+adb_cmd = "adb"
+# here assumes that there is no serial number will start with '-'
+# and the options passed are start with '-' as first option
+if len(sys.argv) > 1 and (not sys.argv[1].startswith('-')):
     adb_cmd = "adb -s %s" % (sys.argv[1])
+
+timeout = 2400
+for index in range(1, len(sys.argv)):
+    arg = sys.argv[index]
+    if arg == '-timeout' and \
+       (index + 1 < len(sys.argv)) and \
+       sys.argv[index + 1]:
+        try:
+            timeout = int(sys.argv[index + 1])
+        except ValueError:
+            pass
+        finally:
+            break
 
 logcat_cmd = '%s logcat' % (adb_cmd)
 pattern = "Displayed org.zeroxlab.zeroxbenchmark/.Report"
 
-if not stop_at_pattern(command=logcat_cmd, pattern=pattern, timeout=2400):
+if not stop_at_pattern(command=logcat_cmd, pattern=pattern, timeout=timeout):
     print "0xbench Test: TIMEOUT Fail"
     sys.exit(1)
 
