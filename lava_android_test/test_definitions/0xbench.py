@@ -46,8 +46,7 @@ RUN_STEPS_HOST_PRE = [
          " $(SERIAL)") % curdir]
 RUN_STEPS_ADB_SHELL = ['logcat -c',
         ("am start -n org.zeroxlab.zeroxbenchmark/"
-         "org.zeroxlab.zeroxbenchmark.Benchmark $(OPTIONS) "
-         "--ez autorun true")]
+         "org.zeroxlab.zeroxbenchmark.Benchmark --ez autorun true $(OPTIONS)")]
 RUN_STEPS_HOST_POST = [
         'python %s/android-0xbenchmark/android_0xbenchmark_wait.py '
         '$(SERIAL) $(OPTIONS)' % curdir]
