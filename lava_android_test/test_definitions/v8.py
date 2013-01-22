@@ -33,7 +33,13 @@ import lava_android_test.testdef
 test_name = 'v8'
 
 INSTALL_STEPS_ADB_PRE = []
-ADB_SHELL_STEPS = ['"cd /data/benchmark/v8; v8shell run.js"']
+adb_shell = ('"'
+             'cd /data/benchmark/v8;'
+             'if which v8shell 2>/dev/null 1>/dev/null;'
+             'then  v8shell run.js; '
+             'else d8 run.js; fi'
+             '"')
+ADB_SHELL_STEPS = [adb_shell]
 PATTERN = "^(?P<test_case_id>.*?):\s+(?P<measurement>\d+)\s*$"
 
 inst = lava_android_test.testdef.AndroidTestInstaller(
