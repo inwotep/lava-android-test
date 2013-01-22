@@ -33,7 +33,9 @@ if len(sys.argv) > 1 and (not sys.argv[1].startswith('-')):
 timeout = 2400
 for index in range(1, len(sys.argv)):
     arg = sys.argv[index]
-    if arg == '-t' and (index + 1 < len(sys.argv)) and sys.argv[index + 1]:
+    if arg == '-timeout' and \
+       (index + 1 < len(sys.argv)) and \
+       sys.argv[index + 1]:
         try:
             timeout = int(sys.argv[index + 1])
         except ValueError:
