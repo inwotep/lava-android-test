@@ -1,12 +1,12 @@
 Version History
 ***************
 
-.. _version_0_17:
+.. _version_0_16.1:
 
-Version 0.17
-============
+Version 0.16.1
+==============
 
-* Unreleased.
+* Add some options to 0xbench, skia, v8 benchmarks to configure number of iterations
 
 .. _version_0_16:
 
