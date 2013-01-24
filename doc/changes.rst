@@ -1,7 +1,12 @@
 Version History
 ***************
 
-.. _version_0_16.1:
+.. _version_0_16.2:
+
+Version 0.16.2
+==============
+
+* Fix NameError in ShellTestProvider.
 
 Version 0.16.1
 ==============
