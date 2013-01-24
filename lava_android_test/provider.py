@@ -231,7 +231,7 @@ class ShellTestProvider(TestProvider):
                                 steps_adb_pre=INSTALL_STEPS_ADB_PRE),
                     runner=testdef.AndroidTestRunner(
                                     adbshell_steps=ADB_SHELL_STEPS),
-                    parser=testdef.AndroidSimpleTestParser(PATTERN),
+                    parser=testdef.AndroidSimpleTestParser(),
                     adb=ADB(serial))
         return testobj
 
