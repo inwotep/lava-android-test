@@ -18,7 +18,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-This is basic unit test for the ashmem driver.
+Runs the basic and expanded unit tests for the ashmem driver.
 
 **URL:**  None
 
@@ -28,5 +28,5 @@ import lava_android_test.testdef
 
 test_name = 'ashmem'
 
-RUN_ADB_SHELL_STEPS = ['ashmemtest']
+RUN_ADB_SHELL_STEPS = ['ashmemtest', 'ashmemtest-expanded-runner.sh']
 PATTERN = "\s*\[(?P<test_case_id>\w+)\]:\s\w+\s(?P<result>\w+)"
