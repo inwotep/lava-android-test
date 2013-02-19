@@ -20,7 +20,6 @@
 
 #http://source.android.com/compatibility/downloads.html
 
-echo ./android-cts/tools/cts-tradefed "$@"
-./android-cts/tools/cts-tradefed "$@" |tee -a cts_output.log
-
+echo ./android-cts/tools/cts-tradefed "$@" --disable-reboot
+./android-cts/tools/cts-tradefed "$@" --disable-reboot  > ./cts_output.log 2>&1
 exit 0
