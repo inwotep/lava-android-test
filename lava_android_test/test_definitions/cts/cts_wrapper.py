@@ -22,6 +22,8 @@
 import os
 import re
 import sys
+import pexpect
+import time
 import xml.dom.minidom
 from lava_android_test.adb import ADB
 from lava_android_test.utils import stop_at_pattern
@@ -29,6 +31,34 @@ from lava_android_test.utils import stop_at_pattern
 adb = ADB(sys.argv[1])
 curdir = os.path.realpath(os.path.dirname(__file__))
 
+
+def stop_at_cts_pattern(command=None, pattern=None, timeout=-1):
+    if not command:
+        return
+
+    if not pattern:
+        response = [pexpect.EOF]
+    else:
+        response = [pattern, pexpect.EOF]
+
+    result = True
+    proc_cts = pexpect.spawn(command, logfile=sys.stdout)
+    time.sleep(20)
+    dump_log_cmd =  "tail -f ./cts_output.log"
+    proc = pexpect.spawn(dump_log_cmd, logfile=sys.stdout)
+    try:
+        match_id = proc.expect(response, timeout=timeout)
+        if match_id == 0:
+            time.sleep(5)
+    except pexpect.TIMEOUT:
+        result = False
+    finally:
+        proc.sendcontrol('C')
+        proc.sendline('')
+        proc_cts.sendcontrol('C')
+        proc_cts.sendline('')
+
+    return result
 
 def get_not_executed():
     list_result_path = os.path.join(curdir, 'cts_list_result_wrapper.sh')
@@ -68,7 +98,7 @@ def run_cts_with_plan(cts_cmd=None):
     plan_command = '--plan CTS'
     if cts_cmd:
         plan_command = "%s %s" % (cts_cmd, plan_command)
-    if not stop_at_pattern(command=plan_command, pattern=pattern,
+    if not stop_at_cts_pattern(command=plan_command, pattern=pattern,
                             timeout=36000):
         print "CTS test times out"
         return False
@@ -83,7 +113,7 @@ def run_cts_with_package(cts_cmd=None, package=None):
     package_command = '--package %s' % package
     if cts_cmd:
         cts_command = "%s %s" % (cts_cmd, package_command)
-    if not stop_at_pattern(command=cts_command, pattern=pattern,
+    if not stop_at_cts_pattern(command=cts_command, pattern=pattern,
                             timeout=36000):
         print "CTS test times out"
         return False
@@ -110,7 +140,7 @@ def run_cts_continue(cts_cmd=None):
             print "Continue the uncompleted CTS test on device(%s)" % (
                                                            adb.get_serial())
 
-            if not stop_at_pattern(command=continue_command,
+            if not stop_at_cts_pattern(command=continue_command,
                                    pattern=pattern,
                                    timeout=36000):
                 print "CTS test times out"
