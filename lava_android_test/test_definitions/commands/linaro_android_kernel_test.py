@@ -18,15 +18,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-Runs the basic and expanded unit tests for the ashmem driver.
+Runs the linaro kernel unit tests
 
 **URL:**  None
 
 **Default Options:** None
 """
-import lava_android_test.testdef
 
-test_name = 'ashmem'
-
-RUN_ADB_SHELL_STEPS = ['ashmemtest', 'ashmemtest-expanded-runner.sh']
+RUN_ADB_SHELL_STEPS = ['linaro-android-kernel-tests.sh']
 PATTERN = "\s*\[(?P<test_case_id>\w+)\]:\s\w+\s(?P<result>\w+)"

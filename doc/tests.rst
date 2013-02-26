@@ -22,7 +22,7 @@ The following tests are currently supported in LAVA Android Test:
  * `v8`_
  * `wifi`_
  * `0xbench`_
- * `ashmemtest`_
+ * `linaro_android_kernel_test`_
  * `commands`_
  * `instruments`_
  * `hostshells`_
@@ -88,9 +88,9 @@ wifi
 ++++
 .. automodule:: lava_android_test.test_definitions.wifi
 
-ashmemtest
+linaro_android_kernel_test
 ++++++++
-.. automodule:: lava_android_test.test_definitions.commands.ashmemtest
+.. automodule:: lava_android_test.test_definitions.commands.linaro_android_kernel_test
 
 commands
 ++++++++
