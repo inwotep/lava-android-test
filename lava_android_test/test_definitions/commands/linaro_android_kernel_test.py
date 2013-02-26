@@ -24,9 +24,6 @@ Runs the linaro kernel unit tests
 
 **Default Options:** None
 """
-import lava_android_test.testdef
-
-test_name = 'linaro_android_kernel_test'
 
 RUN_ADB_SHELL_STEPS = ['linaro-android-kernel-tests.sh']
 PATTERN = "\s*\[(?P<test_case_id>\w+)\]:\s\w+\s(?P<result>\w+)"
