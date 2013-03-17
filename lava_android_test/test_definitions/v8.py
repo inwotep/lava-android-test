@@ -40,7 +40,7 @@ adb_shell = ('"'
              'else d8 run.js; fi'
              '"')
 ADB_SHELL_STEPS = [adb_shell]
-PATTERN = "^(?P<test_case_id>.*?):\s+(?P<measurement>\d+)\s*$"
+PATTERN = "^(?P<test_case_id>.*?):\s+(?P<measurement>[\d.]+)\s*$"
 
 inst = lava_android_test.testdef.AndroidTestInstaller(
                                 steps_adb_pre=INSTALL_STEPS_ADB_PRE)
