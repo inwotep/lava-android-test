@@ -19,8 +19,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #http://source.android.com/compatibility/downloads.html
-
+if [ -z "$cts_pkg" ]; then
 cts_pkg="android-cts-linux_x86-arm-latest.zip"
+fi
 media_pkg="android-cts-media-latest.zip"
 site_url="http://testdata.validation.linaro.org/cts/"
 #site_url="http://192.168.1.127/images/cts/"
@@ -106,7 +107,11 @@ function main(){
         echo "Faild to install CtsDelegatingAccessibilityService.apk"
         exit 1
     fi
-    ##TODO On the device, enable Settings > Accessibility > DelegatingAccessibility Service
+    ## On the device, enable Settings > Accessibility > DelegatingAccessibility Service
+    ${ADB_CMD} push $2 /data/local/tmp/
+    ${ADB_CMD} shell am start  -a android.intent.action.VIEW -n com.android.settings/.Settings
+    ${ADB_CMD} shell uiautomator runtest ctshelper.jar -c com.linaro.ctshelper#AccessibilityHelper
+
 	
     #16. Set up device administration tests:
     echo "${ADB_CMD} install -r android-cts/repository/testcases/CtsDeviceAdmin.apk"
@@ -115,7 +120,10 @@ function main(){
         echo "Faild to install CtsDeviceAdmin.apk"
         exit 1
     fi
-    ##TODO On the device, enable Settings > Security > Device Administrators >android.deviceadmin.cts.CtsDeviceAdmin* settings
+    ## On the device, enable Settings > Security > Device Administrators >android.deviceadmin.cts.CtsDeviceAdmin* settings
+    ${ADB_CMD} shell am start  -a android.intent.action.VIEW -n com.android.settings/.Settings
+    ${ADB_CMD} shell uiautomator runtest ctshelper.jar -c com.linaro.ctshelper#SecurityHelper
+    ${ADB_CMD} shell am start  -a android.intent.action.VIEW -n com.android.launcher/com.android.launcher2.Launcher
 	
 	exit 0
 }
