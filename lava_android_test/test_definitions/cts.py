@@ -33,7 +33,7 @@ test_name = 'cts'
 
 curdir = os.path.realpath(os.path.dirname(__file__))
 
-RUN_STEPS_HOST_PRE = ['python %s/cts/cts_wrapper.py $(SERIAL)' % curdir]
+RUN_STEPS_HOST_PRE = ['python %s/cts/cts_wrapper.py $(SERIAL) $(OPTIONS)' % curdir]
 
 inst = lava_android_test.testdef.AndroidTestInstaller()
 run = lava_android_test.testdef.AndroidTestRunner(
@@ -41,7 +41,7 @@ run = lava_android_test.testdef.AndroidTestRunner(
 
 #01-16 14:24:16 I/0123456789ABCDEF: android.telephony.cts.
 #TelephonyManagerTest#testGetNetworkCountryIso PASS
-pattern = ("^\s*[\d-]+\s+[\d:]+\s+I\/\S+\:\s+(?P<test_case_id>\S+#\S+)"
+pattern = ("\s*[\d-]+\s+[\d:]+\s+I\/\S+\:\s+(?P<test_case_id>\S+#\S+)"
            "\s+(?P<result>\S+)\s*$")
 parser = lava_android_test.testdef.AndroidTestParser(pattern=pattern,
                             fixupdict={'PASS': 'pass', 'FAIL': 'fail'})
