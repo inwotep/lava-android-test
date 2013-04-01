@@ -21,6 +21,7 @@ import os
 import re
 import urlparse
 import versiontools
+import zipfile
 
 from tempfile import mkdtemp
 from uuid import uuid4
@@ -840,6 +841,27 @@ def generate_bundle(serial=None, result_id=None, test=None,
             "mime_type": 'image/png',
             "content": base64.standard_b64encode(data)})
         os.unlink(tmp_path)
+
+    tombstone_path = '/data/tombstones'
+    tombstone_zip =  os.path.join(config.tempdir_host,'tombstones.zip')
+    if adb.exists(tombstone_path):
+        tmp_path = os.path.join(config.tempdir_host, 'tombstones')
+        adb.pull(tombstone_path, tmp_path)
+        adb.shell("rm -R " + tombstone_path)
+        zipf = zipfile.ZipFile(tombstone_zip, mode='w')
+        for rootdir, dirs, files in os.walk(tmp_path):
+            for f in files:
+                zipf.write(os.path.join(rootdir, f), arcname=f)
+        zipf.close()
+
+        with open(tombstone_zip, 'rb') as stream:
+            data = stream.read()
+        if data:
+            bundle['test_runs'][0]["attachments"].append({
+            "pathname": test_id+'_tombstones.zip',
+            "mime_type": 'application/zip',
+            "content": base64.standard_b64encode(data)})
+        os.unlink(tombstone_zip)
 
     for attach in attachments:
         if os.path.exists(attach):
