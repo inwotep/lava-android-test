@@ -56,6 +56,7 @@ def stop_at_cts_pattern(command=None, pattern=None, timeout=-1):
 
     return result
 
+
 def get_not_executed():
     list_result_path = os.path.join(curdir, 'cts_list_result_wrapper.sh')
     list_result_cmd = "bash %s" % list_result_path
@@ -83,20 +84,33 @@ def prepare_cts():
     cts_helper_jar_path = os.path.join(curdir, 'ctshelper.jar')
     cts_prepare_cmd = "bash %s" % cts_prepare_path
     if not stop_at_pattern(command="%s %s %s" % (cts_prepare_cmd,
-                                              adb.get_serial(),cts_helper_jar_path),
+                                adb.get_serial(), cts_helper_jar_path),
                            timeout=18000):
         print "Preapration for CTS test times out"
         return False
     return True
 
 
-def run_cts_with_plan(cts_cmd=None):
+def run_cts_with_plan(cts_cmd=None, plan='CTS', timeout=36000):
     pattern = "Time:"
-    plan_command = '--plan CTS'
+    plan_command = '--plan %s' % plan
     if cts_cmd:
         plan_command = "%s %s --disable-reboot" % (cts_cmd, plan_command)
     if not stop_at_cts_pattern(command=plan_command, pattern=pattern,
-                            timeout=36000):
+                            timeout=timeout):
+        print "CTS test times out"
+        return False
+
+    return True
+
+
+def run_cts_with_package(cts_cmd=None, package='CTS', timeout=36000):
+    pattern = "Time:"
+    plan_command = '--package %s' % package
+    if cts_cmd:
+        plan_command = "%s %s --disable-reboot" % (cts_cmd, plan_command)
+    if not stop_at_cts_pattern(command=plan_command, pattern=pattern,
+                            timeout=timeout):
         print "CTS test times out"
         return False
 
@@ -195,10 +209,42 @@ def get_all_packages(plan_file=None):
         return package_list
 
 
+def get_value_from_paras(paras=[], option=None, default=None):
+    if not option:
+        return default
+
+    if not option in paras:
+        return default
+
+    index = paras.index(option)
+    if len(paras) > index + 1:
+        return paras[index + 1]
+
+    return default
+
+
 def main():
 
-    if len(sys.argv) == 3:
-        os.environ["cts_pkg"] = sys.argv[2]
+    package_name = None
+    plan_name = 'CTS'
+    timeout = 36000
+    #--cts_pkg cts_package_file --package package_name --timeout 36000
+    #--cts_pkg cts_package_file --plan plan_name --timeout 36000
+    if len(sys.argv) > 2:
+        paras = sys.argv[2:]
+        cts_pkg = get_value_from_paras(paras=paras, option='--cts-pkg')
+        if cts_pkg:
+            os.environ["cts_pkg"] = cts_pkg
+
+        package_name = get_value_from_paras(paras=paras, option='--package')
+        plan_name = get_value_from_paras(paras=paras,
+                                         option='--plan',
+                                         default='CTS')
+        timeout = get_value_from_paras(paras=paras, option='--timeout',
+                                       default=36000)
+        if timeout:
+            timeout = int(timeout)
+
     run_wrapper_path = os.path.join('./android-cts/tools/cts-tradefed ')
     run_wrapper_cmd = "%s" % run_wrapper_path
     run_wrapper_cmd = '%s run cts --serial %s' % (run_wrapper_cmd,
@@ -209,7 +255,13 @@ def main():
         sys.exit(1)
 
     try:
-            run_cts_with_plan(cts_cmd=run_wrapper_cmd)
+        if package_name:
+            run_cts_with_package(cts_cmd=run_wrapper_cmd, package=package_name,
+                                 timeout=timeout)
+        else:
+            run_cts_with_plan(cts_cmd=run_wrapper_cmd, plan=plan_name,
+                              timeout=timeout)
+
     finally:
         for log in logs:
             pid = log.get('pid')
