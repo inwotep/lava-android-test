@@ -22,7 +22,7 @@ import os
 
 class LavaAndroidTestConfig(object):
     def __init__(self):
-        home = os.environ.get('ANDROID_TEST_HOME', '/data/lava-android-test/')
+        home = os.environ.get('ANDROID_TEST_HOME', '/data/local/tmp/lava-android-test/')
         config = os.environ.get('ANDROID_TEST_CONFIG_HOME',
                      os.path.join(home, '.config'))
         basedata = os.environ.get('ANDROID_TEST_DATA_HOME',
