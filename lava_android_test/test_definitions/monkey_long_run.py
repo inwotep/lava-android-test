@@ -32,14 +32,22 @@ monkey_blacklist_name = 'package_black_list'
 monkey_blacklist_path = os.path.join(curdir, test_name, monkey_blacklist_name)
 monkey_blacklist_android_path = os.path.join(config.installdir_android,
                                       test_name, monkey_blacklist_name)
+juice_monkey_blacklist_name = 'juice_package_black_list'
+juice_monkey_blacklist_path = os.path.join(curdir, test_name, juice_monkey_blacklist_name)
+juice_monkey_blacklist_android_path = os.path.join(config.installdir_android,
+                                           test_name, juice_monkey_blacklist_name)
 
+DEFAULT_OPTIONS = 'generic_target'
 INSTALL_STEPS_ADB_PRE = ['push %s %s ' % (monkey_sh_path,
                                           monkey_sh_android_path),
                           'push %s %s ' % (monkey_blacklist_path,
                                           monkey_blacklist_android_path),
+                          'push %s %s ' % (juice_monkey_blacklist_path,
+                                           juice_monkey_blacklist_android_path),
                           'shell chmod 777 %s' % monkey_sh_android_path]
 
-ADB_SHELL_STEPS = ['%s %s' % (monkey_sh_android_path,
+ADB_SHELL_STEPS = ['%s $(OPTIONS) %s %s' % (monkey_sh_android_path,
+			       juice_monkey_blacklist_android_path,
                                monkey_blacklist_android_path)]
 #PATTERN = "^(?P<test_case_id>\w+):\W+(?P<measurement>\d+\.\d+)"
 PATTERN = "## Network stats: elapsed time=(?P<measurement>\d+)ms"
@@ -54,4 +62,4 @@ run = lava_android_test.testdef.AndroidTestRunner(
 parser = lava_android_test.testdef.AndroidTestParser(PATTERN,
                appendall={'units': 'ms'}, failure_patterns=FAILURE_PATTERNS)
 testobj = lava_android_test.testdef.AndroidTest(testname=test_name,
-                        installer=inst, runner=run, parser=parser)
+                        installer=inst, runner=run, parser=parser, default_options=DEFAULT_OPTIONS)
