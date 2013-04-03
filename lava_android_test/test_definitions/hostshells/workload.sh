@@ -138,6 +138,7 @@ function main(){
         echo "Failed to run workload.py config.csv outputdir/"
         exit 1
     fi
+    cat ${result}
     parse_output_result ${result}
 }
 
