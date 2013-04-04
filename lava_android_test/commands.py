@@ -829,6 +829,25 @@ def generate_bundle(serial=None, result_id=None, test=None,
         }
     ]
 
+    _gather_screencaps(resultdir, adb,bundle,config)
+    _gather_tombstones(adb,bundle,config)
+
+    for attach in attachments:
+        if os.path.exists(attach):
+            with open(attach, 'rb') as stream:
+                data = stream.read()
+            if data:
+                bundle['test_runs'][0]["attachments"].append({
+                            "pathname": os.path.basename(attach),
+                            "mime_type": 'image/png',
+                            "content": base64.standard_b64encode(data)})
+    return bundle
+
+def _gather_screencaps(resultdir, adb, bundle, config):
+    """
+    Extension of the generate bundle function.
+    Grabs the screencaps and appends them to the bundle.
+     """
     screencap_path = os.path.join(resultdir, 'screencap.png')
     if adb.exists(screencap_path):
         tmp_path = os.path.join(config.tempdir_host, 'screencap.png')
@@ -842,6 +861,12 @@ def generate_bundle(serial=None, result_id=None, test=None,
             "content": base64.standard_b64encode(data)})
         os.unlink(tmp_path)
 
+
+def _gather_tombstones(adb , bundle, config):
+    """
+    Extension of the generate bundle function.
+    Grabs the tombstones and appends them to the bundle.
+    """
     tombstone_path = '/data/tombstones'
     tombstone_zip =  os.path.join(config.tempdir_host,'tombstones.zip')
     if adb.exists(tombstone_path):
@@ -858,21 +883,10 @@ def generate_bundle(serial=None, result_id=None, test=None,
             data = stream.read()
         if data:
             bundle['test_runs'][0]["attachments"].append({
-            "pathname": test_id+'_tombstones.zip',
+            "pathname": 'tombstones.zip',
             "mime_type": 'application/zip',
             "content": base64.standard_b64encode(data)})
         os.unlink(tombstone_zip)
-
-    for attach in attachments:
-        if os.path.exists(attach):
-            with open(attach, 'rb') as stream:
-                data = stream.read()
-            if data:
-                bundle['test_runs'][0]["attachments"].append({
-                            "pathname": os.path.basename(attach),
-                            "mime_type": 'image/png',
-                            "content": base64.standard_b64encode(data)})
-    return bundle
 
 
 class show(AndroidResultCommand):
