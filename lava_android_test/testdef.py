@@ -23,6 +23,7 @@ import re
 import string
 import time
 import tempfile
+import decimal
 from datetime import datetime
 from uuid import uuid4
 
@@ -525,11 +526,18 @@ class AndroidTestParser(object):
         return False
 
     def fixmeasurements(self):
-        """Measurements are often read as strings, but need to be float
+        """Measurements are often read as strings, but need to be
+        decimal.Decimal as per dashboard bundle format JSON schema.
         """
         for test_case in self.results['test_results']:
             if 'measurement' in test_case:
-                test_case['measurement'] = float(test_case['measurement'])
+                try:
+                    test_case['measurement'] = decimal.Decimal(
+                        test_case['measurement'])
+                except decimal.InvalidOperation:
+                    logging.warning("Invalid measurement %s" % (
+                            test_case['measurement']))
+                    del test_case['measurement']
 
     def fixids(self, test_name=''):
         """
