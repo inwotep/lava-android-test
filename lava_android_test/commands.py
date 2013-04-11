@@ -829,8 +829,8 @@ def generate_bundle(serial=None, result_id=None, test=None,
         }
     ]
 
-    _gather_screencaps(resultdir, adb,bundle,config)
-    _gather_tombstones(adb,bundle,config)
+    _gather_screencaps(resultdir, adb, bundle, config)
+    _gather_tombstones(adb, bundle, config)
 
     for attach in attachments:
         if os.path.exists(attach):
