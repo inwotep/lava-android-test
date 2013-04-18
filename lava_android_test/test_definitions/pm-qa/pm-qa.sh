@@ -1,7 +1,7 @@
 #!/system/bin/sh
 
 test_func(){
-   if [ ! -d /system/xbin/pm-qa ]; then
+   if [ ! -d /data/benchmark/pm-qa ]; then
        echo "pm-qa=fail"
        exit
    fi  
@@ -30,7 +30,7 @@ test_func(){
 
    export PATH=/data/bin:$PATH
 
-   cd /system/xbin/pm-qa
+   cd /data/benchmark/pm-qa
 
    pwd=$PWD
    echo $pwd
