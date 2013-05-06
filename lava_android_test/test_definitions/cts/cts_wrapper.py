@@ -104,12 +104,32 @@ def run_cts_with_plan(cts_cmd=None, plan='CTS', timeout=36000):
     return True
 
 
-def run_cts_with_package(cts_cmd=None, package='CTS', timeout=36000):
+def run_cts_with_package(cts_cmd=None, package=None, timeout=36000):
+    if not package:
+        return True
     pattern = "Time:"
     plan_command = '--package %s' % package
     if cts_cmd:
         plan_command = "%s %s --disable-reboot" % (cts_cmd, plan_command)
     if not stop_at_cts_pattern(command=plan_command, pattern=pattern,
+                            timeout=timeout):
+        print "CTS test times out"
+        return False
+
+    return True
+
+
+def run_cts_with_class(cts_cmd=None, cls=None, method=None, timeout=36000):
+    if not cls:
+        return True
+    pattern = "Time:"
+    cmd = '--class %s' % cls
+    if method:
+        cmd = '%s --method %s' % (cmd, method)
+
+    if cts_cmd:
+        cmd = "%s %s --disable-reboot" % (cts_cmd, cmd)
+    if not stop_at_cts_pattern(command=cmd, pattern=pattern,
                             timeout=timeout):
         print "CTS test times out"
         return False
@@ -227,6 +247,8 @@ def main():
 
     package_name = None
     plan_name = 'CTS'
+    class_name= None
+    method_name = None
     timeout = 36000
     #--cts_pkg cts_package_file --package package_name --timeout 36000
     #--cts_pkg cts_package_file --plan plan_name --timeout 36000
@@ -245,6 +267,9 @@ def main():
         if timeout:
             timeout = int(timeout)
 
+        class_name = get_value_from_paras(paras=paras, option='--class')
+        method_name = get_value_from_paras(paras=paras, option='--method')
+
     run_wrapper_path = os.path.join('./android-cts/tools/cts-tradefed ')
     run_wrapper_cmd = "%s" % run_wrapper_path
     run_wrapper_cmd = '%s run cts --serial %s' % (run_wrapper_cmd,
@@ -258,6 +283,9 @@ def main():
         if package_name:
             run_cts_with_package(cts_cmd=run_wrapper_cmd, package=package_name,
                                  timeout=timeout)
+        elif class_name:
+            run_cts_with_class(cts_cmd=run_wrapper_cmd, cls=class_name,
+                               method=method_name, timeout=timeout)
         else:
             run_cts_with_plan(cts_cmd=run_wrapper_cmd, plan=plan_name,
                               timeout=timeout)
