@@ -20,6 +20,7 @@
 """
 This directory contains the tests that only need to run a host command.
 Please see the example.sh for a reference.
+Please note this is not a test that can be run.
 
 **URL:** None
 

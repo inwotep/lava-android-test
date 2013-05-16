@@ -17,6 +17,14 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+Performs a test of monkey functionality in Android with some 
+black list packages provided.
+
+**URL:** http://android.git.linaro.org/gitweb?p=platform/development.git;a=blob;f=cmds/monkey/monkey
+
+**Default options:** "generic_target"
+"""
 import os
 import lava_android_test.testdef
 from lava_android_test.config import get_config

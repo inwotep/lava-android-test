@@ -40,18 +40,18 @@ ppm_url = ("http://testdata.validation.linaro.org/tjbench/"
 ppm_temp_path = os.path.join(config.tempdir_host, ppm_file_name)
 ppm_android_path = os.path.join(config.tempdir_android, test_name,
                                 ppm_file_name)
-ppm_tmpfs_path = os.path.join('/mnt/mytmpfs', ppm_file_name)
+ppm_tmpfs_path = os.path.join('/data/local/tmp/mytmpfs', ppm_file_name)
 INSTALL_STEPS_HOST_PRE = ['wget --no-check-certificate -q "%s" -O ./%s' % (
                                                     ppm_url, ppm_file_name)]
 INSTALL_STEPS_ADB_PRE = ['push %s %s' % (ppm_temp_path, ppm_android_path)]
 
-RUN_STEPS_ADB_SHELL = ['mkdir /mnt/mytmpfs',
-                       'mount -t tmpfs -o mode=777 tmpfs /mnt/mytmpfs',
+RUN_STEPS_ADB_SHELL = ['mkdir /data/local/tmp/mytmpfs',
+                       'mount -t tmpfs -o mode=777 tmpfs /data/local/tmp/mytmpfs',
                        'dd if=%s of=%s' % (ppm_android_path, ppm_tmpfs_path),
                        'tjbench %s 95 -rgb -quiet scale 1/2' % ppm_tmpfs_path,
                        'tjbench %s 95 -rgb -quiet' % ppm_tmpfs_path,
-                       'umount /mnt/mytmpfs',
-                       'rmdir /mnt/mytmpfs']
+                       'umount /data/local/tmp/mytmpfs',
+                       'rmdir /data/local/tmp/mytmpfs']
 
 
 class TjbenchTestParser(lava_android_test.testdef.AndroidTestParser):

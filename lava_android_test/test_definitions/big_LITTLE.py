@@ -20,11 +20,13 @@
 
 """
 Drives big.LITTLE test scripts that are pre-intalled on Linaro Android
-builds of big.LITTLE
+builds of big.LITTLE.
+By default will run all the tests on the target including tests on:
+basic module and switcher/cache-coherency/data-corruption/disk-io/governor/memory/perf/switcher/vfp-ffmpeg
 
-**URL:** https://wiki.linaro.org/Platform/Android/AndroidOnFastModels
+**URL:** https://linaro-private.git.linaro.org/gitweb?p=bL_tests/bL_iks_tests.git;a=summary 
 
-**Default options:** None
+**Default options:** "-a"
 """
 
 import lava_android_test.testdef

@@ -21,6 +21,8 @@
 """
 Ensures USB is enabled on the device by checking /sys entries
 
+**URL:** None
+
 **Default options:** None
 """
 

@@ -17,11 +17,20 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+"""
+Linaro PM-QA tests for platforms
+
+**URL:** https://git.linaro.org/gitweb?p=tools/pm-qa.git;a=summary
+
+**Default options:** None
+"""
+
 import os
 import lava_android_test.testdef
 from lava_android_test.config import get_config
 
-test_name = 'pm-qa'
+test_name = 'pm_qa'
 config = get_config()
 curdir = os.path.realpath(os.path.dirname(__file__))
 test_sh_name = 'pm-qa.sh'

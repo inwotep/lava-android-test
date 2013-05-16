@@ -19,7 +19,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 This directory contains the tests that only need to run the android shell
-script that stored under this directory. Please see the example.sh for a reference.
+scripts that stored under this directory.
+Please see the example.sh for a reference.
+Please note this is not a test that can be run.
 
 **URL:** None
 

@@ -21,9 +21,9 @@
 """
 The Methanol is a page load benchmarking engine.
 The benchmark engine measures the overall page layouting and rendering time of the browser.
-Only several test cases are attached to the engine, because of licensing issue.
+The methanol now includs test for css/canvas/smp/svg test
 
-**URL:** https://gitorious.org/methanol
+**URL:**  https://github.com/szeged/methanol.git
 
 **Default options:** None
 """

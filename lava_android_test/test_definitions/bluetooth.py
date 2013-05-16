@@ -22,7 +22,7 @@
 This test helps validating basic bluetooth functionality by executing the
 Android BluetoothTestRunner tests.
 
-**URL:** http://android.git.linaro.org/gitweb?p=platform/frameworks/base.git;a=blob;f=core/tests/bluetoothtests/src/android/bluetooth/BluetoothTestRunner.java;
+**URL:** http://android.git.linaro.org/gitweb?p=platform/frameworks/base.git;a=blob;f=core/tests/bluetoothtests/src/android/bluetooth/BluetoothTestRunner.java
 
 **Default options:** None
 """

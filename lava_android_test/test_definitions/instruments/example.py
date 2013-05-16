@@ -16,6 +16,16 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+"""
+Example for how to add instrument tests into lava-android-test.
+You can try this test with the android emulator which has this test integrated.
+
+**URL:** http://android.git.linaro.org/gitweb?p=platform/development.git;a=blob;f=tools/emulator/test-apps/ConnectivityTest/src/com/android/emulator/connectivity/test/ConnectivityTest.java
+
+**Default options:** None
+"""
+
 cmd = ("am instrument -r -w "
        "com.android.emulator.connectivity.test/"
        "android.test.InstrumentationTestRunner")

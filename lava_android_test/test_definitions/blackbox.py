@@ -18,9 +18,15 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Bridge for the black-box testing implemented by android-lava-wrapper.
+Bridge for the black-box testing implemented by lava-blackbox.
+It covers all the available tests in AOSP.
+The list is available here from APMTest to ZipFileROTest
 
-See: https://github.com/zyga/android-lava-wrapper
+**Sample Result URL:** http://validation.linaro.org/lava-server/dashboard/image-reports/linaro-android-member-ti_panda-linaro
+
+**URL:** https://github.com/zyga/lava-blackbox
+
+**Default options:** None
 """
 
 import datetime
@@ -457,8 +463,7 @@ class BlackBoxTestBridge(AdbMixIn):
 
     def _monkey_patch_lava(self):
         """
-        Monkey patch the implementation of
-        lava_android_test.commands.generate_bundle
+        Monkey patch the implementation of lava_android_test.commands.generate_bundle
 
         This change is irreversible but given the one-off nature of
         lava-android-test this is okay. It should be safe to do this since

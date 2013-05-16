@@ -20,6 +20,7 @@
 """
 This directory contains the tests that only need to run the "am instrument -w" 
 command on android. Please see the example.py for a reference.
+Please note this is not a test that can be run.
 
 **URL:** None
 

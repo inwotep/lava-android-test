@@ -19,9 +19,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
+bctest test covers testing of a couple of binder IOCTLS.
+We can think of it as a subset of "shell-binder" test,
+which is much more exhaustive and is the main binder test to go for.
 binder test "bctest" that is pre-intalled on Juice Android builds.
 
-**URL:** https://wiki.linaro.org/Internal/Projects/Juice
+**URL:** http://android.git.linaro.org/gitweb?p=platform/frameworks/base.git;a=blob;f=cmds/servicemanager/bctest.c
 
 **Default options:** "publish 1"
 """
@@ -31,7 +34,7 @@ import lava_android_test.testdef
 
 test_name = 'bctest'
 
-DEFAULT_OPTIONS='publish 1'
+DEFAULT_OPTIONS = 'publish 1'
 
 INSTALL_STEPS_ADB_PRE = []
 ADB_SHELL_STEPS = ['bctest $(OPTIONS)']
