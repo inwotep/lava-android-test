@@ -18,6 +18,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+"""
+Tests the various code paths in the TurboJPEG C Wrapper
+
+**URL:** https://git.linaro.org/gitweb?p=people/tomgall/libjpeg-turbo/libjpeg-turbo.git;a=blob_plain;f=tjunittest.c;hb=HEAD 
+
+**Default options:** None
+"""
 ADB_SHELL_STEPS = ['tjunittest']
 PATTERN = ("^\s*(?P<test_case_id>.+)\s+\.\.\.\s+(?P<result>\w+)\."
            "\s+(?P<measurement>[\d\.]+)\s+(?P<units>\w+)\s*$")

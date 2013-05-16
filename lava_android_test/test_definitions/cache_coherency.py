@@ -18,6 +18,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+"""
+Stressapptest tries to maximize randomized traffic to memory from processor 
+and I/O, with the intent of creating a realistic high load situation 
+in order to test the existing hardware devices in a computer.
+Used for cache-coherency testing on big.LITTLE here.
+
+**URL:** http://android.git.linaro.org/gitweb?p=platform/external/stressapptest.git;a=summary 
+
+**Default options:** None
+"""
 import lava_android_test.testdef
 
 test_name = 'cache_coherency'

@@ -18,6 +18,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+"""
+Example for how to add test wrapper for lava-android-test
+
+**URL:** None
+
+**Default options:** None
+"""
+
 import lava_android_test.config
 import lava_android_test.testdef
 

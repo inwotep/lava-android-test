@@ -22,6 +22,7 @@
 This directory contains the test that only needs to run an android command and 
 specify the output pattern that to parse the command ouptu to get result.
 Please see the example.py for a reference.
+Please note this is not a test that can be run.
 
 **URL:** None
 

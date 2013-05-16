@@ -22,7 +22,7 @@
 Performs a test of multimedia functionality in Android by playing a variety
 of different multimedia formats on Android.
 
-**URL:** http://samplemedia.linaro.org/
+**URL:** http://android.git.linaro.org/gitweb?p=platform/frameworks/base.git;a=tree;f=media/tests/MediaFrameworkTest;h=b4088826b3bf07eff72097d866b895019bd5181b;hb=HEAD 
 
 **Default options:** None
 """

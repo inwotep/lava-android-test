@@ -18,9 +18,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-Runs the linaro kernel unit tests
+Runs the linaro kernel unit tests including:
+    ashmem/ashmem_expanded/alarmdev/logger/binder/sync
 
-**URL:**  None
+**URL:**  https://linaro-private.git.linaro.org/gitweb?p=android/linaro-android-kernel-test.git;a=summary
 
 **Default Options:** None
 """

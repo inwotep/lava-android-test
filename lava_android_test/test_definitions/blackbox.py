@@ -20,7 +20,9 @@
 """
 Bridge for the black-box testing implemented by android-lava-wrapper.
 
-See: https://github.com/zyga/android-lava-wrapper
+**URL:** https://github.com/zyga/android-lava-wrapper
+
+**Default options:** None
 """
 
 import datetime
@@ -457,8 +459,7 @@ class BlackBoxTestBridge(AdbMixIn):
 
     def _monkey_patch_lava(self):
         """
-        Monkey patch the implementation of
-        lava_android_test.commands.generate_bundle
+        Monkey patch the implementation of lava_android_test.commands.generate_bundle
 
         This change is irreversible but given the one-off nature of
         lava-android-test this is okay. It should be safe to do this since

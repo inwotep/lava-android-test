@@ -21,10 +21,11 @@
 """
 0xbench integrates several popular benchmarks into a single Android
 app that can be run to get benchmark reports for a given device.
+Here by default we will run the math/2d/3d test on the target device.
 
 **URL:** http://code.google.com/p/0xbench/
 
-**Default options:** None
+**Default options:** "--ez math true --ez 2d true --ez 3d true --ez vm true"
 """
 
 import os
