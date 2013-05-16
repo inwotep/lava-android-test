@@ -18,7 +18,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Bridge for the black-box testing implemented by android-lava-wrapper.
+Bridge for the black-box testing implemented by lava-blackbox.
+It covers all the available tests in AOSP.
+The list is available here from APMTest to ZipFileROTest
+
+**Sample Result URL:** http://validation.linaro.org/lava-server/dashboard/image-reports/linaro-android-member-ti_panda-linaro
 
 **URL:** https://github.com/zyga/lava-blackbox
 
