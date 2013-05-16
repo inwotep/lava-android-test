@@ -268,6 +268,7 @@ The supported third party benchmark applications include:
 andebench/antutu/caffeinemark/geekbench/glbenchmark/linpack/nbench/quadrant/vellamo
 
 **URL of apks:** https://linaro-private.git.linaro.org/gitweb?p=people/yongqinliu/benchmark-apks.git;a=summary
+
 **URL of scripts:** http://android.git.linaro.org/gitweb?p=platform/external/thirdparty-benchmarks.git;a=summary
 
 **Default options:** None

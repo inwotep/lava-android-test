@@ -20,7 +20,7 @@
 """
 Bridge for the black-box testing implemented by android-lava-wrapper.
 
-**URL:** https://github.com/zyga/android-lava-wrapper
+**URL:** https://github.com/zyga/lava-blackbox
 
 **Default options:** None
 """
