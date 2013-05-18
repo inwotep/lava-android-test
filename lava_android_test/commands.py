@@ -816,22 +816,17 @@ def generate_bundle(serial=None, result_id=None, test=None,
         stderr_text = ''
     bundle['test_runs'][0]["test_results"] = test_tmp.parser.results[
                                                         "test_results"]
-    bundle['test_runs'][0]["attachments"] = [
-        {
-            "pathname": test_tmp.org_ouput_file,
-            "mime_type": "text/plain",
-            "content":  base64.standard_b64encode(stdout_text)
-        },
-        {
-            "pathname": 'stderr.log',
-            "mime_type": "text/plain",
-            "content":  base64.standard_b64encode(stderr_text)
-        }
-    ]
 
-    _gather_screencaps(resultdir, adb, bundle, config)
-    _gather_tombstones(adb, bundle, config)
+    ## following part is used for generating the attachment for normal test
+    attachment_bundles = []
+    for attachment in test_tmp.attachments:
+        data_bundle = attachment.generate_bundle(adb=adb, resultsdir=resultdir)
+        if data_bundle:
+            attachment_bundles.append(data_bundle)
 
+    bundle['test_runs'][0]["attachments"] = attachment_bundles
+
+    ##following used for the attachment for monkeyrunner test
     for attach in attachments:
         if os.path.exists(attach):
             with open(attach, 'rb') as stream:
@@ -842,52 +837,6 @@ def generate_bundle(serial=None, result_id=None, test=None,
                             "mime_type": 'image/png',
                             "content": base64.standard_b64encode(data)})
     return bundle
-
-def _gather_screencaps(resultdir, adb, bundle, config):
-    """
-    Extension of the generate bundle function.
-    Grabs the screencaps and appends them to the bundle.
-     """
-    screencap_path = os.path.join(resultdir, 'screencap.png')
-    if adb.exists(screencap_path):
-        tmp_path = os.path.join(config.tempdir_host, 'screencap.png')
-        adb.pull(screencap_path, tmp_path)
-        with open(tmp_path, 'rb') as stream:
-            data = stream.read()
-        if data:
-            bundle['test_runs'][0]["attachments"].append({
-            "pathname": 'screencap.png',
-            "mime_type": 'image/png',
-            "content": base64.standard_b64encode(data)})
-        os.unlink(tmp_path)
-
-
-def _gather_tombstones(adb , bundle, config):
-    """
-    Extension of the generate bundle function.
-    Grabs the tombstones and appends them to the bundle.
-    """
-    tombstone_path = '/data/tombstones'
-    tombstone_zip =  os.path.join(config.tempdir_host,'tombstones.zip')
-    if adb.exists(tombstone_path):
-        tmp_path = os.path.join(config.tempdir_host, 'tombstones')
-        adb.pull(tombstone_path, tmp_path)
-        adb.shell("rm -R " + tombstone_path)
-        zipf = zipfile.ZipFile(tombstone_zip, mode='w')
-        for rootdir, dirs, files in os.walk(tmp_path):
-            for f in files:
-                zipf.write(os.path.join(rootdir, f), arcname=f)
-        zipf.close()
-
-        with open(tombstone_zip, 'rb') as stream:
-            data = stream.read()
-        if data:
-            bundle['test_runs'][0]["attachments"].append({
-            "pathname": 'tombstones.zip',
-            "mime_type": 'application/zip',
-            "content": base64.standard_b64encode(data)})
-        os.unlink(tombstone_zip)
-
 
 class show(AndroidResultCommand):
     """

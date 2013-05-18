@@ -17,13 +17,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import base64
 import hashlib
+import logging
 import os
 import re
 import string
 import time
 import tempfile
 import decimal
+import zipfile
+
 from datetime import datetime
 from uuid import uuid4
 
@@ -33,6 +37,57 @@ from lava_android_test.config import get_config
 from lava_android_test.utils import write_file, geturl
 from lava_android_test import hwprofile, swprofile
 from linaro_dashboard_bundle.io import DocumentIO
+
+
+class Attachment(object):
+
+    def __init__(self, pathname=None, mime_type=None):
+        self.pathname = pathname
+        self.mime_type = mime_type
+
+    def copy_to_result_dir(self, adb=None, resultsdir=None):
+        """
+        Copy the file specified by the pathname to result
+        directory of this time test, beacuse some test will
+        generate the result to the same path file.
+        And Please Note that pathname must be the absolute
+        path in the device.
+        """
+        if (not self.pathname) or (not self.pathname.startswith('/')):
+            return
+        if not resultsdir:
+            return
+        if not adb:
+            adb = ADB()
+        if not adb.exists(resultsdir):
+            adb.makedirs(resultsdir)
+        ret_code = adb.copy(self.pathname, os.path.join(resultsdir,
+                                     os.path.basename(self.pathname)))
+        if ret_code != 0:
+            raise RuntimeError(
+                    "Failed to copy file '%s' to '%s' on device(%s)" %
+                        (self.pathname, resultsdir, adb.get_serial()))
+
+    def generate_bundle(self, adb=None, resultsdir=None):
+        data_bundle = {}
+        if not self.pathname:
+            return data_bundle
+        if not adb:
+            adb = ADB()
+        config = get_config()
+        basename = os.path.basename(self.pathname)
+        android_path = os.path.join(resultsdir, basename)
+        if adb.exists(android_path):
+            tmp_path = os.path.join(config.tempdir_host, basename)
+            adb.pull(android_path, tmp_path)
+            with open(tmp_path, 'rb') as stream:
+                data = stream.read()
+            if data:
+                data_bundle = {"pathname": self.pathname,
+                               "mime_type": self.mime_type,
+                               "content": base64.standard_b64encode(data)}
+            os.unlink(tmp_path)
+        return data_bundle
 
 
 class AndroidTest(ITest):
@@ -49,6 +104,12 @@ class AndroidTest(ITest):
     parser - AbrekParser instance to use
     """
     adb = ADB()
+    default_attachments = [
+        Attachment(pathname="stderr.log", mime_type="text/plain"),
+        Attachment(pathname="stdout.log", mime_type="text/plain"),
+        Attachment(pathname="screencap.png", mime_type="image/png"),
+        Attachment(pathname="tombstones.zip", mime_type="application/zip")
+        ]
 
     def setadb(self, adb=None):
         self.adb = adb
@@ -58,7 +119,8 @@ class AndroidTest(ITest):
 
     def __init__(self, testname, version="", installer=None, runner=None,
                  parser=None, default_options=None,
-                 org_ouput_file='stdout.log'):
+                 org_ouput_file='stdout.log',
+                 attachments=[]):
         self.testname = testname
         self.version = version
         self.installer = installer
@@ -67,6 +129,13 @@ class AndroidTest(ITest):
         self.default_options = default_options
         self.org_ouput_file = org_ouput_file
         self.origdir = os.path.abspath(os.curdir)
+        self.attachments = self.default_attachments
+        if self.org_ouput_file and (self.org_ouput_file != "stdout.log") :
+            self.attachments.append(
+                Attachment(pathname=self.org_ouput_file,
+                           mime_type="text/plain"))
+        if attachments:
+            self.attachments.extend(attachments)
 
     def set_runner(self, runner=None):
         self.runner = runner
@@ -153,7 +222,7 @@ class AndroidTest(ITest):
             ]
         }
         if run_options:
-             bundle['test_runs'][0]['attributes']['run_options'] = run_options
+            bundle['test_runs'][0]['attributes']['run_options'] = run_options
         self._add_install_options(bundle, config)
         filename_host = os.path.join(config.tempdir_host, 'testdata.json')
         write_file(DocumentIO.dumps(bundle), filename_host)
@@ -177,7 +246,8 @@ class AndroidTest(ITest):
         self.resultsdir = os.path.join(config.resultsdir_android, resultname)
         self.adb.makedirs(self.resultsdir)
         self.runner.run(self.resultsdir, run_options=run_options)
-        self._copyorgoutputfile(self.resultsdir)
+        self._gather_tombstones(self.resultsdir)
+        self._copyattachments(self.resultsdir)
         self._screencap(self.resultsdir)
         self._savetestdata(str(uuid4()), run_options=run_options)
         result_id = os.path.basename(self.resultsdir)
@@ -190,17 +260,30 @@ class AndroidTest(ITest):
         self.adb.shell('%s %s' % (target_path, os.path.join(resultsdir,
                                                         'screencap.png')))
 
-    def _copyorgoutputfile(self, resultsdir):
-        if self.org_ouput_file == 'stdout.log':
-            return
-        if not self.adb.exists(resultsdir):
-            self.adb.makedirs(resultsdir)
-        ret_code = self.adb.copy(self.org_ouput_file, os.path.join(resultsdir,
-                                     os.path.basename(self.org_ouput_file)))
-        if ret_code != 0:
-            raise RuntimeError(
-                    "Failed to copy file '%s' to '%s' for test(%s)" %
-                        (self.org_ouput_file, resultsdir, self.testname))
+    def _gather_tombstones(self, resultsdir):
+        """
+        Extension of the generate bundle function.
+        Grabs the tombstones and appends them to the bundle.
+        """
+        config = get_config()
+        tombstone_path = '/data/tombstones'
+        tombstone_zip = os.path.join(config.tempdir_host, 'tombstones.zip')
+        if self.adb.exists(tombstone_path):
+            tmp_path = os.path.join(config.tempdir_host, 'tombstones')
+            self.adb.pull(tombstone_path, tmp_path)
+            self.adb.shell("rm -R " + tombstone_path)
+            zipf = zipfile.ZipFile(tombstone_zip, mode='w')
+            for rootdir, dirs, files in os.walk(tmp_path):
+                for f in files:
+                    zipf.write(os.path.join(rootdir, f), arcname=f)
+            zipf.close()
+            self.adb.push(tombstone_zip, os.path.join(resultsdir,
+                                                      'tombstones.zip'))
+            os.unlink(tombstone_zip)
+
+    def _copyattachments(self, resultsdir):
+        for attachment in self.attachments:
+            attachment.copy_to_result_dir(adb=self.adb, resultsdir=resultsdir)
 
     def parse(self, resultname):
         if not self.parser:
@@ -606,6 +689,7 @@ class AndroidInstrumentTestParser(AndroidTestParser):
             self.appendtoall(self.appendall)
         self.fixmeasurements()
         self.fixids()
+
 
 class AndroidSimpleTestParser(AndroidTestParser):
 

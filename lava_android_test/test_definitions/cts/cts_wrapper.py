@@ -27,6 +27,7 @@ import time
 import xml.dom.minidom
 from lava_android_test.adb import ADB
 from lava_android_test.utils import stop_at_pattern
+from lava_android_test.utils import find_files
 
 adb = ADB(sys.argv[1])
 curdir = os.path.realpath(os.path.dirname(__file__))
@@ -53,6 +54,10 @@ def stop_at_cts_pattern(command=None, pattern=None, timeout=-1):
     finally:
         proc_cts.sendcontrol('C')
         proc_cts.sendline('')
+        target_dir = os.path.join(os.getcwd(),
+                                  './android-cts/repository/results/')
+        for zip_f in find_files(target_dir, '.zip'):
+            adb.push(zip_f, '/data/local/tmp/cts-results.zip')
 
     return result
 
@@ -247,7 +252,7 @@ def main():
 
     package_name = None
     plan_name = 'CTS'
-    class_name= None
+    class_name = None
     method_name = None
     timeout = 36000
     #--cts_pkg cts_package_file --package package_name --timeout 36000
