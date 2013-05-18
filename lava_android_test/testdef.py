@@ -83,7 +83,7 @@ class Attachment(object):
             with open(tmp_path, 'rb') as stream:
                 data = stream.read()
             if data:
-                data_bundle = {"pathname": self.pathname,
+                data_bundle = {"pathname": basename,
                                "mime_type": self.mime_type,
                                "content": base64.standard_b64encode(data)}
             os.unlink(tmp_path)
@@ -130,7 +130,7 @@ class AndroidTest(ITest):
         self.org_ouput_file = org_ouput_file
         self.origdir = os.path.abspath(os.curdir)
         self.attachments = self.default_attachments
-        if self.org_ouput_file and (self.org_ouput_file != "stdout.log") :
+        if self.org_ouput_file and (self.org_ouput_file != "stdout.log"):
             self.attachments.append(
                 Attachment(pathname=self.org_ouput_file,
                            mime_type="text/plain"))
