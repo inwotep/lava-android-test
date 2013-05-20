@@ -45,7 +45,13 @@ pattern = ("\s*[\d-]+\s+[\d:]+\s+I\/\S+\:\s+(?P<test_case_id>\S+#\S+)"
            "\s+(?P<result>\S+)\s*$")
 parser = lava_android_test.testdef.AndroidTestParser(pattern=pattern,
                             fixupdict={'PASS': 'pass', 'FAIL': 'fail'})
+
+attachments = [lava_android_test.testdef.Attachment(
+                            pathname="/data/local/tmp/cts-results.zip",
+                            mime_type="application/zip")
+                ]
 testobj = lava_android_test.testdef.AndroidTest(testname=test_name,
                                                 installer=inst,
                                                 runner=run,
-                                                parser=parser)
+                                                parser=parser,
+                                                attachments=attachments)
