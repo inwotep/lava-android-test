@@ -100,9 +100,3 @@ testobj = lava_android_test.testdef.AndroidTest(testname=test_name,
                                     runner=run,
                                     parser=parser)
 
-
-
-
-
-
-
