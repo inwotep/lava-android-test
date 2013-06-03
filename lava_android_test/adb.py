@@ -198,6 +198,9 @@ class ADB(object):
             return 0
         if target_file is None:
             return 0
+        if not self.exists(source_file):
+            return 0
+
         ret_code = self.shell("dd if=%s of=%s" % (source_file, target_file))
         return ret_code
 

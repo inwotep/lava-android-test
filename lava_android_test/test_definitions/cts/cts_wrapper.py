@@ -57,8 +57,10 @@ def stop_at_cts_pattern(command=None, pattern=None, timeout=-1):
         target_dir = os.path.join(os.getcwd(),
                                   './android-cts/repository/results/')
         for zip_f in find_files(target_dir, '.zip'):
-            adb.push(zip_f, '/data/local/tmp/cts-results.zip')
-
+            ret = adb.push(zip_f, '/data/local/tmp/cts-results.zip')[0]
+            if ret_code != 0:
+                print "Failed to push file %s to device(%s)" % (zip_f,
+                                                           adb.get_serial())
     return result
 
 
