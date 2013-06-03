@@ -27,30 +27,39 @@ a given build meets all the criteria.
 """
 
 import os
-import lava_android_test.testdef
+
+from lava_android_test.testdef import (Attachment,
+                                       AndroidTest,
+                                       AndroidTestInstaller,
+                                       AndroidTestRunner,
+                                       AndroidTestParser)
 
 test_name = 'cts'
 
 curdir = os.path.realpath(os.path.dirname(__file__))
 
-RUN_STEPS_HOST_PRE = ['python %s/cts/cts_wrapper.py $(SERIAL) $(OPTIONS)' % curdir]
+RUN_STEPS_HOST_PRE = ['python %s/cts/cts_wrapper.py $(SERIAL) $(OPTIONS)' % (
+                                            curdir)]
 
-inst = lava_android_test.testdef.AndroidTestInstaller()
-run = lava_android_test.testdef.AndroidTestRunner(
-                                steps_host_pre=RUN_STEPS_HOST_PRE)
+inst = AndroidTestInstaller()
+run = AndroidTestRunner(steps_host_pre=RUN_STEPS_HOST_PRE)
 
 #01-16 14:24:16 I/0123456789ABCDEF: android.telephony.cts.
 #TelephonyManagerTest#testGetNetworkCountryIso PASS
 pattern = ("\s*[\d-]+\s+[\d:]+\s+I\/\S+\:\s+(?P<test_case_id>\S+#\S+)"
            "\s+(?P<result>\S+)\s*$")
-parser = lava_android_test.testdef.AndroidTestParser(pattern=pattern,
-                            fixupdict={'PASS': 'pass', 'FAIL': 'fail'})
+parser = AndroidTestParser(pattern=pattern,
+                           fixupdict={'PASS': 'pass', 'FAIL': 'fail'})
 
-attachments = [lava_android_test.testdef.Attachment(
-                            pathname="/data/local/tmp/cts-results.zip",
-                            mime_type="application/zip")
+attachments = [
+    Attachment(pathname="/data/local/tmp/logcat.log",
+               mime_type="text/plain"),
+    Attachment(pathname="/data/local/tmp/kmsg.log",
+               mime_type="text/plain"),
+    Attachment(pathname="/data/local/tmp/cts-results.zip",
+               mime_type="application/zip")
                 ]
-testobj = lava_android_test.testdef.AndroidTest(testname=test_name,
+testobj = AndroidTest(testname=test_name,
                                                 installer=inst,
                                                 runner=run,
                                                 parser=parser,
