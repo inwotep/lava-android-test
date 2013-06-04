@@ -57,8 +57,10 @@ def stop_at_cts_pattern(command=None, pattern=None, timeout=-1):
         target_dir = os.path.join(os.getcwd(),
                                   './android-cts/repository/results/')
         for zip_f in find_files(target_dir, '.zip'):
-            adb.push(zip_f, '/data/local/tmp/cts-results.zip')
-
+            ret_code = adb.push(zip_f, '/data/local/tmp/cts-results.zip')[0]
+            if ret_code != 0:
+                print "Failed to push file %s to device(%s)" % (zip_f,
+                                                           adb.get_serial())
     return result
 
 
@@ -203,15 +205,21 @@ def collect_logs():
     return logs
 
 
-def print_log(logs=[]):
+def push_log(logs=[]):
     for log in logs:
         log_file = log.get('output_file')
+        base_name = os.path.basename(log_file)
         if log_file:
-            with open(log_file) as log_fd:
-                print '=========Log file [%s] starts=========>>>>>' % log_file
-                for line in log_fd.readlines():
-                    print line.rstrip()
-                print '<<<<<=========Log file [%s] ends=========' % log_file
+            ret_code = adb.push(log_file, '/data/local/tmp/%s' % base_name)[0]
+            if ret_code != 0:
+                print "Failed to push file %s to device(%s)" % (log_file,
+                                                           adb.get_serial())
+                with open(log_file) as log_fd:
+                    print '=========Log file [%s] starts=========>>>>>' % (
+                                                                       log_file)
+                    for line in log_fd.readlines():
+                        print line.rstrip()
+                    print '<<<<<=========Log file [%s] ends=========' % log_file
 
 
 def get_all_packages(plan_file=None):
@@ -301,7 +309,7 @@ def main():
             if pid:
                 adb.run_cmd_host('kill -9 %s' % pid)
 
-        print_log(logs)
+        push_log(logs)
 
     sys.exit(0)
 
