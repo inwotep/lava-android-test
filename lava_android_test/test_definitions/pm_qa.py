@@ -23,13 +23,14 @@ Linaro PM-QA tests for platforms
 
 **URL:** https://git.linaro.org/gitweb?p=tools/pm-qa.git;a=summary
 
-**Default options:** None
+**Default options:** /data/benchmark/pm-qa
 """
 
 import os
 import lava_android_test.testdef
 from lava_android_test.config import get_config
 
+DEFAULT_OPTIONS = '/data/benchmark/pm-qa'
 test_name = 'pm_qa'
 config = get_config()
 curdir = os.path.realpath(os.path.dirname(__file__))
@@ -42,7 +43,7 @@ INSTALL_STEPS_ADB_PRE = ['push %s %s ' % (test_sh_path,
                                           test_sh_android_path),
                           'shell chmod 777 %s' % test_sh_android_path]
 
-ADB_SHELL_STEPS = [test_sh_android_path]
+ADB_SHELL_STEPS = ["%s $(OPTIONS)" % test_sh_android_path]
 PATTERN = "^\s*(?P<test_case_id>\w+)=(?P<result>\w+)\s*$"
 
 inst = lava_android_test.testdef.AndroidTestInstaller(
@@ -53,4 +54,5 @@ parser = lava_android_test.testdef.AndroidTestParser(PATTERN)
 testobj = lava_android_test.testdef.AndroidTest(testname=test_name,
                                     installer=inst,
                                     runner=run,
-                                    parser=parser)
+                                    parser=parser,
+                                    default_options=DEFAULT_OPTIONS)
