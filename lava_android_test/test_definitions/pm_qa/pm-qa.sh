@@ -1,10 +1,14 @@
 #!/system/bin/sh
 
+scripts_dir=$1 && shift
+if [ -z "${scripts_dir}" ];then
+    scripts_dir="/data/benchmark/pm-qa"
+fi
 test_func(){
-   if [ ! -d /data/benchmark/pm-qa ]; then
+   if [ ! -d "${scripts_dir}" ]; then
        echo "pm-qa=fail"
        exit
-   fi  
+   fi
 
    mkdir /data/bin/
    cd /data/bin
@@ -30,26 +34,25 @@ test_func(){
 
    export PATH=/data/bin:$PATH
 
-   cd /data/benchmark/pm-qa
+   cd "${scripts_dir}"
 
-   pwd=$PWD
+   pwd_dir=$PWD
    echo $pwd
    tests_dirs="cpuidle cpufreq cpuhotplug sched_mc suspend thermal utils"
-   files=`find cpuidle cpufreq cpuhotplug sched_mc suspend -name "*.sh"`
 
-   for dir in $tests_dirs
-   do
-       subDir=`pwd`/$dir
+   for dir in $tests_dirs; do
+       subDir=${pwd_dir}/$dir
        if [ -d $subDir ]; then
-       cd $subDir
+           cd $subDir
+       else
+           continue
        fi
 
        echo `pwd`
-       for file in `find . -name "*.sh"`
-       do
-       path=$file
-       echo $path
-       /system/bin/sh $path
+       for file in `find . -name "*.sh"`; do
+           path=$file
+           echo $path
+           /system/bin/sh $path
        done
        cd ..
    done
