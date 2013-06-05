@@ -6,7 +6,7 @@ if [ -z "${scripts_dir}" ];then
 fi
 test_func(){
    if [ ! -d "${scripts_dir}" ]; then
-       echo "pm-qa=fail"
+       echo "pm_qa=fail"
        exit
    fi
 
@@ -57,7 +57,7 @@ test_func(){
        cd ..
    done
 
-   echo "pm-qa=pass"
+   echo "pm_qa=pass"
 }
 
 test_func
