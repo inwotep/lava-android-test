@@ -52,13 +52,17 @@ parser = AndroidTestParser(pattern=pattern,
                            fixupdict={'PASS': 'pass', 'FAIL': 'fail'})
 
 attachments = [
-    Attachment(pathname="/data/local/tmp/logcat.log",
+        Attachment(pathname="/data/local/tmp/logcat.log",
                mime_type="text/plain"),
-    Attachment(pathname="/data/local/tmp/kmsg.log",
+        Attachment(pathname="/data/local/tmp/kmsg.log",
                mime_type="text/plain"),
-    Attachment(pathname="/data/local/tmp/cts-results.zip",
+        Attachment(pathname="/data/local/tmp/cts-results.zip",
+               mime_type="application/zip"),
+        Attachment(pathname="/data/local/tmp/device_logcat.zip",
+               mime_type="application/zip"),
+        Attachment(pathname="/data/local/tmp/host_log.zip",
                mime_type="application/zip")
-                ]
+        ]
 testobj = AndroidTest(testname=test_name,
                                                 installer=inst,
                                                 runner=run,
