@@ -1,4 +1,4 @@
-# Copyright (c) 2012 Linaro
+# Copyright (c) 2013 Linaro
 
 # Author: Linaro Validation Team <linaro-dev@lists.linaro.org>
 #
@@ -20,7 +20,7 @@
 """
 Runs the stock bionic tests.
 
-**URL:**  http://android.git.linaro.org/gitweb?p=platform/system/extras.git;a=tree;f=tests/bionic/libc;h=709d4b36a1421b4c937ded00cb5b750cc9d3f80a;hb=refs/heads/linaro_android_4.2.2
+**URL:**  http://android.git.linaro.org/gitweb?p=platform/system/extras.git;a=tree;f=tests/bionic/libc
 
 **Default Options:** None
 """
