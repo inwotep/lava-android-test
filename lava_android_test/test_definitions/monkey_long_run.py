@@ -61,9 +61,8 @@ ADB_SHELL_STEPS = ['%s $(OPTIONS) %s %s' % (monkey_sh_android_path,
                    monkey_blacklist_android_path)]
 #PATTERN = "^(?P<test_case_id>\w+):\W+(?P<measurement>\d+\.\d+)"
 PATTERN = "## Network stats: elapsed time=(?P<measurement>\d+)ms"
-FAILURE_PATTERNS = []
-#FAILURE_PATTERNS = ['\*\* Monkey aborted due to error.',
-#                    '\*\* System appears to have crashed']
+FAILURE_PATTERNS = ['\*\* Monkey aborted due to error.',
+                    '\*\* System appears to have crashed']
 
 inst = lava_android_test.testdef.AndroidTestInstaller(
                                     steps_adb_pre=INSTALL_STEPS_ADB_PRE)
