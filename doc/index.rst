@@ -56,8 +56,9 @@ in an virtual environment, so that it will not mess up with the system environme
 Latest documentation
 ====================
 
-This documentation may be out of date, we try to make sure that all the latest
-and greatest releases are always documented on http://lava-android-test.readthedocs.org/
+This documentation may be out of date, see 
+http://validation.linaro.org/static/docs/lava-android-test/ or the 
+Documentation link on any LAVA instance to learn more.
 
 
 Source code, bugs and patches
