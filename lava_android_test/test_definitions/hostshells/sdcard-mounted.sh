@@ -54,7 +54,7 @@ function main(){
     if [ -n "${SERIAL}" ]; then
         ADB_OPTION="-s ${SERIAL}"
     fi
-    adb ${ADB_OPTION} shell mount |grep '/sdcard'
+    adb ${ADB_OPTION} shell mount |grep -e '/sdcard' -e 'emulated'
     if [ $? -eq 0 ]; then
         echo "sdcard-mounted=pass"
     else
