@@ -19,7 +19,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #the default ip or domain used by the client to access the server
-DEFAULT_DOMAIN_IP='192.168.1.10'
+DEFAULT_DOMAIN_IP=`ifconfig | awk -F':' '/inet addr/&&!/127.0.0.1/{split($2,_," ");print _[1]}'`
 DEFAULT_BROWSER='DEFAULT'
 
 ########################################################
@@ -29,7 +29,7 @@ THIS_FILE="$0"
 methanol_git="git://github.com/szeged/methanol.git"
 chrome_apk_url="http://testdata.validation.linaro.org/chrome/Chrome-latest.apk"
 server_settings_file="/etc/lava/web_server/settings.conf"
-result_dir_android="/data/local/methanol"
+result_dir_android="/data/local/tmp/methanol"
 declare -a RESULTS=();
 methanol_url="/"
 report_url="/cgi/save_methanol_data.py"
@@ -253,7 +253,7 @@ function test_methanol(){
         test_url="${test_url}?reportToUrl=${report_url}%3Fsave2file=${res_basename}"
     fi
 
-    component_default="com.android.browser/.BrowserActivity"
+    component_default="com.google.android.browser/com.android.browser.BrowserActivity"
     component_chrome=" com.android.chrome/com.google.android.apps.chrome.Main"
     if [ "${browser}" = "CHROME" ]; then
         component=${component_chrome}
