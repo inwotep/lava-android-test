@@ -25,6 +25,8 @@ import sys
 import pexpect
 import time
 import xml.dom.minidom
+from zipfile import ZipFile
+
 from lava_android_test.adb import ADB
 from lava_android_test.utils import stop_at_pattern
 from lava_android_test.utils import find_files
@@ -74,6 +76,13 @@ def stop_at_cts_pattern(command=None, pattern=None, timeout=-1):
             if ret_code != 0:
                 print "Failed to push file %s to device(%s)" % (zip_f,
                                                            adb.get_serial())
+                with ZipFile(zip_f) as log_fd:
+                    print '=========Log file [%s] starts=========>>>>>' % (
+                                                                       base_name)
+                    f_name = base_name.replace('.zip', '.txt')
+                    for line in log_fd.open(f_name).readlines():
+                        print line.rstrip()
+                    print '<<<<<=========Log file [%s] ends=========' % base_name
     return result
 
 
