@@ -253,7 +253,7 @@ function test_methanol(){
         test_url="${test_url}?reportToUrl=${report_url}%3Fsave2file=${res_basename}"
     fi
 
-    component_default="com.google.android.browser/com.android.browser.BrowserActivity"
+    component_default="com.android.browser/com.android.browser.BrowserActivity"
     component_chrome=" com.android.chrome/com.google.android.apps.chrome.Main"
     if [ "${browser}" = "CHROME" ]; then
         component=${component_chrome}

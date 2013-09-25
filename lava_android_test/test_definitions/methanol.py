@@ -62,4 +62,4 @@ run = lava_android_test.testdef.AndroidTestRunner(steps_host_pre=RUN_STEPS_HOST_
 parser = MethanolTestParser()
 testobj = lava_android_test.testdef.AndroidTest(testname="methanol",
             installer=inst, runner=run, parser=parser,
-            org_ouput_file='/data/local/methanol/methanol_result.json')
+            org_ouput_file='/data/local/tmp/methanol/methanol_result.json')
