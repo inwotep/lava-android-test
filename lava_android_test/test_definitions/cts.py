@@ -44,9 +44,9 @@ RUN_STEPS_HOST_PRE = ['python %s/cts/cts_wrapper.py $(SERIAL) $(OPTIONS)' % (
 inst = AndroidTestInstaller()
 run = AndroidTestRunner(steps_host_pre=RUN_STEPS_HOST_PRE)
 
-#01-16 14:24:16 I/0123456789ABCDEF: android.telephony.cts.
-#TelephonyManagerTest#testGetNetworkCountryIso PASS
-pattern = ("\s*[\d-]+\s+[\d:]+\s+I\/\S+\:\s+(?P<test_case_id>\S+#\S+)"
+# cts-tf > [2K06-17 14:24:02 I/10.254.21.142:5555: android.acceleration.
+# cts.HardwareAccelerationTest#testIsHardwareAccelerated PASS
+pattern = ("^cts-tf.*\s*[\d-]+\s+[\d:]+\s+I\/\S+\:\s+(?P<test_case_id>\S+#\S+)"
            "\s+(?P<result>\S+)\s*$")
 parser = AndroidTestParser(pattern=pattern,
                            fixupdict={'PASS': 'pass', 'FAIL': 'fail'})
