@@ -293,6 +293,12 @@ def main():
         if cts_pkg:
             os.environ["cts_pkg"] = cts_pkg
 
+        java_home = get_value_from_paras(paras=paras, option='--java-home')
+        if java_home:
+            os.environ["PATH"] = java_home + "/bin" + os.pathsep + java_home \
+                                      + "/jre/bin" + os.pathsep + os.environ["PATH"]
+            os.environ["JAVA_HOME"] = java_home
+
         package_name = get_value_from_paras(paras=paras, option='--package')
         plan_name = get_value_from_paras(paras=paras,
                                          option='--plan',
