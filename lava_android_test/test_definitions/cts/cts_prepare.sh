@@ -20,12 +20,13 @@
 
 #http://source.android.com/compatibility/downloads.html
 if [ -z "$cts_pkg" ]; then
-cts_pkg="android-cts-linux_x86-arm-latest.zip"
+cts_pkg="android-cts-4.4_r3-linux_x86-arm.zip"
 fi
-media_pkg="android-cts-media-latest.zip"
-site_url="http://testdata.validation.linaro.org/cts/"
+media_pkg="android-cts-media-1.0.zip"
+#site_url="http://testdata.validation.linaro.org/cts/"
 #site_url="http://192.168.1.127/images/cts/"
 #export http_proxy=http://localhost:3128
+site_url="file:///home/smertz/"
 
 cts_pkg_url="${site_url}${cts_pkg}"
 media_pkg_url="${site_url}${media_pkg}"
@@ -46,8 +47,8 @@ function download_unzip(){
     url="${1}"
     pkg="${2}"
     
-    echo "wget --connect-timeout=30 -S --progress=dot -e dotbytes=2M ${url} -O ${pkg}"
-    wget -c -t 20 --connect-timeout=30 -S --progress=dot -e dotbytes=2M "${url}" -O ${pkg}
+    echo "curl ${url} > ${pkg}"
+    curl ${url} > ${pkg}
     if [ $? -ne 0 ]; then
         echo "Failed to get the package ${url}"
         exit 1
