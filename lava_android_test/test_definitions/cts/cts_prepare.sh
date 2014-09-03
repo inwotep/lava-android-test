@@ -62,70 +62,74 @@ function download_unzip(){
 }
 
 function main(){
+    ${ADB_CMD} push $2 /data/local/tmp/
+    #12. Make sure Settings > Developer options > Stay Awake is checked
+    #13. Make sure Settings > Developer options > Allow mock locations is checked
+    ${ADB_CMD} shell uiautomator runtest ctshelper.jar -c com.linaro.ctshelper#DeveloperOptionsEnableHelper
+    ${ADB_CMD} shell uiautomator runtest ctshelper.jar -c com.linaro.ctshelper#DeveloperOptionsHelper
+
+    #9. Make sure no lock pattern is set on the device (Settings > Security > Screen Lock should be 'None').
+    ${ADB_CMD} shell uiautomator runtest ctshelper.jar -c com.linaro.ctshelper#ScreenLockHelper
+
     rm -fr ${cts_pkg} ${media_pkg} android-cts
     download_unzip "${cts_pkg_url}" ${cts_pkg}
+    download_unzip "${media_pkg_url}" ${media_pkg}
 
     #1. Your phone should be running a user build (Android 4.0 and later) from source.android.com
     #2. Please refer to this link on the Android developer site and set up your device accordingly.
     #3. Make sure that your device has been flashed with a user build (Android 4.0and later) before you run CTS.
-    ####Step 1~3 is done by deployment
-	
-    #4. You need to ensure the Text To Speech files are installed on the device. 
-    #   You can check via Settings > Speech synthesis > Install voice data 
-    #   before running CTS tests. 
-    #   (Note that this assumes you have Android Market installed on the device, 
-    #   if not you will need to install the files manually via adb)
-    ##TODO don't know how to do this yet
-	
-    #5. Make sure the device has a SD card plugged in and the card is empty. 
+    #4. Make sure the device has a SD card plugged in and the card is empty.
     #   Warning: CTS may modify/erase data on the SD card plugged in to the device.
-    #6. Do a factory data reset on the device (Settings > SD Card & phone storage >Factory data reset). 
+    #5. Do a factory data reset on the device (Settings > SD Card & phone storage >Factory data reset).
     #   Warning: This will erase all user data from the phone.
-    #7. Make sure no lock pattern is set on the device (Settings > Security > Screen Lock should be 'None').
-    #8. Make sure the "USB Debugging" development option is checked (Settings >Developer options > USB debugging).
-    #9. Make sure Settings > Developer options > Stay Awake is checked
-    #10. Make sure Settings > Developer options > Allow mock locations is checked
-    ####Step 5~10 is done by deployment
-	
-    #11. Make sure device is connected to a functioning Wi-Fi network (Settings > WiFi)
-    ${ADB_CMD} shell am start -a android.intent.action.MAIN -n com.android.settings/.Settings
-    ${ADB_CMD} shell service call wifi 13 i32 1
-    sleep 5
-	
-    #12. Make sure the device is at the home screen at the start of CTS (Press the home button).
-    ${ADB_CMD} shell input keyevent 3
-    sleep 3
-	
-    #13. While a device is running tests, it must not be used for any other tasks.
-    #14. Do not press any keys on the device while CTS is running. 
-    #    Pressing keys or touching the screen of a test device will interfere with the running tests and may lead to test failures.
-    #####Steps 13~14 should be the ok because nobody will operation the test target.
-	
-    #15. Set up accessibility tests:
-    echo "${ADB_CMD} install -r android-cts/repository/testcases/CtsDelegatingAccessibilityService.apk"
-    ${ADB_CMD} install -r android-cts/repository/testcases/CtsDelegatingAccessibilityService.apk
-    if [ $? -ne 0 ]; then
-        echo "Faild to install CtsDelegatingAccessibilityService.apk"
-        exit 1
-    fi
-    ## On the device, enable Settings > Accessibility > DelegatingAccessibility Service
-    ${ADB_CMD} push $2 /data/local/tmp/
-    ${ADB_CMD} shell am start  -a android.intent.action.VIEW -n com.android.settings/.Settings
-    ${ADB_CMD} shell uiautomator runtest ctshelper.jar -c com.linaro.ctshelper#AccessibilityHelper
+    ####Step 1~5 is done by deployment
 
-	
-    #16. Set up device administration tests:
+
+    #6. Make sure your device is set up with English (United States) as the language
+    ${ADB_CMD} shell uiautomator runtest ctshelper.jar -c com.linaro.ctshelper#LanguageHelper
+
+    #7. Ensure the device has the Location setting On.
+    ${ADB_CMD} shell uiautomator runtest ctshelper.jar -c com.linaro.ctshelper#LocationHelper
+
+    #8. Make sure the device is connected to a functioning Wi-Fi network (Settings>Wi-Fi) that supports IPv6
+    ${ADB_CMD} shell uiautomator runtest ctshelper.jar -c com.linaro.ctshelper#WifiHelper
+    #TODO This will just turn it on
+
+
+    #10. Make sure the "USB Debugging" development option is checked (Settings >Developer options > USB debugging).
+    #11. Connect the host machine that will be used to test the device, and "Allow USB debugging" for the computer's RSA key.
+    ####Step 10~11 is done by deployment
+
+
+    #14. Not applicable
+
+    #15. Set up device administration tests:
     echo "${ADB_CMD} install -r android-cts/repository/testcases/CtsDeviceAdmin.apk"
     ${ADB_CMD} install -r android-cts/repository/testcases/CtsDeviceAdmin.apk
     if [ $? -ne 0 ]; then
         echo "Faild to install CtsDeviceAdmin.apk"
         exit 1
     fi
+
     ## On the device, enable Settings > Security > Device Administrators >android.deviceadmin.cts.CtsDeviceAdmin* settings
-    ${ADB_CMD} shell am start  -a android.intent.action.VIEW -n com.android.settings/.Settings
     ${ADB_CMD} shell uiautomator runtest ctshelper.jar -c com.linaro.ctshelper#SecurityHelper
-    ${ADB_CMD} shell am start  -a android.intent.action.VIEW -n com.android.launcher/com.android.launcher2.Launcher
-	
+
+	#16. Copy the media files to the device's external storage
+	echo "bash copy_media.sh 1920x1080 ${ADB_OPTION}"
+	bash copy_media.sh 1920x1080 ${ADB_OPTION}
+
+    #17. Make sure the device is at the home screen at the start of CTS (Press the home button).
+    ${ADB_CMD} shell input keyevent 3
+    sleep 3
+
+    #18. While a device is running tests, it must not be used for any other tasks.
+    #19. Do not press any keys on the device while CTS is running.
+    #    Pressing keys or touching the screen of a test device will interfere with the running tests and may lead to test failures.
+    #####Steps 18~19 should be the ok because nobody will operation the test target.
+
+    #20. Launch the browser and dismiss any startup/setup screen
+    #TODO
+
 	exit 0
 }
 
